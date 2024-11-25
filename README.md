@@ -1,6 +1,6 @@
-# Social Crowd Simulation
+# Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior
 
-Welcome to the Social Crowd Simulationm repository, where agents dynamically navigate a simulated environment. This system simulates realistic pedestrian behavior by integrating a variety of forces that guide agents towards their goals, enable avoidance of collisions, and facilitate natural group formations.
+Welcome to the Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior repository, where agents dynamically navigate a simulated environment. This system simulates realistic pedestrian behavior by integrating a variety of forces that guide agents towards their goals, enable avoidance of collisions, and facilitate natural group formations.
 
 <img src=".github/media/collision_avoidance_system.png" alt="Collision Avoidance System" width="300"/>
 
