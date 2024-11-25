@@ -128,3 +128,16 @@ These steps will allow you to witness the results of your setup, with avatars mo
 
 
 We encourage contributions and inquiries—please open an issue or submit a pull request if you wish to collaborate or have questions.
+
+## Citation 
+If you find this work beneficial, kindly attribute it to the authors or cite the following publication:
+
+@inproceedings{10.1145/3677388.3696337,
+  author    = {Itatani, Reiya and Pelechano, Nuria},
+  title     = {Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior},
+  booktitle = {Proceedings of the 17th ACM SIGGRAPH Conference on Motion, Interaction, and Games (MIG '24)},
+  year      = {2024},
+  doi       = {10.1145/3677388.3696337}
+}
+
+
