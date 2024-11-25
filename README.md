@@ -132,6 +132,7 @@ We encourage contributions and inquiries—please open an issue or submit a pull
 ## Citation 
 If you find this work beneficial, kindly attribute it to the authors or cite the following publication:
 
+```bibtex
 @inproceedings{10.1145/3677388.3696337,
   author    = {Itatani, Reiya and Pelechano, Nuria},
   title     = {Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior},
@@ -139,5 +140,4 @@ If you find this work beneficial, kindly attribute it to the authors or cite the
   year      = {2024},
   doi       = {10.1145/3677388.3696337}
 }
-
 
