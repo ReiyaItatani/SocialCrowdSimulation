@@ -24,7 +24,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-  <title>Academic Project Page</title>
+  <title>Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior</title>
   <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
   rel="stylesheet">
@@ -52,20 +52,17 @@
       <div class="container is-max-desktop">
         <div class="columns is-centered">
           <div class="column has-text-centered">
-            <h1 class="title is-1 publication-title">Academic Project Page</h1>
+            <h1 class="title is-1 publication-title">Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior</h1>
             <div class="is-size-5 publication-authors">
               <!-- Paper authors -->
               <span class="author-block">
-                <a href="FIRST AUTHOR PERSONAL LINK" target="_blank">First Author</a><sup>*</sup>,</span>
+                <a href="FIRST AUTHOR PERSONAL LINK" target="_blank">Reiya Itatani</a><sup>*</sup>,</span>
                 <span class="author-block">
-                  <a href="SECOND AUTHOR PERSONAL LINK" target="_blank">Second Author</a><sup>*</sup>,</span>
-                  <span class="author-block">
-                    <a href="THIRD AUTHOR PERSONAL LINK" target="_blank">Third Author</a>
-                  </span>
+                  <a href="https://www.cs.upc.edu/~npelechano/" target="_blank">Nuria Pelechano</a><sup>*</sup>,</span>
                   </div>
 
                   <div class="is-size-5 publication-authors">
-                    <span class="author-block">Institution Name<br>Conferance name and year</span>
+                    <span class="author-block">Universitat Politècnica de Catalunya, Barcelona, Spain<br>Motion, Interaction, and Games 2024</span>
                     <span class="eql-cntrb"><small><br><sup>*</sup>Indicates Equal Contribution</small></span>
                   </div>
 
@@ -73,7 +70,7 @@
                     <div class="publication-links">
                          <!-- Arxiv PDF link -->
                       <span class="link-block">
-                        <a href="https://arxiv.org/pdf/<ARXIV PAPER ID>.pdf" target="_blank"
+                        <a href="https://dl.acm.org/doi/10.1145/3677388.3696337" target="_blank"
                         class="external-link button is-normal is-rounded is-dark">
                         <span class="icon">
                           <i class="fas fa-file-pdf"></i>
@@ -83,7 +80,7 @@
                     </span>
 
                     <!-- Supplementary PDF link -->
-                    <span class="link-block">
+                    <!-- <span class="link-block">
                       <a href="static/pdfs/supplementary_material.pdf" target="_blank"
                       class="external-link button is-normal is-rounded is-dark">
                       <span class="icon">
@@ -91,11 +88,11 @@
                       </span>
                       <span>Supplementary</span>
                     </a>
-                  </span>
+                  </span> -->
 
                   <!-- Github link -->
                   <span class="link-block">
-                    <a href="https://github.com/YOUR REPO HERE" target="_blank"
+                    <a href="https://github.com/ReiyaItatani/SocialCrowdSimulation" target="_blank"
                     class="external-link button is-normal is-rounded is-dark">
                     <span class="icon">
                       <i class="fab fa-github"></i>
@@ -105,13 +102,22 @@
                 </span>
 
                 <!-- ArXiv abstract Link -->
-                <span class="link-block">
+                <!-- <span class="link-block">
                   <a href="https://arxiv.org/abs/<ARXIV PAPER ID>" target="_blank"
                   class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                     <i class="ai ai-arxiv"></i>
                   </span>
-                  <span>arXiv</span>
+                  <span>arXiv</span> -->
+
+                <!-- Video Link -->
+                <span class="link-block">
+                  <a href="https://youtu.be/oPm8Pg5EtTk?si=_6kL4e7qTlslj-BJ" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fa fa-video"></i>
+                  </span>
+                  <span>Video</span>
                 </a>
               </span>
             </div>
@@ -132,9 +138,9 @@
         <source src="static/videos/banner_video.mp4"
         type="video/mp4">
       </video>
-      <h2 class="subtitle has-text-centered">
+      <!-- <h2 class="subtitle has-text-centered">
         Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
+      </h2> -->
     </div>
   </div>
 </section>
@@ -148,7 +154,7 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper tellus sed ante aliquam tempus. Etiam porttitor urna feugiat nibh elementum, et tempor dolor mattis. Donec accumsan enim augue, a vulputate nisi sodales sit amet. Proin bibendum ex eget mauris cursus euismod nec et nibh. Maecenas ac gravida ante, nec cursus dui. Vivamus purus nibh, placerat ac purus eget, sagittis vestibulum metus. Sed vestibulum bibendum lectus gravida commodo. Pellentesque auctor leo vitae sagittis suscipit.
+            This paper proposes a novel approach to enhance the realism of a rule-based crowd simulation model by incorporating social rules and gaze-driven attention with consistent animations. Current crowd simulation models focus mostly on steering towards a goal while avoiding collision based on the agent’s direction of movement. This leads to robot-like simulations since agents’ appear to always have their attention perfectly aligned with the direction of movement. In the real world we observe that humans move in a crowd performing collision avoidance driven by attention, gaze, and non-verbal coordination with incoming traffic. In addition, humans exhibit different steering strategies based on whether they walk alone or in a group, whether they can look ahead and plan their best local movement, or react more abruptly because their gaze diverts from their direction of movement. Human gaze can be driven by movement but also by distractions such as being engaged in conversation with other people or using mobile phones. These human features are overlooked in crowd simulation leading often to perfectly smooth local movements of individuals. Our proposed method enhances existing crowd simulation frameworks by integrating social behavior models that affect both individual and collective dynamics, and drives gaze behavior to better simulate attention. By applying these models at both the steering and animation levels, we significantly improve the realism of the crowd simulation. A user study shows that our model was perceived as being more realistic and consistent with social behaviors when compared to a more traditional collision avoidance with just locomotion or with random animations.
           </p>
         </div>
       </div>
@@ -165,30 +171,30 @@
       <div id="results-carousel" class="carousel results-carousel">
        <div class="item">
         <!-- Your image here -->
-        <img src="static/images/carousel1.jpg" alt="MY ALT TEXT"/>
+        <img src="static/images/FocalPoints.gif" alt="MY ALT TEXT"/>
         <h2 class="subtitle has-text-centered">
-          First image description.
+          These are the focal points of this model.
         </h2>
       </div>
       <div class="item">
         <!-- Your image here -->
-        <img src="static/images/carousel2.jpg" alt="MY ALT TEXT"/>
+        <img src="static/images/CollisionAvoidance.gif" alt="MY ALT TEXT"/>
         <h2 class="subtitle has-text-centered">
-          Second image description.
+          Collision avoidance force is adjusted by the target's size and the distance to the target.
         </h2>
       </div>
       <div class="item">
         <!-- Your image here -->
-        <img src="static/images/carousel3.jpg" alt="MY ALT TEXT"/>
+        <img src="static/images/CollidionAvoidanceCoordination.gif" alt="MY ALT TEXT"/>
         <h2 class="subtitle has-text-centered">
-         Third image description.
+         Because of the collisin avoidance equation, when two agents are moving diagonally, collision avoidance forces end up pointing to the same direction. To avoid this situation, one of the agents changes its direction to the opposite side.
        </h2>
      </div>
      <div class="item">
       <!-- Your image here -->
-      <img src="static/images/carousel4.jpg" alt="MY ALT TEXT"/>
-      <h2 class="subtitle has-text-centered">
-        Fourth image description.
+      <img src="static/images/SharedFoV.gif" alt="MY ALT TEXT"/>
+      <h2 class="subtitle has-text-centered">        
+        Even if the agent itself is not aware, its collision avoidance force will be activated if agents in same group recognize the collision avoidance target.
       </h2>
     </div>
   </div>
@@ -205,13 +211,17 @@
   <div class="hero-body">
     <div class="container">
       <!-- Paper video. -->
-      <h2 class="title is-3">Video Presentation</h2>
+      <h2 class="title is-3">Overview Video</h2>
       <div class="columns is-centered has-text-centered">
         <div class="column is-four-fifths">
-          
           <div class="publication-video">
-            <!-- Youtube embed code here -->
-            <iframe src="https://www.youtube.com/embed/JkaxUblCGz0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <!-- Correct YouTube embed code -->
+            <iframe 
+              src="https://www.youtube.com/embed/oPm8Pg5EtTk?start=5" 
+              frameborder="0" 
+              allow="autoplay; encrypted-media" 
+              allowfullscreen>
+            </iframe>
           </div>
         </div>
       </div>
@@ -220,52 +230,13 @@
 </section>
 <!-- End youtube video -->
 
-
-<!-- Video carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Another Carousel</h2>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <video poster="" id="video1" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel1.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video2">
-          <video poster="" id="video2" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel2.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video3">
-          <video poster="" id="video3" autoplay controls muted loop height="100%">\
-            <!-- Your video file here -->
-            <source src="static/videos/carousel3.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End video carousel -->
-
-
-
-
-
-
 <!-- Paper poster -->
 <section class="hero is-small is-light">
   <div class="hero-body">
     <div class="container">
-      <h2 class="title">Poster</h2>
+      <h2 class="title">Paper</h2>
 
-      <iframe  src="static/pdfs/sample.pdf" width="100%" height="550">
+      <iframe  src="static/pdfs/mig24-18.pdf" width="100%" height="550">
           </iframe>
         
       </div>
@@ -273,12 +244,27 @@
   </section>
 <!--End paper poster -->
 
-
 <!--BibTex citation -->
   <section class="section" id="BibTeX">
     <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
-      <pre><code>BibTex Code Here</code></pre>
+      <pre><code>@inproceedings{10.1145/3677388.3696337,
+        author = {Itatani, Reiya and Pelechano, Nuria},
+        title = {Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior},
+        year = {2024},
+        isbn = {9798400710902},
+        publisher = {Association for Computing Machinery},
+        address = {New York, NY, USA},
+        url = {https://doi.org/10.1145/3677388.3696337},
+        doi = {10.1145/3677388.3696337},
+        booktitle = {Proceedings of the 17th ACM SIGGRAPH Conference on Motion, Interaction, and Games},
+        articleno = {3},
+        numpages = {11},
+        keywords = {Collision Avoidance, Crowd Simulation, Gaze Behavior, Social Rules},
+        location = {Arlington, VA, USA},
+        series = {MIG '24}
+        }
+        </code></pre>
     </div>
 </section>
 <!--End BibTex citation -->
