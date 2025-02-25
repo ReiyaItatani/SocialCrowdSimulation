@@ -3,7 +3,47 @@ guid: 6a8ad94ba18945a4295dcf02c729c2ce
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black
+    second: {fileID: 2100000, guid: f68b388c699fbc64db73383b93db3298, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black 2
+    second: {fileID: 2100000, guid: 268109065577a1642ae78ddafe8ae55a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black 3
+    second: {fileID: 2100000, guid: c7cd1eb02f10d734c9eac19ca91a57b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Camera Lens
+    second: {fileID: 2100000, guid: d156566a126f75340b8d1d1e8d95d187, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Color 1
+    second: {fileID: 2100000, guid: 7b68bd80aad11f24d981d76896e4d79a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Color 2
+    second: {fileID: 2100000, guid: edc0e224e8f6c15438f9a2adf7ee73a1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Glass
+    second: {fileID: 2100000, guid: b9a9207c20bc4694aa1ff4395ee5dc70, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lock Screen
+    second: {fileID: 2100000, guid: 97dee5f87355be245968c5eb9d2e3c04, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
