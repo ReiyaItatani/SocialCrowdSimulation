@@ -1,0 +1,24 @@
+{
+    "name": "com.reiya.socialcrowdsimulation",
+    "version": "0.1.3",
+    "displayName": "Social Crowd Simulation",
+    "description": "Motion Matching with Collision Avoidance including social behabvior implementation for Unity",
+    "unity": "2020.1",
+    "documentationUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
+    "changelogUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
+    "licensesUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation#license",
+    "keywords": [
+      "steering",
+      "crowd",
+      "motion matching",
+      "social behavior"
+    ],
+    "author": {
+      "name": "Reiya"
+    },
+    "dependencies": {
+      "com.jlpm.motionmatching": "0.1.0",
+      "com.unity.collections": "1.4.0"
+    }
+  }
+  

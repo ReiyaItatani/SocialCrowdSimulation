@@ -1,12 +1,10 @@
 {
-    "name": "ReiyaItatani.CollisionAvoidance",
+    "name": "RI.SocialCrowdSimulation.Editor",
     "rootNamespace": "",
     "references": [
         "JLPM.MotionMatching",
-        "Unity.Mathematics",
-        "Unity.InputSystem",
-        "ALINE",
-        "Unity.Collections"
+        "RI.SocialCrowdSimulation",
+        "Oculus.LipSync"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
