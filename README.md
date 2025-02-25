@@ -34,7 +34,7 @@ Before starting, ensure your system meets the following requirements:
 4. Enter the following URL into the git URL field:
 
 ```
-https://github.com/ReiyaItatani/SocialCrowdSimulation.git?path=Assets/com.reiya.collisionavoidance
+https://github.com/ReiyaItatani/SocialCrowdSimulation.git?path=Assets/com.reiya.socialcrowdsimulation
 ```
 
 5. Click `Add` to start the installation process.
