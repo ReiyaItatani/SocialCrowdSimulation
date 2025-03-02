@@ -36,9 +36,10 @@ public class GazeController : MonoBehaviour
         socialBehaviour = GetComponent<SocialBehaviour>();
 
         ParameterManager parameterManager = GetComponent<ParameterManager>();
-        List<GameObject> groupAgents = parameterManager.GetAvatarCreatorBase().GetAgentsInCategory(parameterManager.GetSocialRelations());
-        SocialRelations mySocialRelations = parameterManager.GetSocialRelations();
-        ifIndividual = groupAgents.Count <= 1 || mySocialRelations == SocialRelations.Individual;
+        string mySocialRelations = parameterManager.GetGroupName();
+        if(mySocialRelations == "Individual"){
+            ifIndividual = true;
+        }
     }
 
     protected virtual void Start()

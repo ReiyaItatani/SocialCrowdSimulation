@@ -12,6 +12,7 @@ namespace CollisionAvoidance{
 // Custom editor window to create prefabs of Humanoid characters.
 public class PrefabCreatorWindow : EditorWindow
 {
+    [SerializeField]private GroupNodeEventChannelSO groupNodeEventChannel;
     [SerializeField]private MotionMatchingData MMData;
     [SerializeField]private GameObject FOVMeshPrefab;
     [SerializeField]private RuntimeAnimatorController  animator;
@@ -43,6 +44,10 @@ public class PrefabCreatorWindow : EditorWindow
         // Display the title for the settings section
         GUILayout.Label("Settings", EditorStyles.boldLabel);
         EditorGUILayout.Space(); // Adds a little space after the label for better readability
+
+        // Field for Motion Matching Data
+        groupNodeEventChannel = (GroupNodeEventChannelSO)EditorGUILayout.ObjectField("Group Node Event Channel", groupNodeEventChannel, typeof(GroupNodeEventChannelSO), false);
+        EditorGUILayout.Space(); // Adds spacing between fields for clarity
 
         // Field for Motion Matching Data
         MMData = (MotionMatchingData)EditorGUILayout.ObjectField("Motion Matching Data", MMData, typeof(MotionMatchingData), false);
@@ -225,6 +230,7 @@ private void CreatePrefab(GameObject humanoid)
     GameObject pathController = new GameObject("PathController");
     pathController.transform.SetParent(agent.transform);
     PathController pathControllerScript = pathController.AddComponent<PathController>(); // Make sure you have a PathController script.
+    AgentPathManager agentPathManager = pathController.AddComponent<AgentPathManager>();
 
     // Create and attach the "MotionMatching" GameObject and script.
     GameObject motionMatching = new GameObject("MotionMatching");
@@ -239,9 +245,10 @@ private void CreatePrefab(GameObject humanoid)
     //set params
     pathControllerScript.MotionMatching     = motionMatchingController;
     pathControllerScript.collisionAvoidance = collisionAvoidanceController;
-    pathControllerScript.Path               = new Vector3[2];
-    pathControllerScript.Path[0]            = new Vector3(-15, 0, 0);
-    pathControllerScript.Path[1]            = new Vector3(15, 0, 0);
+    pathControllerScript.agentPathManager   = agentPathManager;
+    //
+    agentPathManager.pathController         = pathControllerScript;
+    agentPathManager.groupNodeEventChannel  = groupNodeEventChannel;
     //
     motionMatchingController.CharacterController = pathControllerScript;
     motionMatchingController.MMData              = MMData;

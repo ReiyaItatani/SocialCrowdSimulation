@@ -16,7 +16,7 @@ public class PathController : MotionMatchingCharacterController
 {
     public string TrajectoryPositionFeatureName = "FuturePosition";
     public string TrajectoryDirectionFeatureName = "FutureDirection";
-    public Vector3[] Path;
+    public AgentPathManager agentPathManager;
     //Warning:current position is not the current position of the agent itself when the parent transform is not (0.0f, 0.0f, 0.0f);
     //To get current position of the agent you have to use GetCurrentPosition()
     protected Vector3 CurrentPosition;
@@ -38,9 +38,6 @@ public class PathController : MotionMatchingCharacterController
     public float maxSpeed = 1.0f; //Maximum speed of the agent
     private UnityAction OnGoalReached; //the event when the agent reaches the goal
     public bool onInSlowingArea = false; //the event when the agent is in the slowing radius
-    // --------------------------------------------------------------------------
-    // To Mange Agents -----------------------------------------------------------------
-    public AvatarCreatorBase avatarCreator; //Manager for all of the agents
     // --------------------------------------------------------------------------
     // Features -----------------------------------------------------------------
     [Header("Features For Motion Matching")]
@@ -67,16 +64,9 @@ public class PathController : MotionMatchingCharacterController
     [Header("Parameters For Goal Direction")]
     protected Vector3 currentGoal;
     protected Vector3 toGoalVector = Vector3.zero;//Direction to goal
+    
     [HideInInspector]
     public float toGoalWeight = 2.0f;//Weight for goal direction
-    [ReadOnly]
-    public int currentGoalIndex = 1;//Current goal index num
-    public int CurrentGoalIndex 
-    { 
-        get { return currentGoalIndex; } 
-        set { currentGoalIndex = value; } 
-    }
-    public float goalRadius = 0.5f;
     public float slowingRadius = 2.0f;
     // --------------------------------------------------------------------------
     // Anticipated Collision Avoidance -------------------------------------------
@@ -109,14 +99,12 @@ public class PathController : MotionMatchingCharacterController
     public bool showGroupForce = false;
     [HideInInspector]
     public bool showWallForce = false;
-    [HideInInspector]
-    public bool showSyntheticVisionForce = false;
     // --------------------------------------------------------------------------
     // Force From Group --------------------------------------------------------
     [Header("Group Force, Group Category")]
     protected Vector3 groupForce = Vector3.zero;
     [ReadOnly]
-    public SocialRelations socialRelations;
+    public string groupName;
     [HideInInspector]
     public float groupForceWeight = 0.5f;
     // --------------------------------------------------------------------------
@@ -142,11 +130,12 @@ public class PathController : MotionMatchingCharacterController
         if (initialSpeed < minSpeed)
         {
             initialSpeed = minSpeed;
-            // minSpeed = initialSpeed;
+        }else if(initialSpeed > maxSpeed){
+            initialSpeed = maxSpeed;
         }
-        int currentPositionIndex = currentGoalIndex - 1;
-        CurrentPosition = Path[currentPositionIndex];
-        currentGoal = Path[currentGoalIndex];        
+
+        //CurrentPosition = agentPathManager.PrevTargetNodePosition;
+        currentGoal     = agentPathManager.CurrentTargetNodePosition;  
 
         //Init
         AgentCollisionDetection agentCollisionDetection = collisionAvoidance.GetAgentCollisionDetection();
@@ -183,12 +172,12 @@ public class PathController : MotionMatchingCharacterController
         StartCoroutine(UpdateToGoalVector(0.1f));
         StartCoroutine(UpdateAvoidanceVector(0.1f, 0.3f));
         StartCoroutine(UpdateAvoidNeighborsVector(0.1f, 0.3f));
-        StartCoroutine(UpdateGroupForce(0.1f, GetSocialRelations()));
+        StartCoroutine(UpdateGroupForce(0.1f, GetGroupName()));
         StartCoroutine(UpdateWallForce(0.2f, 0.5f));
         //StartCoroutine(UpdateAngularVelocityControl(0.2f));   
 
         //Update the speed of the agent based on the distance to the goal
-        StartCoroutine(UpdateSpeed(avatarCreator.GetAgentsInCategory(GetSocialRelations()), collisionAvoidance.GetAgentGameObject()));
+        StartCoroutine(UpdateSpeed(collisionAvoidance.GetAgentGameObject()));
         StartCoroutine(UpdateSpeedBasedOnGoalDist(0.1f));
 
         StartCoroutine(CheckForGoalReached(0.1f));
@@ -204,8 +193,6 @@ public class PathController : MotionMatchingCharacterController
         {
             SimulatePath(DatabaseDeltaTime * TrajectoryPosPredictionFrames[i], CurrentPosition, out PredictedPositions[i], out PredictedDirections[i]);
         }
-        
-        UpdateGoalTarget(CurrentPosition, currentGoal);
 
         //Update Current Position and Direction
         SimulatePath(Time.deltaTime, CurrentPosition, out CurrentPosition, out CurrentDirection);
@@ -229,8 +216,7 @@ public class PathController : MotionMatchingCharacterController
                         avoidanceWeight    *         avoidanceVector + 
                     avoidNeighborWeight    *    avoidNeighborsVector + 
                     groupForceWeight       *              groupForce +
-                    wallRepForceWeight     *            wallRepForce +
-            syntheticVisionForceWeight     *    syntheticVisionForce
+                    wallRepForceWeight     *            wallRepForce
                     ).normalized;
         direction = new Vector3(direction.x, 0f, direction.z);
 
@@ -275,13 +261,13 @@ public class PathController : MotionMatchingCharacterController
     //when the agent collide with the agent in front of it, it will take a step back
     protected virtual void HandleAgentCollision(Collider other){
         //Check the social realtionship between the collided agent and the agent
-        SocialRelations  mySocialRelations          = GetSocialRelations();
+        string  mySocialRelations          = GetGroupName();
         IParameterManager otherAgentParameterManager = other.GetComponent<IParameterManager>();
-        SocialRelations  otherAgentSocialRelations  = otherAgentParameterManager.GetSocialRelations();
+        string  otherAgentSocialRelations  = otherAgentParameterManager.GetGroupName();
 
         if(onCollide == false){
             collidedAgent = other.gameObject;
-            if(mySocialRelations != SocialRelations.Individual && mySocialRelations == otherAgentSocialRelations){
+            if(mySocialRelations != "Individual" && mySocialRelations == otherAgentSocialRelations){
                 //If the collided agent is in the same group
                 float distance = Vector3.Distance(GetCurrentPosition(), otherAgentParameterManager.GetCurrentPosition());
                 if(distance < 0.4f){
@@ -370,38 +356,6 @@ public class PathController : MotionMatchingCharacterController
         }
     }
 
-    protected virtual void UpdateGoalTarget(Vector3 _currentPosition, Vector3 _currentGoal)
-    {
-        float distanceToGoal = Vector3.Distance(_currentPosition, _currentGoal);
-        if(distanceToGoal < goalRadius) {
-            SelectRandomGoal();
-        }
-    }
-
-    protected bool isIncreasing = true;
-
-    protected virtual void SelectRandomGoal(){
-
-        if(isIncreasing)
-        {
-            //Path[index]→Path[index+1]
-            currentGoalIndex++;
-            if(currentGoalIndex >= Path.Length - 1) isIncreasing = false;
-        }
-        else
-        {
-            //Path[index]→Path[index-1]
-            currentGoalIndex--;
-            if(currentGoalIndex <= 0) isIncreasing = true;
-        }
-
-        //Adjustment
-        if(currentGoalIndex > Path.Length-1) currentGoalIndex = Path.Length-2;
-        if(currentGoalIndex < 0) currentGoalIndex = -currentGoalIndex;
-
-        currentGoal = Path[currentGoalIndex];
-        OnGoalReached?.Invoke();
-    }
     #endregion
 
     /***********************************************************************************************
@@ -693,188 +647,6 @@ public class PathController : MotionMatchingCharacterController
     }
     #endregion
 
-    /***********************************************************************************************
-    * Synthetic-Vision Based Steering for Crowds[Ondrej, J. et al. (2010)]:
-    * This part of the code helps virtual agents "see" and avoid bumping into each other.
-    * It detects when agents might crash and helps them change direction or speed to avoid it.
-    ***********************************************************************************************/
-    #region Synthetic-Vision Based Steering
-
-    protected Vector3 syntheticVisionForce;
-    [HideInInspector]
-    public float syntheticVisionForceWeight = 1.0f;
-    protected float minTimeToInteraction;
-    protected virtual IEnumerator UpdateAngularVelocityControl(float updateTime){
-        while(true){
-            //List<GameObject> others = collisionAvoidance.GetOthersInAnticipatedAvoidanceArea();
-            List<GameObject> others = avatarCreator.GetAgents();
-            Vector3 myPosition      = GetCurrentPosition();
-            Vector3 myDirection     = GetCurrentDirection();
-            float   _currentSpeed   = GetCurrentSpeed();
-            Vector3 myGoal          = GetCurrentGoal();
-            float minTimeToInteraction = float.MaxValue;
-            float   angularVelocity = CalculateAngularVelocities(others, myPosition, myDirection, myGoal, out minTimeToInteraction);
-            //currentSpeed = UpdateSpeed(others, _currentSpeed, minTimeToInteraction);
-            //rotation
-            Vector3 rotationAxis = Vector3.up;
-            Quaternion rotation = Quaternion.AngleAxis(angularVelocity * Mathf.Rad2Deg, rotationAxis);
-            syntheticVisionForce = rotation * myDirection;
-
-            yield return new WaitForSeconds(updateTime);
-        }
-    }
-
-    protected virtual float UpdateSpeed(List<GameObject> others, float _currentSpeed, float minTimeToInteraction, float ttiThr = 1f){
-        if(others == null){
-            return _currentSpeed;
-        }else{
-            if(minTimeToInteraction < ttiThr){
-                _currentSpeed = _currentSpeed * (1 - Mathf.Exp(-0.5f * minTimeToInteraction * minTimeToInteraction));
-            }
-        }
-        return _currentSpeed;
-    }
-
-    protected virtual float CalculateAngularVelocities(List<GameObject> others, Vector3 myPosition, Vector3 myDirection,Vector3 myGoal, out float minTimeToInteraction){
-        float rightTurn = float.MaxValue;
-        float leftTurn = float.MinValue;
-        minTimeToInteraction = float.MaxValue; 
-
-        foreach(GameObject other in others){
-            Vector3 otherPosition     = other.GetComponent<IParameterManager>().GetCurrentPosition();
-            Vector3 otherDirection    = other.GetComponent<IParameterManager>().GetCurrentDirection();
-
-            //Calculate Angular Velocity
-            float distance = Vector3.Distance(myPosition, otherPosition);
-            Vector3 pi_walker = otherPosition - myPosition;
-            //Vector3 pi_walker = myPosition - otherPosition;
-            Vector3 k = pi_walker.normalized;
-            Vector3 V_pi_w = otherDirection - myDirection;//(10)
-            Vector3 V_conv_pi_w = ProjectVector(V_pi_w, k);//(11)
-            Vector3 V_orth_pi_w = V_pi_w - V_conv_pi_w;//(12)
-            float angularVelocity_Other = CalculateAngularVelocity(distance, V_orth_pi_w, V_conv_pi_w, 1f);//(14)
-            //Calculate Time-To-Interaction
-            float timeToInteraction = CalculateTimeToIntersection(distance, V_conv_pi_w);//(13)
-
-            //Update Minimum TimeToInteraction
-            if(timeToInteraction < minTimeToInteraction){
-                minTimeToInteraction = timeToInteraction;
-            }
-
-            //Calculate Angular Velocities Threshold
-            float bearingAngleThreshold = CalculateBearingAngleThreshold(angularVelocity_Other, timeToInteraction);
-            float currentBearingAngle_Other = CalculateBearingAngle(myPosition, myDirection, otherPosition);
-            //Points a walker has to react to
-            if(timeToInteraction > 0f && currentBearingAngle_Other < bearingAngleThreshold){
-                float turn = angularVelocity_Other - bearingAngleThreshold;
-                if(angularVelocity_Other > 0f){
-                    //the two walkers will not collide and I will give way.
-                    if(turn < rightTurn || rightTurn == 0f){
-                        rightTurn = turn;
-                    }
-                }else if(angularVelocity_Other < 0f || leftTurn == 0f){
-                    //the two walkers will not collide and I will pass first.
-                    if(turn > leftTurn){
-                        leftTurn = turn;
-                    }
-                }   
-            }
-        }
-
-        //Calculate bearing-angle corresponding to my goal
-        float distance_Goal = Vector3.Distance(myPosition, myGoal);
-        Vector3 pg_walker = myPosition - myGoal;
-        Vector3 k_Goal = pg_walker.normalized;
-        Vector3 V_pg_w = Vector3.zero - myDirection;//(10)
-        Vector3 V_conv_pg_w = ProjectVector(V_pg_w, k_Goal);//(11)
-        Vector3 V_orth_pg_w = V_pg_w - V_conv_pg_w;//(12)
-        float angularVelocity_Goal = CalculateAngularVelocity(distance_Goal, V_orth_pg_w, V_conv_pg_w, 1f);//(14)
-
-        float myAngularVelocity = 0f;
-
-        //Calculate angular velocities for me
-        if(Mathf.Abs(angularVelocity_Goal) < 0.1f){
-            //walkers are currently heading to their goal
-            if(Mathf.Abs(rightTurn) < Mathf.Abs(leftTurn)){
-                //why -rightturn????
-                myAngularVelocity = -rightTurn;
-            }else{
-                myAngularVelocity = leftTurn;
-            }
-        }else if(leftTurn < angularVelocity_Goal && angularVelocity_Goal < rightTurn){
-            if(Mathf.Abs(rightTurn-angularVelocity_Goal) < Mathf.Abs(leftTurn-angularVelocity_Goal)){
-                myAngularVelocity = rightTurn;
-            }else{
-                myAngularVelocity = leftTurn;
-            }
-        }else if(angularVelocity_Goal < leftTurn && angularVelocity_Goal > rightTurn){
-            myAngularVelocity = angularVelocity_Goal;
-        }
-
-        if(myAngularVelocity == float.MaxValue || myAngularVelocity == float.MinValue){
-            myAngularVelocity = 0f;
-        }
-        return myAngularVelocity;
-    }
-
-    protected virtual float CalculateBearingAngle(Vector3 basePosition, Vector3 baseDirection, Vector3 otherPosition)
-    {
-        Vector3 directionToOther = otherPosition - basePosition;
-        float angleInDegrees = Vector3.SignedAngle(baseDirection, directionToOther, Vector3.up);
-        return -angleInDegrees * Mathf.Deg2Rad; 
-    }
-
-
-    protected virtual float CalculateBearingAngleThreshold(float angularVelocity, float timeToInteraction, float a = 1.0f, float b = 1.1f, float c = 0.7f){
-        float bearingAngleThreshold = 0f;
-        if(angularVelocity < 0){
-            bearingAngleThreshold= a - b * Mathf.Pow(timeToInteraction, -c);
-        }else{
-            bearingAngleThreshold= a + b * Mathf.Pow(timeToInteraction, -c);
-        }
-        return bearingAngleThreshold;
-    }
-
-    protected virtual Vector3 ProjectVector(Vector3 vector, Vector3 direction)
-    {
-        float dotProduct = Vector3.Dot(vector, direction);
-        return direction * dotProduct;
-    }
-
-    protected virtual float CalculateTimeToIntersection(float distance, Vector3 velocityProjection)
-    {
-        float speedTowardsWalker = velocityProjection.magnitude;
-
-        if (speedTowardsWalker < Mathf.Epsilon)
-        {
-            return float.PositiveInfinity;
-        }
-
-        return distance / speedTowardsWalker;
-    }
-
-    protected virtual float CalculateAngularVelocity(float distance, Vector3 orthogonalComponent, Vector3 projectionComponent, float timeUnit)
-    {
-        float numerator = orthogonalComponent.magnitude;
-        float denominator = distance - projectionComponent.magnitude;
-
-        if (Mathf.Abs(denominator) < Mathf.Epsilon)
-        {
-            return 0f;
-        }
-
-        float angle = Mathf.Atan2(numerator , denominator) / timeUnit;
-        float signedAngle = Vector3.SignedAngle(projectionComponent, orthogonalComponent, Vector3.up);
-
-        if (signedAngle < 0)
-        {
-            angle = -angle;
-        }
-
-        return angle;
-    }
-
-    #endregion
     /******************************************************************************************************************************
     * Force from Group[Moussaid et al. (2010)]:
     * This section of the code calculates the collective force exerted by or on a group of objects.
@@ -886,16 +658,14 @@ public class PathController : MotionMatchingCharacterController
     protected float repulsionForceWeight = 1.5f;
     protected float alignmentForceWeight = 1.5f;
 
-    protected virtual IEnumerator UpdateGroupForce(float updateTime, SocialRelations _socialRelations){
-        List<GameObject> groupAgents = avatarCreator.GetAgentsInCategory(_socialRelations);
-
-        CapsuleCollider  agentCollider = collisionAvoidance.GetAgentCollider();
-        float              agentRadius = agentCollider.radius;
-        GameObject     agentGameObject = collisionAvoidance.GetAgentGameObject();
-
-        if(groupAgents.Count <= 1 || _socialRelations == SocialRelations.Individual){
+    protected virtual IEnumerator UpdateGroupForce(float updateTime, string  _groupName){
+        if(_groupName == "Individual"){
             groupForce = Vector3.zero;
         }else{
+            List<GameObject> groupAgents = groupColliderManager.GetGroupAgents();
+            CapsuleCollider  agentCollider = collisionAvoidance.GetAgentCollider();
+            float              agentRadius = agentCollider.radius;
+            GameObject     agentGameObject = collisionAvoidance.GetAgentGameObject();
 
             while(true){
                 Vector3  _currentPosition = GetCurrentPosition();   
@@ -1113,59 +883,59 @@ public class PathController : MotionMatchingCharacterController
     * It ensures that the object maintains an appropriate speed, possibly in response to environmental factors, obstacles, or other objects.
     ********************************************************************************************************************************/
     #region SPEED ADJUSTMENT 
-    protected virtual IEnumerator UpdateSpeed(List<GameObject> groupAgents, GameObject myself, float updateTime = 0.1f, float speedChangeRate = 0.05f){
-        if(groupAgents.Count == 1 || GetSocialRelations() == SocialRelations.Individual){
+    protected virtual IEnumerator UpdateSpeed(GameObject myself, float updateTime = 0.1f, float speedChangeRate = 0.05f){
+        if(GetGroupName() == "Individual"){
             StartCoroutine(DecreaseSpeedBaseOnUpperBodyAnimation(updateTime));
             yield return null;
-        }
-
-        float averageSpeed = 0.0f;
-        foreach(GameObject go in groupAgents){
-            IParameterManager parameterManager = go.GetComponent<IParameterManager>();
-            averageSpeed += parameterManager.GetCurrentSpeed();
-        }
-        averageSpeed /= groupAgents.Count;
-
-        averageSpeed = averageSpeed - 0.1f*groupAgents.Count;
-        if(averageSpeed<minSpeed){
-            averageSpeed = minSpeed;
-        }
-
-        while(true){
-            Vector3 centerOfMass = CalculateCenterOfMass(groupAgents, myself);
-            Vector3 directionToCenterOfMass = (centerOfMass - (Vector3)GetCurrentPosition()).normalized;
-            Vector3 myForward = GetCurrentDirection();
-            float distFromMeToCenterOfMass = Vector3.Distance(GetCurrentPosition(), centerOfMass);
-
-            //0.3f is the radius of the agent
-            float safetyDistance = 0.05f;
-            float speedChangeDist = groupAgents.Count * 0.3f + safetyDistance;
-
-            if(distFromMeToCenterOfMass > speedChangeDist){
-                float dotProduct = Vector3.Dot(myForward, directionToCenterOfMass);
-                //lowest speed or average speed?
-                if (dotProduct > 0)
-                {
-                    //accelerate when the center of mass is in front of me
-                    if(GetCurrentSpeed() <= maxSpeed){
-                        currentSpeed += speedChangeRate; 
-                    }else{
-                        currentSpeed = maxSpeed;
-                    }
-                }
-                else
-                {
-                    //decelerate when the center of mass is behind
-                    if(GetCurrentSpeed() >= minSpeed){
-                        currentSpeed -= speedChangeRate;
-                    }else{
-                        currentSpeed = minSpeed;
-                    }
-                }
-            }else{
-                currentSpeed = averageSpeed;
+        }else{
+            float averageSpeed = 0.0f;
+            List<GameObject> groupAgents = GetGroupAgents(); 
+            foreach(GameObject go in groupAgents){
+                IParameterManager parameterManager = go.GetComponent<IParameterManager>();
+                averageSpeed += parameterManager.GetCurrentSpeed();
             }
-            yield return new WaitForSeconds(updateTime);
+            averageSpeed /= groupAgents.Count;
+
+            averageSpeed = averageSpeed - 0.1f*groupAgents.Count;
+            if(averageSpeed<minSpeed){
+                averageSpeed = minSpeed;
+            }
+            while(true){
+                Vector3 centerOfMass = CalculateCenterOfMass(groupAgents, myself);
+                Vector3 directionToCenterOfMass = (centerOfMass - (Vector3)GetCurrentPosition()).normalized;
+                Vector3 myForward = GetCurrentDirection();
+                float distFromMeToCenterOfMass = Vector3.Distance(GetCurrentPosition(), centerOfMass);
+
+                //0.3f is the radius of the agent
+                float safetyDistance = 0.05f;
+                float speedChangeDist = groupAgents.Count * 0.3f + safetyDistance;
+
+                if(distFromMeToCenterOfMass > speedChangeDist){
+                    float dotProduct = Vector3.Dot(myForward, directionToCenterOfMass);
+                    //lowest speed or average speed?
+                    if (dotProduct > 0)
+                    {
+                        //accelerate when the center of mass is in front of me
+                        if(GetCurrentSpeed() <= maxSpeed){
+                            currentSpeed += speedChangeRate; 
+                        }else{
+                            currentSpeed = maxSpeed;
+                        }
+                    }
+                    else
+                    {
+                        //decelerate when the center of mass is behind
+                        if(GetCurrentSpeed() >= minSpeed){
+                            currentSpeed -= speedChangeRate;
+                        }else{
+                            currentSpeed = minSpeed;
+                        }
+                    }
+                }else{
+                    currentSpeed = averageSpeed;
+                }
+                yield return new WaitForSeconds(updateTime);
+            }
         }
     }
 
@@ -1265,12 +1035,14 @@ public class PathController : MotionMatchingCharacterController
 
     public override float3 GetWorldInitPosition()
     {
-        return Path[currentGoalIndex-1] + this.transform.position;
+        // return Path[currentGoalIndex-1] + this.transform.position;
+        return agentPathManager.PrevTargetNodePosition + this.transform.position;
     }
     public override float3 GetWorldInitDirection()
     {
         // float2 dir = Path.Length > 0 ? Path[1].Position - Path[0].Position : new float2(0, 1);
-        Vector3 dir = Path.Length > 0 ? Path[currentGoalIndex] - Path[currentGoalIndex-1] : new Vector3(0, 0, 1);
+        // Vector3 dir = Path.Length > 0 ? Path[currentGoalIndex] - Path[currentGoalIndex-1] : new Vector3(0, 0, 1);
+        Vector3 dir = agentPathManager.CurrentTargetNodePosition - agentPathManager.PrevTargetNodePosition;
         return dir.normalized;
     }
 
@@ -1299,13 +1071,14 @@ public class PathController : MotionMatchingCharacterController
         return currentSpeed;
     }
     public Vector3 GetCurrentGoal(){
-        return currentGoal;
+        return agentPathManager.CurrentTargetNodePosition;
     }
-    public SocialRelations GetSocialRelations(){
-        return socialRelations;
+    public string GetGroupName(){
+        return groupName;
     }
-    public AvatarCreatorBase GetAvatarCreatorBase(){
-        return avatarCreator;
+    public List<GameObject> GetGroupAgents(){
+        if(groupColliderManager == null) return null;
+        return groupColliderManager.GetGroupAgents();
     }
     public GameObject GetPotentialAvoidanceTarget()
     {
@@ -1359,27 +1132,13 @@ public class PathController : MotionMatchingCharacterController
             gizmoColor = Color.black;
             Draw.ArrowheadArc((Vector3)GetCurrentPosition(), wallRepForce, 0.55f, gizmoColor);
         }
-
-        if(showSyntheticVisionForce){
-            gizmoColor = Color.magenta;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), syntheticVisionForce, 0.55f, gizmoColor);
-        }
-        // const float heightOffset = 0.01f;
-        //Draw slowingRadius, goalRadius
-        // for (int i = 0; i < Path.Length; i++)
-        // {
-        //     Vector3 pos = GetWorldPosition(transform, Path[i]);
-        //     Draw.Circle(new Vector3(pos.x, heightOffset, pos.z), Vector3.up ,slowingRadius);
-        //     Draw.Circle(new Vector3(pos.x, heightOffset, pos.z), Vector3.up, goalRadius);
-        //     Draw.SolidCircle(new Vector3(pos.x, heightOffset, pos.z), Vector3.up, 0.1f);
-        // }
     }
 
     #if UNITY_EDITOR
     protected virtual void OnDrawGizmos()
     {
 
-        if (Path == null) return;
+        // if (Path == null) return;
 
         // const float heightOffset = 0.01f;
 

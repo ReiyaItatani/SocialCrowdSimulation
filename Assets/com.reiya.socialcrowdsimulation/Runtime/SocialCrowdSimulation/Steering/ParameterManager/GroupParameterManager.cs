@@ -41,8 +41,8 @@ public class GroupParameterManager : MonoBehaviour, IParameterManager
         return currentAvoidanceVectorAverage.normalized;
     }
 
-    public SocialRelations GetSocialRelations(){
-        return pathControllers[0].GetSocialRelations();
+    public string GetGroupName(){
+        return pathControllers[0].GetGroupName();
     }
 }
 }

@@ -25,8 +25,8 @@ public class SpringParameterManager : MonoBehaviour, IParameterManager
         return Vector3.zero;
     }
 
-    public SocialRelations GetSocialRelations(){
-        return SocialRelations.Individual;
+    public string GetGroupName(){
+        return "Individual";
     }
 }
 }

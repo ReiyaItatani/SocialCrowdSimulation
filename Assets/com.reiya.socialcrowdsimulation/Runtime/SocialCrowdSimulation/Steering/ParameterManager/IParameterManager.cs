@@ -44,6 +44,6 @@ namespace CollisionAvoidance
         /// Any custom ParameterManager must implement this function.
         /// </summary>
         /// <returns>The SocialRelations instance.</returns>
-        SocialRelations GetSocialRelations();
+        string GetGroupName();
     }
 }

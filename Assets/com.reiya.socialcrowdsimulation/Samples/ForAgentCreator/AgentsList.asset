@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8af626eb17ad0434cafaa840c7b19e26, type: 3}
+  m_Name: AgentsList
+  m_EditorClassIdentifier: 
+  individuals:
+    agents:
+    - {fileID: 3846230633580688351, guid: fc459a64c9544204baa5390f476f5202, type: 3}
+    - {fileID: 5800964573482720960, guid: adb1c1af20963e04296bae943ec0bb7c, type: 3}
+    speedRange:
+      minSpeed: 0.4
+      maxSpeed: 0.8
+  groups:
+  - groupName: TestGroup1
+    count: 2
+    agents:
+    - {fileID: 4110648341680021903, guid: fde8f53b37d95ee4cb41bf90a2e76724, type: 3}
+    - {fileID: 2330521412855342892, guid: 955173a2c90349244a9954b24ef8fe4e, type: 3}
+    speedRange:
+      minSpeed: 0.4
+      maxSpeed: 0.8

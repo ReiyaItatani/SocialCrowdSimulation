@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CollisionAvoidance
@@ -45,18 +46,18 @@ namespace CollisionAvoidance
         /// Gets the agent's social relations, which may influence its movement or decision-making.
         /// </summary>
         /// <returns>The SocialRelations instance associated with the agent.</returns>
-        public SocialRelations GetSocialRelations()
+        public string GetGroupName()
         {
-            return pathController.GetSocialRelations();
+            return pathController.GetGroupName();
         }
 
         /// <summary>
         /// Gets the AvatarCreatorBase associated with the agent.
         /// </summary>
         /// <returns>The AvatarCreatorBase instance.</returns>
-        public AvatarCreatorBase GetAvatarCreatorBase()
+        public List<GameObject> GetGroupAgents()
         {
-            return pathController.GetAvatarCreatorBase();
+            return pathController.GetGroupAgents();
         }
 
         /// <summary>

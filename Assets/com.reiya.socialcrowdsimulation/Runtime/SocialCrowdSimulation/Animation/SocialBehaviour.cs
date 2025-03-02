@@ -100,7 +100,7 @@ public class SocialBehaviour : MonoBehaviour
     {
         while (true)
         {
-            List<GameObject> groupAgents = parameterManager.GetAvatarCreatorBase().GetAgentsInCategory(parameterManager.GetSocialRelations());
+            List<GameObject> groupAgents = parameterManager.GetGroupAgents();
             //Determine Random Animation State based on social relations
             currentAnimationState = DetermineAnimationState(groupAgents);
 
@@ -136,7 +136,7 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual UpperBodyAnimationState DetermineAnimationState(List<GameObject> groupAgents)
     {
-        bool isIndividual = parameterManager.GetSocialRelations() == SocialRelations.Individual || groupAgents.Count <= 1;
+        bool isIndividual = parameterManager.GetGroupName() == "Individual" || groupAgents.Count <= 1;
         return UnityEngine.Random.value < WalkAnimationProbability ? UpperBodyAnimationState.Walk : (isIndividual ? UpperBodyAnimationState.SmartPhone : UpperBodyAnimationState.Talk);
     }
 
@@ -165,10 +165,9 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual void SetSmartPhoneActiveBasedOnSocialRelations(GameObject smartPhone)
     {
-        List<GameObject> groupAgents = parameterManager.GetAvatarCreatorBase().GetAgentsInCategory(parameterManager.GetSocialRelations());
-        bool isIndividual = parameterManager.GetSocialRelations() == SocialRelations.Individual;
+        bool isIndividual = parameterManager.GetGroupName() == "Individual";
         
-        if(isIndividual || groupAgents.Count <= 1){
+        if(isIndividual){
             smartPhone.SetActive(true);
             onSmartPhone = true;
         }
@@ -252,12 +251,12 @@ public class SocialBehaviour : MonoBehaviour
     protected virtual void HandleAgentCollision(Collider other){
         if(collidedTarget != null) return;
 
-        SocialRelations  mySocialRelations          = parameterManager.GetSocialRelations();
+        string  mySocialRelations          = parameterManager.GetGroupName();
         IParameterManager otherAgentParameterManager = other.GetComponent<IParameterManager>();
-        SocialRelations  otherAgentSocialRelations  = otherAgentParameterManager.GetSocialRelations();
+        string  otherAgentSocialRelations  = otherAgentParameterManager.GetGroupName();
         float probability = UnityEngine.Random.value;
 
-        if(mySocialRelations == SocialRelations.Individual || mySocialRelations != otherAgentSocialRelations && probability < 0.05f){
+        if(mySocialRelations == "Individual" || mySocialRelations != otherAgentSocialRelations && probability < 0.05f){
             //if the collided agent is not in the same group, then react to collision
             StartCoroutine(ReactionToCollisionGazeAndAnim(2.0f, other.gameObject));
         }else{
@@ -286,9 +285,8 @@ public class SocialBehaviour : MonoBehaviour
     #region Update Look At
     protected virtual IEnumerator UpdateCurrentLookAt(float updateTime)
     {
-        List<GameObject> groupAgents = parameterManager.GetAvatarCreatorBase().GetAgentsInCategory(parameterManager.GetSocialRelations());
-        SocialRelations mySocialRelations = parameterManager.GetSocialRelations();
-        bool _isIndividual = groupAgents.Count <= 1 || mySocialRelations == SocialRelations.Individual;
+        string mySocialRelations = parameterManager.GetGroupName();
+        bool _isIndividual = mySocialRelations == "Individual";
 
         while (true)
         {
@@ -296,7 +294,7 @@ public class SocialBehaviour : MonoBehaviour
 
             if (!_isIndividual)
             {
-                UpdateGroupAgentLookAt(groupAgents);
+                UpdateGroupAgentLookAt(parameterManager.GetGroupAgents());
             }
 
             yield return new WaitForSeconds(updateTime);
@@ -304,14 +302,14 @@ public class SocialBehaviour : MonoBehaviour
     }
 
     //For individual
-    protected virtual void UpdateDirectionAndAvoidance(SocialRelations mySocialRelations, bool _isIndividual)
+    protected virtual void UpdateDirectionAndAvoidance(string mySocialRelations, bool _isIndividual)
     {
         SetCurrentDirection(parameterManager.GetCurrentDirection());
         GameObject _potentialAvoidanceTarget = parameterManager.GetPotentialAvoidanceTarget();
 
         if (_potentialAvoidanceTarget != null)
         {
-            SocialRelations avoidanceTargetSocialRelations = _potentialAvoidanceTarget.GetComponent<IParameterManager>().GetSocialRelations();
+            string avoidanceTargetSocialRelations = _potentialAvoidanceTarget.GetComponent<IParameterManager>().GetGroupName();
             if(_isIndividual == true){
                 SetPotentialAvoidanceTarget(_potentialAvoidanceTarget.GetComponent<IParameterManager>().GetCurrentPosition(), _potentialAvoidanceTarget);
             }else{

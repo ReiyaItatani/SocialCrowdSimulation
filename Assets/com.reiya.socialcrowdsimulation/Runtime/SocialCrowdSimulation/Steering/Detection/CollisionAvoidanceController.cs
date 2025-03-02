@@ -185,21 +185,21 @@ namespace CollisionAvoidance{
         }
 
         private void DrawInfo(){
-            Color gizmoColor;
-            if(showAgentSphere){
-                if (pathController.GetSocialRelations() == SocialRelations.Couple){
-                    gizmoColor = new Color(1.0f, 0.0f, 0.0f); // red
-                }else if (pathController.GetSocialRelations() == SocialRelations.Friend){
-                    gizmoColor = new Color(0.0f, 1.0f, 0.0f); // green
-                }else if  (pathController.GetSocialRelations() == SocialRelations.Family){
-                    gizmoColor = new Color(0.0f, 0.0f, 1.0f); // blue
-                }else if  (pathController.GetSocialRelations() == SocialRelations.Coworker){
-                    gizmoColor = new Color(1.0f, 1.0f, 0.0f); // yellow
-                }else{
-                    gizmoColor = new Color(1.0f, 1.0f, 1.0f); // white
-                }
-                Draw.WireCylinder((Vector3)pathController.GetCurrentPosition(), Vector3.up, agentCollider.height, agentCollider.radius, gizmoColor);
-            }
+            // Color gizmoColor;
+            // if(showAgentSphere){
+                // if (pathController.GetSocialRelations() == SocialRelations.Couple){
+                //     gizmoColor = new Color(1.0f, 0.0f, 0.0f); // red
+                // }else if (pathController.GetSocialRelations() == SocialRelations.Friend){
+                //     gizmoColor = new Color(0.0f, 1.0f, 0.0f); // green
+                // }else if  (pathController.GetSocialRelations() == SocialRelations.Family){
+                //     gizmoColor = new Color(0.0f, 0.0f, 1.0f); // blue
+                // }else if  (pathController.GetSocialRelations() == SocialRelations.Coworker){
+                //     gizmoColor = new Color(1.0f, 1.0f, 0.0f); // yellow
+                // }else{
+                //     gizmoColor = new Color(1.0f, 1.0f, 1.0f); // white
+                // }
+                //Draw.WireCylinder((Vector3)pathController.GetCurrentPosition(), Vector3.up, agentCollider.height, agentCollider.radius, gizmoColor);
+            // }
         }
         // void OnDrawGizmos()
         // {

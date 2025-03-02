@@ -547,6 +547,7 @@ MonoBehaviour:
   currentAnimationState: 0
   smartPhone: {fileID: 1344545899}
   onAnimationShift: 1
+  CustomFocalPoints: []
 --- !u!114 &7498186110846363706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -559,7 +560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0faf669923ade934b9002377206d49d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  socialBehaviour: {fileID: 7498186110846363705}
 --- !u!114 &6803781801784463650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2129,6 +2129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7498186109917103325}
   - component: {fileID: 7498186109917103330}
+  - component: {fileID: 7498186110846363711}
   m_Layer: 0
   m_Name: PathController
   m_TagString: Untagged
@@ -2166,20 +2167,18 @@ MonoBehaviour:
   MotionMatching: {fileID: 7498186110573242093}
   TrajectoryPositionFeatureName: FuturePosition
   TrajectoryDirectionFeatureName: FutureDirection
-  Path:
-  - {x: -15, y: 0, z: 0}
-  - {x: 15, y: 0, z: 0}
+  agentPathManager: {fileID: 7498186110846363711}
   MaxDistanceMMAndCharacterController: 0.1
   PositionAdjustmentHalflife: 0.1
   PosMaximumAdjustmentRatio: 0.1
+  currentSpeed: 1
   initialSpeed: 1.2
   minSpeed: 0.5
   maxSpeed: 1
-  avatarCreator: {fileID: 0}
+  onInSlowingArea: 0
   avoidanceWeight: 1.5
   currentAvoidanceTarget: {fileID: 0}
   toGoalWeight: 1.7
-  goalRadius: 0.5
   slowingRadius: 2
   potentialAvoidanceTarget: {fileID: 0}
   avoidNeighborWeight: 1
@@ -2189,13 +2188,30 @@ MonoBehaviour:
   showCurrentDirection: 0
   showGroupForce: 0
   showWallForce: 0
-  showSyntheticVisionForce: 0
-  socialRelations: 0
+  groupName: 
   groupForceWeight: 0.5
-  collisionAvoidance: {fileID: 7498186110846363711}
+  collisionAvoidance: {fileID: 7542989378868723396}
   wallRepForceWeight: 1
+  groupColliderManager: {fileID: 0}
   onAvoidanceCoordination: 1
-  syntheticVisionForceWeight: 1
+--- !u!114 &7498186110846363711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7498186109917103331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cef85058296ec0c408f3f8a4215d4a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  goalRadius: 0.5
+  pathController: {fileID: 7498186109917103330}
+  groupNodeEventChannel: {fileID: 11400000, guid: 5edd08011a9c0c24393e2ef8ece6cabb,
+    type: 2}
+  _prevTargetNode: {fileID: 0}
+  _currentTargetNode: {fileID: 0}
 --- !u!1 &7498186110341389331
 GameObject:
   m_ObjectHideFlags: 0
@@ -2960,7 +2976,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4805479335473242894}
-  - component: {fileID: 7498186110846363711}
+  - component: {fileID: 7542989378868723396}
   m_Layer: 0
   m_Name: CollisionAvoidance
   m_TagString: Untagged
@@ -2983,7 +2999,7 @@ Transform:
   m_Father: {fileID: 7498186109153928230}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7498186110846363711
+--- !u!114 &7542989378868723396
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2999,7 +3015,6 @@ MonoBehaviour:
   agentCollider: {fileID: 1361533232868395896}
   groupCollider: {fileID: 0}
   avoidanceColliderSize: {x: 1.5, y: 1.5, z: 1.5}
-  anticipatedAvoidanceColliderSize: {x: 4.5, y: 1.5, z: 6}
   FOVMeshPrefab: {fileID: 4215951433680714984, guid: 67d1ea03b9f7a07428c663c49ab761a1,
     type: 3}
   socialBehaviour: {fileID: 7498186110846363705}

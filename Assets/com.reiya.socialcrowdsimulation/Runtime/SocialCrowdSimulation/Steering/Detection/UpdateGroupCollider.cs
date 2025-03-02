@@ -4,14 +4,13 @@ using UnityEngine;
 namespace CollisionAvoidance{
 public class UpdateGroupCollider : MonoBehaviour
 {
-    public AvatarCreatorBase avatarCreator; 
-    private List<GameObject> agentsInCategory = new List<GameObject>();
     private CapsuleCollider groupCollider;
+    private List<PathController> pathControllers = new List<PathController>();
     public float agentRadius = 0.3f;
 
     void Start()
     {
-        agentsInCategory = avatarCreator.GetAgentsInCategory(avatarCreator.StringToSocialRelations(this.transform.parent.name));
+        pathControllers = GetComponent<GroupParameterManager>().pathControllers;
         groupCollider = GetComponent<CapsuleCollider>();
     }
 
@@ -24,25 +23,25 @@ public class UpdateGroupCollider : MonoBehaviour
     void UpdateCenterOfMass()
     {
         Vector3 combinedPosition = Vector3.zero;
-        foreach (GameObject agent in agentsInCategory)
+        foreach (PathController agentPathController in pathControllers)
         {
-            combinedPosition += agent.transform.position;
+            combinedPosition += (Vector3)agentPathController.GetCurrentPosition();
         }
-        this.transform.position = combinedPosition / agentsInCategory.Count;
+        this.transform.position = combinedPosition / pathControllers.Count;
     }
 
     void UpdateCircleColliderRadius()
     {
         float maxDistance = 0f;
-        foreach (GameObject agent in agentsInCategory)
+        foreach (PathController agentPathController in pathControllers)
         {
-            float distance = Vector3.Distance(this.transform.position, agent.transform.position);
+            float distance = Vector3.Distance(this.transform.position, agentPathController.GetCurrentPosition());
             if (distance > maxDistance)
             {
                 maxDistance = distance;
             }
         }
-        if(maxDistance <= (agentsInCategory.Count)/2){
+        if(maxDistance <= (pathControllers.Count)/2){
             groupCollider.radius = maxDistance + agentRadius;    
         }
     }

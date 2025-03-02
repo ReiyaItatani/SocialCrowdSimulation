@@ -9,6 +9,7 @@ using System.IO;
 
 namespace CollisionAvoidance{
 // AgentManager is a class that manages various parameters and settings for agents in a simulation.
+
 public class AgentManager : MonoBehaviour
 {
     [Header("Goal Parameters")]
@@ -98,12 +99,12 @@ public class AgentManager : MonoBehaviour
     private List<GameObject> CollisionAvoidanceControllers = new List<GameObject>();
     private List<GameObject> ConversationalAgentFrameworks = new List<GameObject>();
     private List<GameObject> Avatars = new List<GameObject>();
-    private AvatarCreatorBase avatarCreator;
+    private AvatarCreatorQuickGraph avatarCreator;
 
     // Awake is called when the script instance is being loaded.
     void Awake(){
         // Get a reference to the AvatarCreatorBase component.
-        avatarCreator = this.GetComponent<AvatarCreatorBase>();
+        avatarCreator = this.GetComponent<AvatarCreatorQuickGraph>();
         // Get a list of instantiated avatars from the AvatarCreatorBase.
         Avatars = avatarCreator.instantiatedAvatars; 
     }
@@ -199,7 +200,6 @@ public class AgentManager : MonoBehaviour
 
     // Method to set parameters for PathController.
     private void SetPathControllerParams(PathController pathController){
-        pathController.goalRadius    = goalRadius;
         pathController.slowingRadius = slowingRadius;
 
         pathController.toGoalWeight               = toGoalWeight;
@@ -207,7 +207,6 @@ public class AgentManager : MonoBehaviour
         pathController.avoidNeighborWeight        = avoidNeighborWeight;
         pathController.groupForceWeight           = groupForceWeight;
         pathController.wallRepForceWeight         = wallRepForceWeight;
-        pathController.syntheticVisionForceWeight = syntheticVisionForceWeight;
 
         pathController.MaxDistanceMMAndCharacterController = MaxDistanceMMAndCharacterController;
         pathController.PositionAdjustmentHalflife          = PositionAdjustmentHalflife;
@@ -219,7 +218,6 @@ public class AgentManager : MonoBehaviour
         pathController.showCurrentDirection            = ShowCurrentDirection;
         pathController.showGroupForce                  = ShowGroupForce;
         pathController.showWallForce                   = ShowWallForce;
-        pathController.showSyntheticVisionForce        = ShowSyntheticVisionForce;
     }
 
     private void SetMotionMatchingControllerParams(MotionMatchingController motionMatchingController){

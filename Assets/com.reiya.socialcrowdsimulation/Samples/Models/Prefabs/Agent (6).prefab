@@ -1600,6 +1600,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5560578027770900455}
   - component: {fileID: 5560578027770900452}
+  - component: {fileID: 5560578026911432707}
   m_Layer: 0
   m_Name: PathController
   m_TagString: Untagged
@@ -1637,20 +1638,18 @@ MonoBehaviour:
   MotionMatching: {fileID: 5560578027830737124}
   TrajectoryPositionFeatureName: FuturePosition
   TrajectoryDirectionFeatureName: FutureDirection
-  Path:
-  - {x: -15, y: 0, z: 0}
-  - {x: 15, y: 0, z: 0}
+  agentPathManager: {fileID: 5560578026911432707}
   MaxDistanceMMAndCharacterController: 0.1
   PositionAdjustmentHalflife: 0.1
   PosMaximumAdjustmentRatio: 0.1
+  currentSpeed: 1
   initialSpeed: 1.2
   minSpeed: 0.5
   maxSpeed: 1
-  avatarCreator: {fileID: 0}
+  onInSlowingArea: 0
   avoidanceWeight: 1.5
   currentAvoidanceTarget: {fileID: 0}
   toGoalWeight: 1.7
-  goalRadius: 0.5
   slowingRadius: 2
   potentialAvoidanceTarget: {fileID: 0}
   avoidNeighborWeight: 1
@@ -1660,13 +1659,30 @@ MonoBehaviour:
   showCurrentDirection: 0
   showGroupForce: 0
   showWallForce: 0
-  showSyntheticVisionForce: 0
-  socialRelations: 0
+  groupName: 
   groupForceWeight: 0.5
-  collisionAvoidance: {fileID: 5560578026911432707}
+  collisionAvoidance: {fileID: 2278780713431882424}
   wallRepForceWeight: 1
+  groupColliderManager: {fileID: 0}
   onAvoidanceCoordination: 1
-  syntheticVisionForceWeight: 1
+--- !u!114 &5560578026911432707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5560578027770900453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cef85058296ec0c408f3f8a4215d4a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  goalRadius: 0.5
+  pathController: {fileID: 5560578027770900452}
+  groupNodeEventChannel: {fileID: 11400000, guid: 5edd08011a9c0c24393e2ef8ece6cabb,
+    type: 2}
+  _prevTargetNode: {fileID: 0}
+  _currentTargetNode: {fileID: 0}
 --- !u!1 &5560578027830737122
 GameObject:
   m_ObjectHideFlags: 0
@@ -1939,7 +1955,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8002939027955922312}
-  - component: {fileID: 5560578026911432707}
+  - component: {fileID: 2278780713431882424}
   m_Layer: 0
   m_Name: CollisionAvoidance
   m_TagString: Untagged
@@ -1962,7 +1978,7 @@ Transform:
   m_Father: {fileID: 5560578027940749347}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5560578026911432707
+--- !u!114 &2278780713431882424
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1978,7 +1994,6 @@ MonoBehaviour:
   agentCollider: {fileID: 6432052096384931387}
   groupCollider: {fileID: 0}
   avoidanceColliderSize: {x: 1.5, y: 1.5, z: 1.5}
-  anticipatedAvoidanceColliderSize: {x: 4.5, y: 1.5, z: 6}
   FOVMeshPrefab: {fileID: 4215951433680714984, guid: 67d1ea03b9f7a07428c663c49ab761a1,
     type: 3}
   socialBehaviour: {fileID: 5560578026911432829}
@@ -2691,6 +2706,7 @@ MonoBehaviour:
   currentAnimationState: 0
   smartPhone: {fileID: 672740920}
   onAnimationShift: 1
+  CustomFocalPoints: []
 --- !u!114 &5560578026911432828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2703,7 +2719,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0faf669923ade934b9002377206d49d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  socialBehaviour: {fileID: 5560578026911432829}
 --- !u!114 &1950073289709169603
 MonoBehaviour:
   m_ObjectHideFlags: 0
