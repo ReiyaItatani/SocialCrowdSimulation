@@ -97,10 +97,10 @@ public class GroupColliderManager : MonoBehaviour
         return agentsInCategory;
     }
 
-    public List<PathController> GetPathControllers(){
-        List<PathController> pathControllers = new List<PathController>();
+    public List<AgentPathController> GetPathControllers(){
+        List<AgentPathController> pathControllers = new List<AgentPathController>();
         foreach(GameObject agent in agentsInCategory){
-            pathControllers.Add(agent.GetComponentInChildren<PathController>());
+            pathControllers.Add(agent.GetComponentInChildren<AgentPathController>());
         }
         return pathControllers;
     }

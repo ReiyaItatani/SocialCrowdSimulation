@@ -229,7 +229,7 @@ private void CreatePrefab(GameObject humanoid)
     // Create and attach the "PathController" GameObject and script.
     GameObject pathController = new GameObject("PathController");
     pathController.transform.SetParent(agent.transform);
-    PathController pathControllerScript = pathController.AddComponent<PathController>(); // Make sure you have a PathController script.
+    AgentPathController pathControllerScript = pathController.AddComponent<AgentPathController>(); // Make sure you have a PathController script.
     AgentPathManager agentPathManager = pathController.AddComponent<AgentPathManager>();
 
     // Create and attach the "MotionMatching" GameObject and script.

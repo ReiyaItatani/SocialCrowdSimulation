@@ -38,9 +38,6 @@ public class AgentManager : MonoBehaviour
     [Tooltip("Weight for wall force.")]
     [Range(0.0f, 5.0f)]
     public float wallRepForceWeight = 0.3f;
-    [Tooltip("Weight for synthetic vision force.")]
-    [Range(0.0f, 5.0f)]
-    public float syntheticVisionForceWeight = 0.0f;
 
     // Parameters related to the adjustment of the position of the SimulationBone and SimulationObject.
     [Header("Motion Matching Parameters")]
@@ -66,7 +63,6 @@ public class AgentManager : MonoBehaviour
     public bool ShowCurrentDirection = false;
     public bool ShowGroupForce = false;
     public bool ShowWallForce = false;
-    public bool ShowSyntheticVisionForce = false;
 
     // Parameters for debugging the Motion Matching Controller.
     [Header("Motion Matching Controller Debug")]
@@ -116,7 +112,7 @@ public class AgentManager : MonoBehaviour
         for (int i = 0; i < Avatars.Count; i++)
         {
             // Get and set PathController parameters.
-            PathController pathController = Avatars[i].GetComponentInChildren<PathController>();
+            AgentPathController pathController = Avatars[i].GetComponentInChildren<AgentPathController>();
             if(pathController != null) {
                 SetPathControllerParams(pathController);
                 PathControllers.Add(pathController.gameObject);
@@ -156,10 +152,15 @@ public class AgentManager : MonoBehaviour
         // Loop through all PathControllers and set their parameters.
         foreach(GameObject controllerObject in PathControllers) 
         {
-            PathController pathController = controllerObject.GetComponent<PathController>();
+            AgentPathController pathController = controllerObject.GetComponent<AgentPathController>();
             if(pathController != null) 
             {
                 SetPathControllerParams(pathController);
+            }
+            AgentPathManager pathManager = controllerObject.GetComponent<AgentPathManager>();
+            if(pathController != null) 
+            {
+                SetPathManagerrParams(pathManager);
             }
         }
 
@@ -199,7 +200,7 @@ public class AgentManager : MonoBehaviour
     }
 
     // Method to set parameters for PathController.
-    private void SetPathControllerParams(PathController pathController){
+    private void SetPathControllerParams(AgentPathController pathController){
         pathController.slowingRadius = slowingRadius;
 
         pathController.toGoalWeight               = toGoalWeight;
@@ -212,12 +213,16 @@ public class AgentManager : MonoBehaviour
         pathController.PositionAdjustmentHalflife          = PositionAdjustmentHalflife;
         pathController.PosMaximumAdjustmentRatio           = PosMaximumAdjustmentRatio;
 
-        pathController.showAvoidanceForce              = ShowAvoidanceForce;
-        pathController.showAnticipatedCollisionAvoidance = ShowAnticipatedCollisionAvoidance;
-        pathController.showGoalDirection               = ShowGoalDirection;
-        pathController.showCurrentDirection            = ShowCurrentDirection;
-        pathController.showGroupForce                  = ShowGroupForce;
-        pathController.showWallForce                   = ShowWallForce;
+        pathController.ShowAvoidanceForce              = ShowAvoidanceForce;
+        pathController.ShowAnticipatedCollisionAvoidance = ShowAnticipatedCollisionAvoidance;
+        pathController.ShowGoalDirection               = ShowGoalDirection;
+        pathController.ShowCurrentDirection            = ShowCurrentDirection;
+        pathController.ShowGroupForce                  = ShowGroupForce;
+        pathController.ShowWallForce                   = ShowWallForce;
+    }
+
+    private void SetPathManagerrParams(AgentPathManager pathManager){
+        pathManager.goalRadius = goalRadius;
     }
 
     private void SetMotionMatchingControllerParams(MotionMatchingController motionMatchingController){
@@ -231,7 +236,6 @@ public class AgentManager : MonoBehaviour
 
     private void SetCollisionAvoidanceControllerParams(CollisionAvoidanceController collisionAvoidanceController){
         collisionAvoidanceController.agentCollider.radius           = CapsuleColliderRadius;
-        collisionAvoidanceController.showAgentSphere                = showAgentSphere;
     }
 
     private void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){

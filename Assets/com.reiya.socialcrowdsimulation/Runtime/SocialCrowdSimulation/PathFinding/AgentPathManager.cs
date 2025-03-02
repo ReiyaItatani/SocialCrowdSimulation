@@ -8,8 +8,9 @@ namespace CollisionAvoidance{
     {
 
         public float goalRadius = 0.5f;
-        public PathController pathController;
+        public AgentPathController pathController;
         public GroupNodeEventChannelSO groupNodeEventChannel;
+        public UnityAction OnTargetReached;
         #region PROTECTED ATTRIBUTES
 
         [SerializeField, ReadOnly]
@@ -86,6 +87,7 @@ namespace CollisionAvoidance{
             float distanceToGoal = Vector3.Distance(pathController.GetCurrentPosition(), CurrentTargetNodePosition);
             if(distanceToGoal < goalRadius) {
                 SetTargetNode(GetNextNode(pathController.groupName));
+                OnTargetReached?.Invoke();
             }
         }
 

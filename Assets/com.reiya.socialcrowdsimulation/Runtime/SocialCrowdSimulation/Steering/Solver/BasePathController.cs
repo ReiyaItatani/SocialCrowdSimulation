@@ -113,7 +113,6 @@ namespace CollisionAvoidance{
         {
             return CurrentSpeed;
         }
-        
         public override float3 GetWorldInitPosition()
         {
             return agentPathManager.CurrentTargetNodePosition + this.transform.position;
@@ -123,8 +122,6 @@ namespace CollisionAvoidance{
             Vector3 dir = agentPathManager.CurrentTargetNodePosition - agentPathManager.PrevTargetNodePosition;
             return dir.normalized;
         }
-
-        
         protected virtual Vector3 GetWorldPredictedPos(int index)
         {
             return PredictedPositions[index] + transform.position;

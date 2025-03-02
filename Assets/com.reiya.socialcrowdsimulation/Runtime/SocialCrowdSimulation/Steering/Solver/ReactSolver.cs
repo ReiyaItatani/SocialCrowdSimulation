@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CollisionAvoidance{
+    /// <summary>
+    /// ReactSolver handles agent reactions upon collision with other agents.
+    /// Agents step back or move differently based on their social relationships.
+    /// </summary>
     public class ReactSolver : SpeedSolver
     {   
         protected virtual void InitReactSolver(){
@@ -10,7 +14,12 @@ namespace CollisionAvoidance{
             agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;     
         }
 
-        //when the agent collide with the agent in front of it, it will take a step back
+        /// <summary>
+        /// Handles agent collisions by checking social relationships and triggering a reaction.
+        /// If the collided agent belongs to the same group, a shorter step-back occurs.
+        /// If the collided agent is from a different group, the reaction is stronger.
+        /// </summary>
+        /// <param name="other">The collider of the other agent.</param>
         protected virtual void HandleAgentCollision(Collider other){
             //Check the social realtionship between the collided agent and the agent
             string  mySocialRelations          = GetGroupName();
@@ -33,6 +42,12 @@ namespace CollisionAvoidance{
             }
         }
 
+        /// <summary>
+        /// Executes a reaction to collision, making the agent step back and move differently.
+        /// </summary>
+        /// <param name="stepBackDuration">Duration to step back.</param>
+        /// <param name="goDifferentDuration">Duration to move in a different direction.</param>
+        /// <returns>Coroutine for the reaction sequence.</returns>
         protected virtual IEnumerator ReactionToCollision(float stepBackDuration, float goDifferentDuration)
         {
             onCollide = true;

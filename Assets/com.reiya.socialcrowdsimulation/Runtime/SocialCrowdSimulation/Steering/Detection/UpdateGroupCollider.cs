@@ -5,7 +5,7 @@ namespace CollisionAvoidance{
 public class UpdateGroupCollider : MonoBehaviour
 {
     private CapsuleCollider groupCollider;
-    private List<PathController> pathControllers = new List<PathController>();
+    private List<AgentPathController> pathControllers = new List<AgentPathController>();
     public float agentRadius = 0.3f;
 
     void Start()
@@ -23,7 +23,7 @@ public class UpdateGroupCollider : MonoBehaviour
     void UpdateCenterOfMass()
     {
         Vector3 combinedPosition = Vector3.zero;
-        foreach (PathController agentPathController in pathControllers)
+        foreach (AgentPathController agentPathController in pathControllers)
         {
             combinedPosition += (Vector3)agentPathController.GetCurrentPosition();
         }
@@ -33,7 +33,7 @@ public class UpdateGroupCollider : MonoBehaviour
     void UpdateCircleColliderRadius()
     {
         float maxDistance = 0f;
-        foreach (PathController agentPathController in pathControllers)
+        foreach (AgentPathController agentPathController in pathControllers)
         {
             float distance = Vector3.Distance(this.transform.position, agentPathController.GetCurrentPosition());
             if (distance > maxDistance)

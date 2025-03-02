@@ -1,66 +1,63 @@
-using Unity.Collections;
-using Unity.Mathematics;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
-using Drawing;
-
-using MotionMatching;
-using TrajectoryFeature = MotionMatching.MotionMatchingData.TrajectoryFeature;
-using UnityEngine.Events;
 
 namespace CollisionAvoidance{
 
+/// <summary>
+/// This script is responsible for calculating the social forces applied to each agent.
+/// </summary>
 public class ForceSolver : BasePathController
 {
     // --------------------------------------------------------------------------
     // Collision Avoidance Force ------------------------------------------------
-    [Header("Parameters For Basic Collision Avoidance"), HideInInspector]
-    [ReadOnly] public GameObject currentAvoidanceTarget;
-    protected Vector3 avoidanceVector = Vector3.zero;//Direction of basic collision avoidance
-    [HideInInspector] public float avoidanceWeight = 2.0f;//Weight for basic collision avoidance
+    [Header("Parameters For Basic Collision Avoidance")]
+    [HideInInspector] [ReadOnly] public GameObject currentAvoidanceTarget;
+    protected Vector3 avoidanceVector = Vector3.zero; // Direction of basic collision avoidance
+    [HideInInspector] public float avoidanceWeight = 2.0f; // Weight for basic collision avoidance
+
     // --------------------------------------------------------------------------
     // Collision Response -------------------------------------------------------
     public event EventDelegate OnMutualGaze;
     public delegate void EventDelegate(GameObject targetAgent);
+
     // --------------------------------------------------------------------------
     // To Goal Direction --------------------------------------------------------
     [Header("Parameters For Goal Direction")]
     protected Vector3 currentGoal;
-    protected Vector3 toGoalVector = Vector3.zero;//Direction to goal
-    
-    [HideInInspector]
-    public float toGoalWeight = 2.0f;//Weight for goal direction
+    protected Vector3 toGoalVector = Vector3.zero; // Direction to goal
+    [HideInInspector] public float toGoalWeight = 2.0f; // Weight for goal direction
+
     // --------------------------------------------------------------------------
     // Anticipated Collision Avoidance -------------------------------------------
-    [Header("Parameters For Anticipated Collision Avoidance"), HideInInspector]
-    [ReadOnly] public GameObject potentialAvoidanceTarget;
-    protected Vector3 avoidNeighborsVector = Vector3.zero;//Direction for Anticipated collision avoidance
-    [HideInInspector]
-    public float avoidNeighborWeight = 2.0f;//Weight for Anticipated collision avoidance
-    protected float minTimeToCollision =5.0f;
+    [Header("Parameters For Anticipated Collision Avoidance")]
+    [HideInInspector] [ReadOnly] public GameObject potentialAvoidanceTarget;
+    protected Vector3 avoidNeighborsVector = Vector3.zero; // Direction for anticipated collision avoidance
+    [HideInInspector] public float avoidNeighborWeight = 2.0f; // Weight for anticipated collision avoidance
+    protected float minTimeToCollision = 5.0f;
     protected float collisionDangerThreshold = 4.0f;
+
     // --------------------------------------------------------------------------
-    // When Collide each other -----------------------------------------------------
+    // Social Behavior and Non-verbal Communication -----------------------------
     [Header("Social Behaviour, Non-verbal Communication")]
     protected bool onCollide = false;
     protected bool onMoving = false;
     protected GameObject collidedAgent;
     // --------------------------------------------------------------------------
-    // Force From Group --------------------------------------------------------
+    // Force From Group ---------------------------------------------------------
     [Header("Group Force, Group Category")]
     [ReadOnly] public string groupName;
     [HideInInspector] public float groupForceWeight = 0.5f;
     protected Vector3 groupForce = Vector3.zero;
+
     // --------------------------------------------------------------------------
     // Repulsion Force From Wall ------------------------------------------------
     protected Vector3 wallRepForce;
-    [HideInInspector]
-    public float wallRepForceWeight = 0.2f;
+    [HideInInspector] public float wallRepForceWeight = 0.2f;
+
     // --------------------------------------------------------------------------
-    // Group Collider Manager For Group Behaviour--------------------------------
-    public GroupColliderManager groupColliderManager;   
+    // Group Collider Manager For Group Behaviour -------------------------------
+    public GroupColliderManager groupColliderManager;
 
     protected virtual void InitForceSolver(){
         // CurrentPosition = agentPathManager.PrevTargetNodePosition;
@@ -705,19 +702,6 @@ public class ForceSolver : BasePathController
     * These methods ensure controlled access and potential validation when changing the state of the object.
     ********************************************************************************************************************************/
     #region GET AND SET
-    public float3 GetWorldPosition(Transform transform, Vector3 Position)
-    {
-        return transform.position + Position;
-    }
-    public quaternion GetCurrentRotation()
-    {
-        Quaternion rot = Quaternion.LookRotation(CurrentDirection);
-        return rot * transform.rotation;
-    }
-    public Vector3 GetRawCurrentPosition()
-    {
-        return CurrentPosition;
-    }
     public Vector3 GetCurrentGoal(){
         return agentPathManager.CurrentTargetNodePosition;
     }

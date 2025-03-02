@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 namespace CollisionAvoidance{
     public class CollisionAvoidanceController : MonoBehaviour
     {
-        public PathController pathController;
+        public AgentPathController pathController;
         public CapsuleCollider agentCollider;
         public CapsuleCollider groupCollider;
 
@@ -37,9 +37,6 @@ namespace CollisionAvoidance{
 
         [Header("Repulsion Force from the wall")]
         public AgentCollisionDetection agentCollisionDetection; 
-
-        [HideInInspector]
-        public bool showAgentSphere = false;
 
         void Awake(){
             //Create Box Collider for Collision Avoidance Force

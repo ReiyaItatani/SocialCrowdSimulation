@@ -42,7 +42,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             var node = quickGraph._nodes[UnityEngine.Random.Range(0, quickGraph._nodes.Count)];
             var neighbours = node._neighbours[UnityEngine.Random.Range(0, node._neighbours.Count)];
             if (ComputeSafeSpawnPosition(node, neighbours, out Vector3 pos)){
-                InstantiateAgent(agent, individualParent, "Individual", agentsList.individuals.speedRange, node, pos);
+                InstantiateAgent(agent, individualParent, "Individual", agentsList.individuals.speedRange, node, neighbours, pos);
             }
         }
     }
@@ -60,37 +60,37 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             foreach (GameObject agent in group.agents)
             {
                 if (ComputeSafeSpawnPosition(node, neighbours, out Vector3 pos)){
-                    GameObject instance = InstantiateAgent(agent, groupParent, group.groupName, group.speedRange, node, pos);
+                    GameObject instance = InstantiateAgent(agent, groupParent, group.groupName, group.speedRange, node, neighbours , pos);
                     AssignGroupComponents(instance, groupParameterManager, groupColliderManager);
                 }
             }
         }
     }
 
-    private GameObject InstantiateAgent(GameObject agent, GameObject parent, string groupName, SpeedRange speedRange, QuickGraphNode node, Vector3 pos)
+    private GameObject InstantiateAgent(GameObject agent, GameObject parent, string groupName, SpeedRange speedRange, QuickGraphNode node, QuickGraphNode neighbours, Vector3 pos)
     {
         Debug.Log("Instantiating agent: " + agent.name);
         GameObject instance = Instantiate(agent, pos, Quaternion.identity);
         instance.name = groupName;
         instance.transform.parent = parent.transform;
-        AssignPathController(instance, groupName, speedRange, pos, node);
+        AssignPathController(instance, groupName, speedRange, pos, node, neighbours);
         instantiatedAvatars.Add(instance);
         return instance;
     }
 
-    private void AssignPathController(GameObject instance, string groupName, SpeedRange speedRange, Vector3 pos, QuickGraphNode node)
+    private void AssignPathController(GameObject instance, string groupName, SpeedRange speedRange, Vector3 pos, QuickGraphNode node, QuickGraphNode neighbours)
     {
-        PathController pathController = instance.GetComponentInChildren<PathController>();
+        AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
         AgentPathManager agentPathManager = instance.GetComponentInChildren<AgentPathManager>();
-        MotionMatchingController motionMatchingController = instance.GetComponentInChildren<MotionMatchingController>();
-        ConversationalAgentFramework conversationalAgentFramework = instance.GetComponentInChildren<ConversationalAgentFramework>();
+        // MotionMatchingController motionMatchingController = instance.GetComponentInChildren<MotionMatchingController>();
+        // ConversationalAgentFramework conversationalAgentFramework = instance.GetComponentInChildren<ConversationalAgentFramework>();
         
         pathController.maxSpeed = speedRange.maxSpeed;
         pathController.minSpeed = speedRange.minSpeed;
         pathController.initialSpeed = UnityEngine.Random.Range(speedRange.minSpeed, speedRange.maxSpeed);
         pathController.groupName = groupName;
         agentPathManager.SetTargetNode(node);
-        agentPathManager.SetTargetNode(agentPathManager.GetNextNode(groupName));
+        agentPathManager.SetTargetNode(neighbours);
         // pathController.transform.position = pos;
         // motionMatchingController.transform.position = pos;
         // conversationalAgentFramework.transform.position = pos;
@@ -98,7 +98,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
 
     private void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupColliderManager groupColliderManager)
     {
-        PathController pathController = instance.GetComponentInChildren<PathController>();
+        AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
         CollisionAvoidanceController collisionAvoidanceController = instance.GetComponentInChildren<CollisionAvoidanceController>();
         
         if (groupParameterManager != null)

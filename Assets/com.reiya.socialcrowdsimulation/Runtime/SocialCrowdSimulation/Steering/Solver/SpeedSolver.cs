@@ -4,26 +4,40 @@ using UnityEngine.Events;
 using UnityEngine;
 
 namespace CollisionAvoidance{
+    /// <summary>
+    /// Manages the speed of an agent, adjusting based on distance to the goal and group dynamics.
+    /// </summary>
     public class SpeedSolver : ForceSolver
     {
-        [Header("Speed")]
-        public float currentSpeed = 1.0f; //Current speed of the agent
+        [Header("Speed Settings")]
         [Range (0.0f, 1.0f)]
-        public float initialSpeed = 0.7f; //Initial speed of the agent
-        public float minSpeed = 0.0f; //Minimum speed of the agent
-        public float maxSpeed = 1.0f; //Maximum speed of the agent
-        public bool onInSlowingArea = false; //the event when the agent is in the slowing radius
-        public float slowingRadius = 2.0f;
-        private UnityAction OnGoalReached; //the event when the agent reaches the goal
+        public float initialSpeed = 0.7f; // Initial speed of the agent
+        public float minSpeed = 0.0f; // Minimum speed limit
+        public float maxSpeed = 1.0f; // Maximum speed limit
+        public float slowingRadius = 2.0f; // Radius within which speed slows down
+        
+        private bool onInSlowingArea = false; // Indicates if the agent is within the slowing radius
+        private UnityAction OnGoalReached; // Event triggered when the agent reaches the goal
 
+        /// <summary>
+        /// Initializes the speed solver, setting the initial speed and subscribing to the goal event.
+        /// </summary>
         protected virtual void InitSpeedSolver(){
-            currentSpeed = initialSpeed;
+            CurrentSpeed = initialSpeed;
             if (initialSpeed < minSpeed)
             {
                 initialSpeed = minSpeed;
             }
+
+            agentPathManager.OnTargetReached += () =>
+            {
+                OnGoalReached?.Invoke();
+            };
         }
 
+        /// <summary>
+        /// Starts the speed adjustment coroutines.
+        /// </summary>
         protected virtual void StartUpdateSpeed(){
             //Update the speed of the agent based on the distance to the goal
             StartCoroutine(UpdateSpeed(collisionAvoidance.GetAgentGameObject()));
@@ -32,6 +46,9 @@ namespace CollisionAvoidance{
         }
 
         #region SPEED ADJUSTMENT 
+        /// <summary>
+        /// Adjusts the speed dynamically based on group movement or individual behavior.
+        /// </summary>
         protected virtual IEnumerator UpdateSpeed(GameObject myself, float updateTime = 0.1f, float speedChangeRate = 0.05f){
             if(GetGroupName() == "Individual"){
                 StartCoroutine(DecreaseSpeedBaseOnUpperBodyAnimation(updateTime));
@@ -66,62 +83,71 @@ namespace CollisionAvoidance{
                         {
                             //accelerate when the center of mass is in front of me
                             if(GetCurrentSpeed() <= maxSpeed){
-                                currentSpeed += speedChangeRate; 
+                                CurrentSpeed += speedChangeRate; 
                             }else{
-                                currentSpeed = maxSpeed;
+                                CurrentSpeed = maxSpeed;
                             }
                         }
                         else
                         {
                             //decelerate when the center of mass is behind
                             if(GetCurrentSpeed() >= minSpeed){
-                                currentSpeed -= speedChangeRate;
+                                CurrentSpeed -= speedChangeRate;
                             }else{
-                                currentSpeed = minSpeed;
+                                CurrentSpeed = minSpeed;
                             }
                         }
                     }else{
-                        currentSpeed = averageSpeed;
+                        CurrentSpeed = averageSpeed;
                     }
                     yield return new WaitForSeconds(updateTime);
                 }
             }
         }
 
+        /// <summary>
+        /// Decreases speed if the agent is using a smartphone animation.
+        /// </summary>
         protected virtual IEnumerator DecreaseSpeedBaseOnUpperBodyAnimation(float updateTime){
             float initialSpeed = GetCurrentSpeed();
             while(true){
                 if(collisionAvoidance.GetUpperBodyAnimationState() == UpperBodyAnimationState.SmartPhone){
-                    currentSpeed = minSpeed;
+                    CurrentSpeed = minSpeed;
                 }else{
-                    currentSpeed = initialSpeed;
+                    CurrentSpeed = initialSpeed;
                 }
                 yield return new WaitForSeconds(updateTime);
             }
         }
 
+        /// <summary>
+        /// Updates speed based on the distance to the goal, slowing down when approaching.
+        /// </summary>
         protected virtual IEnumerator UpdateSpeedBasedOnGoalDist(float updateTime){
             OnGoalReached += () =>
             {
                 float duration = 2.0f;
-                StartCoroutine(SpeedChanger(duration, currentSpeed, initialSpeed));
+                StartCoroutine(SpeedChanger(duration, CurrentSpeed, initialSpeed));
             };
             while(true){
                 float distanceToGoal = Vector3.Distance(GetCurrentPosition(), GetCurrentGoal());
-                if(distanceToGoal < slowingRadius) currentSpeed = Mathf.Lerp(minSpeed, currentSpeed, distanceToGoal / slowingRadius);
+                if(distanceToGoal < slowingRadius) CurrentSpeed = Mathf.Lerp(minSpeed, CurrentSpeed, distanceToGoal / slowingRadius);
                 
                 yield return new WaitForSeconds(updateTime);
             }
         }
 
+        /// <summary>
+        /// Smoothly transitions the speed over a duration.
+        /// </summary>
         protected virtual IEnumerator SpeedChanger(float duration, float _currentSpeed, float targetSpeed){
             float elapsedTime = 0.0f;
             while(elapsedTime < duration){
                 elapsedTime += Time.deltaTime;
-                currentSpeed = Mathf.Lerp(_currentSpeed, targetSpeed, elapsedTime/duration);
+                CurrentSpeed = Mathf.Lerp(_currentSpeed, targetSpeed, elapsedTime/duration);
                 yield return new WaitForSeconds(Time.deltaTime);
             }
-            currentSpeed = targetSpeed;
+            CurrentSpeed = targetSpeed;
 
             yield return null;
         }
@@ -131,17 +157,23 @@ namespace CollisionAvoidance{
         * Update Attractions
         ********************************************************************************************************************************/
         #region OTHER
+        /// <summary>
+        /// Monitors whether the agent has entered the slowing area.
+        /// </summary>
         protected virtual IEnumerator CheckForGoalReached(float updateTime){
             while(true){
                 float distanceToGoal = Vector3.Distance(GetCurrentPosition(), GetCurrentGoal());
-                if(distanceToGoal < slowingRadius){
-                    onInSlowingArea = true;
-                }else{
-                    onInSlowingArea = false;
-                }
+                onInSlowingArea = distanceToGoal < slowingRadius;
                 yield return new WaitForSeconds(updateTime);
             }
         }
-        #endregion        
+        #endregion    
+
+        /// <summary>
+        /// Returns whether the agent is in the slowing area.
+        /// </summary>
+        public bool GetOnInSlowingArea(){
+            return onInSlowingArea;
+        }    
     }
 }

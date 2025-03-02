@@ -13,7 +13,7 @@ namespace CollisionAvoidance
         /// <summary>
         /// The PathController instance that provides movement-related data.
         /// </summary>
-        public PathController pathController;
+        public AgentPathController pathController;
 
         /// <summary>
         /// Gets the agent's current movement direction.
@@ -82,7 +82,7 @@ namespace CollisionAvoidance
         /// Gets the PathController instance managing the agent's path.
         /// </summary>
         /// <returns>The PathController instance.</returns>
-        public PathController GetPathController()
+        public AgentPathController GetPathController()
         {
             return pathController;
         }
