@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MotionMatching;
-using System.Security.Cryptography;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -13,81 +12,92 @@ namespace CollisionAvoidance{
 public class AgentManager : MonoBehaviour
 {
     [Header("Goal Parameters")]
-    [Tooltip("Radius to consider as the goal.")]
-    [Range(0.1f, 5.0f)]
-    public float goalRadius = 2.0f;
-    [Tooltip("Radius to start slowing down.")]
-    [Range(0.1f, 5.0f)]
-    public float slowingRadius = 3.0f;
+    public GoalParameters goalParameters;
+    [System.Serializable]
+    public class GoalParameters{
+    [Tooltip("Radius to consider as the goal.")][Range(0.1f, 5.0f)]public float goalRadius = 2.0f;
+    [Tooltip("Radius to start slowing down.")][Range(0.1f, 5.0f)]public float slowingRadius = 3.0f;
+    }
 
     // Weights for various forces influencing agent movement.
     [Space]
-    [Header("Weights")]
-    [Tooltip("Weight for moving towards the goal.")]
-    [Range(0.0f, 5.0f)]
-    public float toGoalWeight = 1.5f;
-    [Tooltip("Weight to avoid neighbors.")]
-    [Range(0.0f, 5.0f)]
-    public float avoidNeighborWeight = 0.5f;
-    [Tooltip("Weight for general avoidance.")]
-    [Range(0.0f, 5.0f)]
-    public float avoidanceWeight = 2.3f;
-    [Tooltip("Weight for group force.")]
-    [Range(0.0f, 5.0f)]
-    public float groupForceWeight = 0.5f;
-    [Tooltip("Weight for wall force.")]
-    [Range(0.0f, 5.0f)]
-    public float wallRepForceWeight = 0.3f;
+    [Header("  ==MOVEMENT==  ")]
+    [Header("Weights for Social Forces")]
+    public ForceWeights forceWeights;
+    [System.Serializable]
+    public class ForceWeights{
+        [Range(0.0f, 5.0f)]public float toGoalWeight = 1.5f;
+        [Range(0.0f, 5.0f)]public float avoidNeighborWeight = 0.5f;
+        [Range(0.0f, 5.0f)]public float avoidanceWeight = 2.3f;
+        [Range(0.0f, 5.0f)]public float groupForceWeight = 0.5f;
+        [Range(0.0f, 5.0f)]public float wallRepForceWeight = 0.3f;
+    }
 
     // Parameters related to the adjustment of the position of the SimulationBone and SimulationObject.
     [Header("Motion Matching Parameters")]
-    [Space]
-    [Range(0.0f, 2.0f), Tooltip("Max distance between SimulationBone and SimulationObject")] 
-    public float MaxDistanceMMAndCharacterController = 0.1f;
-    [Range(0.0f, 2.0f), Tooltip("Time needed to move half of the distance between SimulationBone and SimulationObject")] 
-    public float PositionAdjustmentHalflife = 0.1f;
-    [Range(0.0f, 2.0f), Tooltip("Ratio between the adjustment and the character's velocity to clamp the adjustment")] 
-    public float PosMaximumAdjustmentRatio = 0.1f;
-
-    // Parameters defining the size of the agent's capsule collider.
-    [Header("Agent Capsule Collider Size")]
-    [Range(0.0f, 1.0f)]
-    public float CapsuleColliderRadius = 0.3f; 
+    public MMParameters mmParameters;
+    public class MMParameters{
+        [Range(0.0f, 2.0f), Tooltip("Max distance between SimulationBone and SimulationObject")] public float MaxDistanceMMAndCharacterController = 0.1f;
+        [Range(0.0f, 2.0f), Tooltip("Time needed to move half of the distance between SimulationBone and SimulationObject")] public float PositionAdjustmentHalflife = 0.1f;
+        [Range(0.0f, 2.0f), Tooltip("Ratio between the adjustment and the character's velocity to clamp the adjustment")] public float PosMaximumAdjustmentRatio = 0.1f;
+    }
 
     // Parameters to control the display of various debug gizmos in the Unity Editor.
-    [Header("Controll Gizmos Parameters")]
-    public bool showAgentSphere = false;
-    public bool ShowAvoidanceForce = false;
-    public bool ShowAnticipatedCollisionAvoidance = false;
-    public bool ShowGoalDirection = false;
-    public bool ShowCurrentDirection = false;
-    public bool ShowGroupForce = false;
-    public bool ShowWallForce = false;
+    [Header("Path Controller Debug")]
+    public GizmosPathController gizmosPC;
+    [System.Serializable]
+    public class GizmosPathController
+    {
+        public bool ShowAvoidanceForce = false;
+        public bool ShowAnticipatedCollisionAvoidance = false;
+        public bool ShowGoalDirection = false;
+        public bool ShowCurrentDirection = false;
+        public bool ShowGroupForce = false;
+        public bool ShowWallForce = false;
+    }
 
     // Parameters for debugging the Motion Matching Controller.
     [Header("Motion Matching Controller Debug")]
-    public bool DebugSkeleton = false;
-    public bool DebugCurrent = false;
-    public bool DebugPose = false;
-    public bool DebugTrajectory = false;
-    public bool DebugContacts = false;
+    public GizmosMotionMatching gizmosMM;
+    [System.Serializable]
+    public class GizmosMotionMatching
+    {
+        public bool DebugSkeleton = false;
+        public bool DebugCurrent = false;
+        public bool DebugPose = false;
+        public bool DebugTrajectory = false;
+        public bool DebugContacts = false;
+    }
 
     // OCEAN Personality Model Parameters: Parameters that define the personality of the agent according to the OCEAN model.
+    [Space]
+    [Header("  ==FACIAL EXPRESSION==  ")]
     [Header("Conversational Agent Framework Parameters")]
-    [Range(-1f, 1f),HideInInspector] public float openness = 0f;
-    [Range(-1f, 1f),HideInInspector] public float conscientiousness = 0f;
-    [Range(-1f, 1f)] public float Negative_Positive = 0f;
-    [Range(-1f, 1f),HideInInspector] public float agreeableness = 0f;
-    [Range(-1f, 1f),HideInInspector] public float neuroticism = 0f;
+    public OCEAN ocean;
+    [System.Serializable]
+    public class OCEAN
+    {
+        [Range(-1f, 1f)]public float openness = 0f;
+        [Range(-1f, 1f)]public float conscientiousness = 0f;
+        [Range(-1f, 1f)]public float extraversion = 0f;
+        [Range(-1f, 1f)]public float agreeableness = 0f;
+        [Range(-1f, 1f)]public float neuroticism = 0f;
+    }
 
     // Emotion Parameters: Parameters that define the emotional state of the agent.
     [Header("Emotion Parameters")]
-    [Range(0f, 1f)] public float e_happy = 0f;
-    [Range(0f, 1f)] public float e_sad = 0f;
-    [Range(0f, 1f)] public float e_angry = 0f;
-    [Range(0f, 1f)] public float e_disgust = 0f;
-    [Range(0f, 1f)] public float e_fear = 0f;
-    [Range(0f, 1f)] public float e_shock = 0f;
+    public Emotion emotion;
+
+    [System.Serializable]
+    public class Emotion
+    {
+        [Range(0f, 1f)]public float happy = 0f;
+        [Range(0f, 1f)]public float sad = 0f;
+        [Range(0f, 1f)]public float angry = 0f;
+        [Range(0f, 1f)]public float disgust = 0f;
+        [Range(0f, 1f)]public float fear = 0f;
+        [Range(0f, 1f)]public float shock = 0f;
+    }
 
     // Lists to store references to various controller game objects.
     private List<GameObject> PathControllers = new List<GameObject>();
@@ -128,7 +138,7 @@ public class AgentManager : MonoBehaviour
             // Get and set CollisionAvoidance parameters.
             CollisionAvoidanceController collisionAvoidanceController = Avatars[i].GetComponentInChildren<CollisionAvoidanceController>();
             if(collisionAvoidanceController != null) {
-                SetCollisionAvoidanceControllerParams(collisionAvoidanceController);
+                // SetCollisionAvoidanceControllerParams(collisionAvoidanceController);
                 CollisionAvoidanceControllers.Add(collisionAvoidanceController.gameObject);
             }
 
@@ -175,14 +185,14 @@ public class AgentManager : MonoBehaviour
         }
 
         // Loop through all CollisionAvoidanceControllers and set their parameters.
-        foreach(GameObject controllerObject in CollisionAvoidanceControllers) 
-        {
-            CollisionAvoidanceController collisionAvoidanceController = controllerObject.GetComponent<CollisionAvoidanceController>();
-            if(collisionAvoidanceController != null) 
-            {
-                SetCollisionAvoidanceControllerParams(collisionAvoidanceController);
-            }
-        }
+        // foreach(GameObject controllerObject in CollisionAvoidanceControllers) 
+        // {
+        //     CollisionAvoidanceController collisionAvoidanceController = controllerObject.GetComponent<CollisionAvoidanceController>();
+        //     if(collisionAvoidanceController != null) 
+        //     {
+        //         SetCollisionAvoidanceControllerParams(collisionAvoidanceController);
+        //     }
+        // }
 
         // Loop through all ConversationalAgentFrameworks and set their parameters.
         foreach(GameObject controllerObject in ConversationalAgentFrameworks) 
@@ -201,56 +211,56 @@ public class AgentManager : MonoBehaviour
 
     // Method to set parameters for PathController.
     private void SetPathControllerParams(AgentPathController pathController){
-        pathController.slowingRadius = slowingRadius;
+        pathController.slowingRadius = goalParameters.slowingRadius;
 
-        pathController.toGoalWeight               = toGoalWeight;
-        pathController.avoidanceWeight            = avoidanceWeight;
-        pathController.avoidNeighborWeight        = avoidNeighborWeight;
-        pathController.groupForceWeight           = groupForceWeight;
-        pathController.wallRepForceWeight         = wallRepForceWeight;
+        pathController.toGoalWeight               = forceWeights.toGoalWeight;
+        pathController.avoidanceWeight            = forceWeights.avoidanceWeight;
+        pathController.avoidNeighborWeight        = forceWeights.avoidNeighborWeight;
+        pathController.groupForceWeight           = forceWeights.groupForceWeight;
+        pathController.wallRepForceWeight         = forceWeights.wallRepForceWeight;
 
-        pathController.MaxDistanceMMAndCharacterController = MaxDistanceMMAndCharacterController;
-        pathController.PositionAdjustmentHalflife          = PositionAdjustmentHalflife;
-        pathController.PosMaximumAdjustmentRatio           = PosMaximumAdjustmentRatio;
+        pathController.MaxDistanceMMAndCharacterController = mmParameters.MaxDistanceMMAndCharacterController;
+        pathController.PositionAdjustmentHalflife          = mmParameters.PositionAdjustmentHalflife;
+        pathController.PosMaximumAdjustmentRatio           = mmParameters.PosMaximumAdjustmentRatio;
 
-        pathController.ShowAvoidanceForce              = ShowAvoidanceForce;
-        pathController.ShowAnticipatedCollisionAvoidance = ShowAnticipatedCollisionAvoidance;
-        pathController.ShowGoalDirection               = ShowGoalDirection;
-        pathController.ShowCurrentDirection            = ShowCurrentDirection;
-        pathController.ShowGroupForce                  = ShowGroupForce;
-        pathController.ShowWallForce                   = ShowWallForce;
+        pathController.ShowAvoidanceForce                = gizmosPC.ShowAvoidanceForce;
+        pathController.ShowAnticipatedCollisionAvoidance = gizmosPC.ShowAnticipatedCollisionAvoidance;
+        pathController.ShowGoalDirection                 = gizmosPC.ShowGoalDirection;
+        pathController.ShowCurrentDirection              = gizmosPC.ShowCurrentDirection;
+        pathController.ShowGroupForce                    = gizmosPC.ShowGroupForce;
+        pathController.ShowWallForce                     = gizmosPC.ShowWallForce;
     }
 
     private void SetPathManagerrParams(AgentPathManager pathManager){
-        pathManager.goalRadius = goalRadius;
+        pathManager.goalRadius = goalParameters.goalRadius;
     }
 
     private void SetMotionMatchingControllerParams(MotionMatchingController motionMatchingController){
         // motionMatchingController.SpheresRadius = SphereRadius;
-        motionMatchingController.DebugSkeleton   = DebugSkeleton;
-        motionMatchingController.DebugCurrent    = DebugCurrent;
-        motionMatchingController.DebugPose       = DebugPose;
-        motionMatchingController.DebugTrajectory = DebugTrajectory;
-        motionMatchingController.DebugContacts   = DebugContacts;
+        motionMatchingController.DebugSkeleton   = gizmosMM.DebugSkeleton;
+        motionMatchingController.DebugCurrent    = gizmosMM.DebugCurrent;
+        motionMatchingController.DebugPose       = gizmosMM.DebugPose;
+        motionMatchingController.DebugTrajectory = gizmosMM.DebugTrajectory;
+        motionMatchingController.DebugContacts   = gizmosMM.DebugContacts;
     }
 
-    private void SetCollisionAvoidanceControllerParams(CollisionAvoidanceController collisionAvoidanceController){
-        collisionAvoidanceController.agentCollider.radius           = CapsuleColliderRadius;
-    }
+    // private void SetCollisionAvoidanceControllerParams(CollisionAvoidanceController collisionAvoidanceController){
+    //     collisionAvoidanceController.agentCollider.radius           = CapsuleColliderRadius;
+    // }
 
     private void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){
-        conversationalAgentFramework.openness          = openness;
-        conversationalAgentFramework.conscientiousness = conscientiousness;
-        conversationalAgentFramework.extraversion      = Negative_Positive;
-        conversationalAgentFramework.agreeableness     = agreeableness;
-        conversationalAgentFramework.neuroticism       = neuroticism;
+        conversationalAgentFramework.openness          = ocean.openness;
+        conversationalAgentFramework.conscientiousness = ocean.conscientiousness;
+        conversationalAgentFramework.extraversion      = ocean.extraversion;
+        conversationalAgentFramework.agreeableness     = ocean.agreeableness;
+        conversationalAgentFramework.neuroticism       = ocean.neuroticism;
 
-        conversationalAgentFramework.e_happy           = e_happy;
-        conversationalAgentFramework.e_sad             = e_sad;
-        conversationalAgentFramework.e_angry           = e_angry;
-        conversationalAgentFramework.e_disgust         = e_disgust;
-        conversationalAgentFramework.e_fear            = e_fear;
-        conversationalAgentFramework.e_shock           = e_shock;      
+        conversationalAgentFramework.e_happy           = emotion.happy;
+        conversationalAgentFramework.e_sad             = emotion.sad;
+        conversationalAgentFramework.e_angry           = emotion.angry;
+        conversationalAgentFramework.e_disgust         = emotion.disgust;
+        conversationalAgentFramework.e_fear            = emotion.fear;
+        conversationalAgentFramework.e_shock           = emotion.shock;      
     }
 
     private void SetSocialBehaviourParams(SocialBehaviour socialBehaviour){

@@ -14,7 +14,7 @@ namespace CollisionAvoidance{
         public float initialSpeed = 0.7f; // Initial speed of the agent
         public float minSpeed = 0.0f; // Minimum speed limit
         public float maxSpeed = 1.0f; // Maximum speed limit
-        public float slowingRadius = 2.0f; // Radius within which speed slows down
+        public float slowingRadius = 3.0f; // Radius within which speed slows down
         
         private bool onInSlowingArea = false; // Indicates if the agent is within the slowing radius
         private UnityAction OnGoalReached; // Event triggered when the agent reaches the goal

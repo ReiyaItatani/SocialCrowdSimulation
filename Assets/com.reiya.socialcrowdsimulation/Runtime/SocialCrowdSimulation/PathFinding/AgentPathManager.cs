@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +6,7 @@ namespace CollisionAvoidance{
     public class AgentPathManager : MonoBehaviour
     {
 
-        public float goalRadius = 0.5f;
+        public float goalRadius = 2.0f;
         public AgentPathController pathController;
         public GroupNodeEventChannelSO groupNodeEventChannel;
         public UnityAction OnTargetReached;
