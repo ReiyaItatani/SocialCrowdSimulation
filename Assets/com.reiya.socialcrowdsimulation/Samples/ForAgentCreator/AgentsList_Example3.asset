@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: AgentsList_Example3
   m_EditorClassIdentifier: 
   individuals:
-    agents: []
+    agents:
+    - {fileID: 4127260373610900068, guid: 1718ab575ec590240a485e13ee4559a5, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8

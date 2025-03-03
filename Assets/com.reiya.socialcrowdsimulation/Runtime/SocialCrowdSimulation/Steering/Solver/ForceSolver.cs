@@ -57,7 +57,7 @@ public class ForceSolver : BasePathController
 
     // --------------------------------------------------------------------------
     // Group Collider Manager For Group Behaviour -------------------------------
-    public GroupColliderManager groupColliderManager;
+    public GroupManager groupManager;
 
     protected virtual void InitForceSolver(){
         // CurrentPosition = agentPathManager.PrevTargetNodePosition;
@@ -331,9 +331,9 @@ public class ForceSolver : BasePathController
 
                 //Get Agents//
                 List<GameObject> Agents = new List<GameObject>();
-                if(groupColliderManager!=null && groupColliderManager.GetOnGroupCollider()){
+                if(groupManager!=null && groupManager.GetOnGroupCollider()){
                     //if the agent is in a group and in certain distance, shared FOV happens
-                    Agents = groupColliderManager.GetAgentsInSharedFOV();
+                    Agents = groupManager.GetAgentsInSharedFOV();
                 }else{
                     //if the agent is "not" in a group
                     Agents = collisionAvoidance.GetOthersInFOV();
@@ -342,11 +342,11 @@ public class ForceSolver : BasePathController
 
                 //Calculate Anticipated Collision Avoidance Force//
                 Vector3 newAvoidNeighborsVector;
-                if(groupColliderManager!=null && groupColliderManager.GetOnGroupCollider()){
+                if(groupManager!=null && groupManager.GetOnGroupCollider()){
                     //if the agent is in a group and in certain distance
-                    Vector3 groupCurrentDirection = groupColliderManager.GetGroupParameterManager().GetCurrentDirection();
-                    Vector3 groupCurrentPosition  = groupColliderManager.GetGroupParameterManager().GetCurrentPosition();
-                    float   groupCurrentSpeed     = groupColliderManager.GetGroupParameterManager().GetCurrentSpeed();
+                    Vector3 groupCurrentDirection = groupManager.GetGroupParameterManager().GetCurrentDirection();
+                    Vector3 groupCurrentPosition  = groupManager.GetGroupParameterManager().GetCurrentPosition();
+                    float   groupCurrentSpeed     = groupManager.GetGroupParameterManager().GetCurrentSpeed();
 
                     newAvoidNeighborsVector       = SteerToAvoidNeighbors(groupCurrentDirection, groupCurrentPosition, groupCurrentSpeed,
                                                                           Agents, minTimeToCollision, collisionDangerThreshold);
@@ -481,7 +481,7 @@ public class ForceSolver : BasePathController
         if(_groupName == "Individual"){
             groupForce = Vector3.zero;
         }else{
-            List<GameObject> groupAgents = groupColliderManager.GetGroupAgents();
+            List<GameObject> groupAgents = groupManager.GetGroupAgents();
             CapsuleCollider  agentCollider = collisionAvoidance.GetAgentCollider();
             float              agentRadius = agentCollider.radius;
             GameObject     agentGameObject = collisionAvoidance.GetAgentGameObject();
@@ -709,8 +709,8 @@ public class ForceSolver : BasePathController
         return groupName;
     }
     public List<GameObject> GetGroupAgents(){
-        if(groupColliderManager == null) return null;
-        return groupColliderManager.GetGroupAgents();
+        if(groupManager == null) return null;
+        return groupManager.GetGroupAgents();
     }
     public GameObject GetPotentialAvoidanceTarget()
     {

@@ -5,7 +5,6 @@ using UnityEngine.Events;
 namespace CollisionAvoidance{
     public class AgentPathManager : MonoBehaviour
     {
-
         public float goalRadius = 2.0f;
         public AgentPathController pathController;
         public GroupNodeEventChannelSO groupNodeEventChannel;
@@ -47,7 +46,14 @@ namespace CollisionAvoidance{
         {
             if (_currentTargetNode._neighbours.Count == 1)
             {
-                return _currentTargetNode._neighbours[0];
+                if(groupName == "Individual"){
+                    return _currentTargetNode._neighbours[0];
+                }
+                else{
+                    QuickGraphNode groupNode = _currentTargetNode._neighbours[0];
+                    groupNodeEventChannel.RaiseEvent(new GroupNode{graphNode = groupNode, groupName = groupName});
+                    return groupNode;
+                }
             }
             
             List<QuickGraphNode> tmp = new List<QuickGraphNode>();

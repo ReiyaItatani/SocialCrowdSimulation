@@ -54,14 +54,14 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             GameObject groupParent = GetOrCreateParent(group.groupName);
             GameObject groupColliderObject = CreateGroupCollider(groupParent, group.groupName);
             GroupParameterManager groupParameterManager = groupColliderObject.GetComponent<GroupParameterManager>();
-            GroupColliderManager groupColliderManager = CreateGroupColliderManager(groupParent, groupColliderObject);
+            GroupManager groupManager = CreateGroupManager(groupParent, groupColliderObject);
             var node = quickGraph._nodes[UnityEngine.Random.Range(0, quickGraph._nodes.Count)];
             var neighbours = node._neighbours[UnityEngine.Random.Range(0, node._neighbours.Count)];
             foreach (GameObject agent in group.agents)
             {
                 if (ComputeSafeSpawnPosition(node, neighbours, out Vector3 pos)){
                     GameObject instance = InstantiateAgent(agent, groupParent, group.groupName, group.speedRange, node, neighbours , pos);
-                    AssignGroupComponents(instance, groupParameterManager, groupColliderManager);
+                    AssignGroupComponents(instance, groupParameterManager, groupManager);
                 }
             }
         }
@@ -96,7 +96,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         // conversationalAgentFramework.transform.position = pos;
     }
 
-    private void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupColliderManager groupColliderManager)
+    private void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupManager groupManager)
     {
         AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
         CollisionAvoidanceController collisionAvoidanceController = instance.GetComponentInChildren<CollisionAvoidanceController>();
@@ -106,10 +106,10 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             groupParameterManager.pathControllers.Add(pathController);
             collisionAvoidanceController.groupCollider = groupParameterManager.GetComponent<CapsuleCollider>();
         }
-        if (groupColliderManager != null)
+        if (groupManager != null)
         {
-            pathController.groupColliderManager = groupColliderManager;
-            groupColliderManager.groupMembers.Add(instance);
+            pathController.groupManager = groupManager;
+            groupManager.groupMembers.Add(instance);
         }
     }
 
@@ -139,11 +139,11 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         return groupColliderObject;
     }
 
-    private GroupColliderManager CreateGroupColliderManager(GameObject parent, GameObject groupColliderObject)
+    private GroupManager CreateGroupManager(GameObject parent, GameObject groupColliderObject)
     {
-        GameObject managerObject = new GameObject("GroupColliderManager");
+        GameObject managerObject = new GameObject("GroupManager");
         managerObject.transform.SetParent(parent.transform);
-        GroupColliderManager groupColliderManager = managerObject.AddComponent<GroupColliderManager>();
+        GroupManager groupColliderManager = managerObject.AddComponent<GroupManager>();
         groupColliderManager.groupColliderGameObject = groupColliderObject;
         return groupColliderManager;
     }

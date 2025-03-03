@@ -117,7 +117,7 @@ public class PathController : MotionMatchingCharacterController
     public float wallRepForceWeight = 0.2f;
     // --------------------------------------------------------------------------
     // Group Collider Manager For Group Behaviour--------------------------------
-    public GroupColliderManager groupColliderManager;   
+    public GroupManager groupColliderManager;   
     // --------------------------------------------------------------------------
     // For experiment -----------------------------------------------------------
     public bool onAvoidanceCoordination = true;

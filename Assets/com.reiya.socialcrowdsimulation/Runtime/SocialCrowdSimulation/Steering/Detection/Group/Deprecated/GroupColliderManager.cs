@@ -8,15 +8,12 @@ namespace CollisionAvoidance{
 
 public class GroupColliderManager : MonoBehaviour
 {
-    public bool OnGroupCollider = true;
     public List<GameObject> groupMembers = new List<GameObject>();
     public GameObject groupColliderGameObject;
     private CapsuleCollider groupCollider;
     private GroupParameterManager groupParameterManager;
     private List<CollisionAvoidanceController> collisionAvoidanceControllers = new List<CollisionAvoidanceController>();
     private HashSet<GameObject> agentsInFOV = new HashSet<GameObject>();
-    [ReadOnly]
-    public List<GameObject> debug_agentsInFOV = new List<GameObject>();
 
     private bool onGroupCollider = false;
 
@@ -44,6 +41,7 @@ public class GroupColliderManager : MonoBehaviour
         DistanceChecker();
     }
 
+    // Update the center of mass of the group
     void UpdateCenterOfMass()
     {
         Vector3 combinedPosition = Vector3.zero;
@@ -54,6 +52,7 @@ public class GroupColliderManager : MonoBehaviour
         this.transform.position = combinedPosition / agentsInCategory.Count;
     }
 
+    // Check if the agents are close enough to each other
     private void DistanceChecker(){
         float maxDistance = 0f;
         foreach (GameObject agent in agentsInCategory)
@@ -64,7 +63,7 @@ public class GroupColliderManager : MonoBehaviour
                 maxDistance = distance;
             }
         }
-        if(maxDistance <= (agentsInCategory.Count)/2 && OnGroupCollider){
+        if(maxDistance <= (agentsInCategory.Count)/2){
             groupCollider.enabled = true;
             //groupColliderGameObject.SetActive(true);
             onGroupCollider = true;
@@ -99,16 +98,9 @@ public class GroupColliderManager : MonoBehaviour
     public List<GameObject> GetGroupAgents(){
         if(initializedGroup == false){
            agentsInCategory = GetNewGroupAgents();
+           initializedGroup = true;
         }
         return agentsInCategory;
-    }
-
-    public List<AgentPathController> GetPathControllers(){
-        List<AgentPathController> pathControllers = new List<AgentPathController>();
-        foreach(GameObject agent in agentsInCategory){
-            pathControllers.Add(agent.GetComponentInChildren<AgentPathController>());
-        }
-        return pathControllers;
     }
 
     private IEnumerator UpdateAgentsInGroupFOV(float updateTime){
@@ -119,7 +111,6 @@ public class GroupColliderManager : MonoBehaviour
             }
             //remove agents in same category
             agentsInFOV.ExceptWith(agentsInCategory); 
-            debug_agentsInFOV = agentsInFOV.ToList();
             yield return new WaitForSeconds(updateTime);
         }
     }
