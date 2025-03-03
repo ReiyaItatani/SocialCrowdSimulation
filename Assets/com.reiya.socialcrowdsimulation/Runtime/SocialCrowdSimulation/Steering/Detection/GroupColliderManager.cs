@@ -21,10 +21,13 @@ public class GroupColliderManager : MonoBehaviour
     private bool onGroupCollider = false;
 
     private List<GameObject> agentsInCategory = new List<GameObject>();
+    private bool initializedGroup = false;
 
     void Start()
     {
         agentsInCategory = GetNewGroupAgents();
+        initializedGroup = true;
+
         foreach(GameObject agent in agentsInCategory){
             collisionAvoidanceControllers.Add(agent.GetComponent<ParameterManager>().GetCollisionAvoidanceController());
         }
@@ -94,6 +97,9 @@ public class GroupColliderManager : MonoBehaviour
     }
 
     public List<GameObject> GetGroupAgents(){
+        if(initializedGroup == false){
+           agentsInCategory = GetNewGroupAgents();
+        }
         return agentsInCategory;
     }
 
