@@ -36,10 +36,14 @@ public class AgentManager : MonoBehaviour
     // Parameters related to the adjustment of the position of the SimulationBone and SimulationObject.
     [Header("Motion Matching Parameters")]
     public MMParameters mmParameters;
+    [System.Serializable]
     public class MMParameters{
-        [Range(0.0f, 2.0f), Tooltip("Max distance between SimulationBone and SimulationObject")] public float MaxDistanceMMAndCharacterController = 0.1f;
-        [Range(0.0f, 2.0f), Tooltip("Time needed to move half of the distance between SimulationBone and SimulationObject")] public float PositionAdjustmentHalflife = 0.1f;
-        [Range(0.0f, 2.0f), Tooltip("Ratio between the adjustment and the character's velocity to clamp the adjustment")] public float PosMaximumAdjustmentRatio = 0.1f;
+        [Range(0.0f, 2.0f), Tooltip("Max distance between SimulationBone and SimulationObject")] 
+        public float MaxDistanceMMAndCharacterController = 0.1f;
+        [Range(0.0f, 2.0f), Tooltip("Time needed to move half of the distance between SimulationBone and SimulationObject")] 
+        public float PositionAdjustmentHalflife = 0.1f;
+        [Range(0.0f, 2.0f), Tooltip("Ratio between the adjustment and the character's velocity to clamp the adjustment")] 
+        public float PosMaximumAdjustmentRatio = 0.1f;
     }
 
     // Parameters to control the display of various debug gizmos in the Unity Editor.

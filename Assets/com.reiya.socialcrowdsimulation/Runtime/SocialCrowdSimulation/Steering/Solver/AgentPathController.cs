@@ -1,5 +1,6 @@
 using Drawing;
 using UnityEngine;
+using System.Collections;
 
 namespace CollisionAvoidance{
     public class AgentPathController : ReactSolver
@@ -21,11 +22,17 @@ namespace CollisionAvoidance{
         protected virtual void Start(){
             InitForceSolver();
             InitSpeedSolver();
-            InitReactSolver();
+            StartCoroutine(DelayedStart(1.0f));
             InitMotionMathing();
             
             StartUpdateForce();
             StartUpdateSpeed();
+        }
+
+        //※For one second, the agent does not react to collisions※
+        protected virtual IEnumerator DelayedStart(float delay) {
+            yield return new WaitForSeconds(delay);
+            InitReactSolver();
         }
 
         protected override void OnUpdate(){
