@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 namespace CollisionAvoidance{
 
@@ -14,7 +15,7 @@ public class ForceSolver : BasePathController
     [Header("Parameters For Basic Collision Avoidance")]
     [HideInInspector] [ReadOnly] public GameObject currentAvoidanceTarget;
     protected Vector3 avoidanceVector = Vector3.zero; // Direction of basic collision avoidance
-    [HideInInspector] public float avoidanceWeight = 2.0f; // Weight for basic collision avoidance
+    [HideInInspector] public float avoidanceWeight = 2.0f; // Weight for basic collision avoidance 
 
     // --------------------------------------------------------------------------
     // Collision Response -------------------------------------------------------
@@ -46,6 +47,7 @@ public class ForceSolver : BasePathController
     // --------------------------------------------------------------------------
     // Force From Group ---------------------------------------------------------
     [Header("Group Force, Group Category")]
+    public GroupManager groupManager;
     [ReadOnly] public string groupName;
     [HideInInspector] public float groupForceWeight = 0.5f;
     protected Vector3 groupForce = Vector3.zero;
@@ -56,8 +58,9 @@ public class ForceSolver : BasePathController
     [HideInInspector] public float wallRepForceWeight = 0.2f;
 
     // --------------------------------------------------------------------------
-    // Group Collider Manager For Group Behaviour -------------------------------
-    public GroupManager groupManager;
+    // Repulsion Force From Wall ------------------------------------------------
+    protected Vector3 avoidObstacleVector = Vector3.zero;
+    [HideInInspector] public float avoidObstacleWeight = 1.0f;
 
     protected virtual void InitForceSolver(){
         // CurrentPosition = agentPathManager.PrevTargetNodePosition;
@@ -70,6 +73,7 @@ public class ForceSolver : BasePathController
         StartCoroutine(UpdateAvoidNeighborsVector(0.1f, 0.3f));
         StartCoroutine(UpdateGroupForce(0.1f, GetGroupName()));
         StartCoroutine(UpdateWallForce(0.2f, 0.5f));
+        StartCoroutine(UpdateAvoidObstacleVector(0.1f, 0.3f, GetGroupName()));
     }
 
     #region UPDATE SIMULATION
@@ -98,7 +102,8 @@ public class ForceSolver : BasePathController
                         avoidanceWeight    *         avoidanceVector + 
                     avoidNeighborWeight    *    avoidNeighborsVector + 
                     groupForceWeight       *              groupForce +
-                    wallRepForceWeight     *            wallRepForce
+                    wallRepForceWeight     *            wallRepForce +
+                    avoidObstacleWeight    *     avoidObstacleVector
                     ).normalized;
         direction = new Vector3(direction.x, 0f, direction.z);
 
@@ -328,7 +333,6 @@ public class ForceSolver : BasePathController
             if(currentAvoidanceTarget != null){
                 avoidNeighborsVector = Vector3.zero;
             }else{
-
                 //Get Agents//
                 List<GameObject> Agents = new List<GameObject>();
                 if(groupManager!=null && groupManager.GetOnGroupCollider()){
@@ -512,7 +516,7 @@ public class ForceSolver : BasePathController
 
     protected virtual float CalculateGazingAngle(List<GameObject> groupAgents, Vector3 currentPos, Vector3 currentDir, float angleLimit, GameObject myself)
     {
-        Vector3            centerOfMass = CalculateCenterOfMass(groupAgents, myself);
+        Vector3            centerOfMass = Math.CalculateCenterOfMass(groupAgents, myself);
         Vector3 directionToCenterOfMass = centerOfMass - currentPos;
 
         float             angle = Vector3.Angle(currentDir, directionToCenterOfMass);
@@ -536,7 +540,7 @@ public class ForceSolver : BasePathController
         //float threshold = (groupAgents.Count)/2;
         float safetyDistance = 0.05f;
         float threshold = groupAgents.Count * 0.3f + safetyDistance;
-        Vector3 centerOfMass = CalculateCenterOfMass(groupAgents, myself);
+        Vector3 centerOfMass = Math.CalculateCenterOfMass(groupAgents, myself);
         float dist = Vector3.Distance(currentPos, centerOfMass);
         float judgeWithinThreshold = 0;
         if(dist > threshold){
@@ -622,33 +626,6 @@ public class ForceSolver : BasePathController
         }
     }
 
-    protected virtual Vector3 CalculateCenterOfMass(List<GameObject> groupAgents, GameObject myself)
-    {
-        if (groupAgents == null || groupAgents.Count == 0)
-        {
-            return Vector3.zero;
-        }
-
-        Vector3 sumOfPositions = Vector3.zero;
-        int count = 0;
-
-        foreach (GameObject go in groupAgents)
-        {
-            if (go != null && go != myself) 
-            {
-                sumOfPositions += go.transform.position;
-                count++; 
-            }
-        }
-
-        if (count == 0) 
-        {
-            return Vector3.zero;
-        }
-
-        return sumOfPositions / count;
-    }
-
     protected virtual IEnumerator GroupForceGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector){
         float elapsedTime = 0.0f;
         Vector3 initialGroupForce = initialVector;
@@ -691,6 +668,70 @@ public class ForceSolver : BasePathController
             yield return new WaitForSeconds(Time.deltaTime);
         }
         wallRepForce = targetVector;
+
+        yield return null;
+    }
+    #endregion
+
+    /***********************************************************************************************************
+    * Collision avoidance for obstacle:
+    * This section of the code handles scenarios where obstacles might collide.
+    ************************************************************************************************************/
+    #region COLLISION AVOIDANCE FOR OBSTACLE
+    protected virtual IEnumerator UpdateAvoidObstacleVector(float updateTime, float transitionTime, string groupName){
+        while(true){
+            //Get Obstacles//
+            List<GameObject> _obstacles = new List<GameObject>();
+            _obstacles = collisionAvoidance.GetObstaclesInFOV();
+
+            Vector3 newAvoidObstacleVector;
+            if(_obstacles == null || _obstacles.Count == 0){
+                newAvoidObstacleVector = Vector3.zero;
+            }else{
+                Vector3 _currentPosition;
+                if(groupName == "Individual"){
+                    _currentPosition = GetCurrentPosition();
+                }else{
+                    List<GameObject> _groupAgents = groupManager.GetGroupAgents();
+                    _currentPosition = Math.CalculateCenterOfMass(_groupAgents);
+                }
+                
+                GameObject _closestObstacle = CalculateClosestObstacle( _obstacles, _currentPosition);
+                NormalVector normalVector = _closestObstacle.GetComponent<NormalVector>();
+                if(normalVector == null){
+                    newAvoidObstacleVector = Vector3.zero;
+                }else{
+                    newAvoidObstacleVector = normalVector.CalculateNormalVectorFromWall(_currentPosition);
+                }
+            }
+            StartCoroutine(AvoidObstacleVectorGradualTransition(transitionTime, avoidObstacleVector, newAvoidObstacleVector.normalized));
+            yield return new WaitForSeconds(updateTime);
+        }
+    }
+    protected GameObject CalculateClosestObstacle(List<GameObject> obstacles, Vector3 pos){
+        GameObject closestObstacle = null;
+        float minDistance = float.MaxValue;
+
+        foreach (GameObject obstacle in obstacles)
+        {
+            float distance = Vector3.Distance(pos, obstacle.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestObstacle = obstacle;
+            }
+        }
+        return closestObstacle;
+    }
+    protected virtual IEnumerator AvoidObstacleVectorGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector){
+        float elapsedTime = 0.0f;
+        Vector3 initialavoidNeighborsVector = initialVector;
+        while(elapsedTime < duration){
+            elapsedTime += Time.deltaTime;
+            avoidObstacleVector = Vector3.Slerp(initialavoidNeighborsVector, targetVector, elapsedTime/duration);
+            yield return new WaitForSeconds(Time.deltaTime);
+        }
+        avoidObstacleVector = targetVector;
 
         yield return null;
     }

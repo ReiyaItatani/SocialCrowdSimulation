@@ -15,6 +15,7 @@ public class CollisionAvoidanceMenuItems
         AddTag("Group");
         AddTag("Wall");
         AddTag("Object");
+        AddTag("Obstacle");
         GameObject avatarCreator = CreateAvatarCreator("AvatarCreatorQuickGraph");
         Debug.Log("AvatarCreator created");
     }

@@ -31,6 +31,7 @@ public class AgentManager : MonoBehaviour
         [Range(0.0f, 5.0f)]public float avoidanceWeight = 2.3f;
         [Range(0.0f, 5.0f)]public float groupForceWeight = 0.5f;
         [Range(0.0f, 5.0f)]public float wallRepForceWeight = 0.3f;
+        [Range(0.0f, 5.0f)]public float avoidObstacleWeight = 1.0f;
     }
 
     // Parameters related to the adjustment of the position of the SimulationBone and SimulationObject.
@@ -58,6 +59,7 @@ public class AgentManager : MonoBehaviour
         public bool ShowCurrentDirection = false;
         public bool ShowGroupForce = false;
         public bool ShowWallForce = false;
+        public bool ShowObstacleAvoidanceForce = false;
     }
 
     // Parameters for debugging the Motion Matching Controller.
@@ -222,6 +224,7 @@ public class AgentManager : MonoBehaviour
         pathController.avoidNeighborWeight        = forceWeights.avoidNeighborWeight;
         pathController.groupForceWeight           = forceWeights.groupForceWeight;
         pathController.wallRepForceWeight         = forceWeights.wallRepForceWeight;
+        pathController.avoidObstacleWeight        = forceWeights.avoidObstacleWeight;
 
         pathController.MaxDistanceMMAndCharacterController = mmParameters.MaxDistanceMMAndCharacterController;
         pathController.PositionAdjustmentHalflife          = mmParameters.PositionAdjustmentHalflife;
@@ -233,6 +236,7 @@ public class AgentManager : MonoBehaviour
         pathController.ShowCurrentDirection              = gizmosPC.ShowCurrentDirection;
         pathController.ShowGroupForce                    = gizmosPC.ShowGroupForce;
         pathController.ShowWallForce                     = gizmosPC.ShowWallForce;
+        pathController.ShowAvoidObstacleForce            = gizmosPC.ShowObstacleAvoidanceForce;
     }
 
     private void SetPathManagerrParams(AgentPathManager pathManager){

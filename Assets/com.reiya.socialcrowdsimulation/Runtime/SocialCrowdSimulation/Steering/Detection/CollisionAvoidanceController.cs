@@ -157,6 +157,12 @@ namespace CollisionAvoidance{
             return _updateAvoidanceTarget.GetOthersInAvoidanceArea();
         }
 
+        public List<GameObject> GetObstaclesInFOV(){
+            GameObject             activeGameObject      = fovActiveController.GetActiveChildObject();
+            UpdateAvoidanceTarget _updateAvoidanceTarget = activeGameObject.GetComponent<UpdateAvoidanceTarget>();
+            return _updateAvoidanceTarget.GetObstaclesInAvoidanceArea();
+        }
+
         public GameObject GetCurrentWallTarget(){
             return agentCollisionDetection.GetCurrentWallTarget();
         }

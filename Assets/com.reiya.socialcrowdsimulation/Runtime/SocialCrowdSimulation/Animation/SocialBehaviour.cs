@@ -370,7 +370,7 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual Vector3 CalculateGazingDirectionToCOM(List<GameObject> groupAgents, Vector3 currentPos, Vector3 currentLookDir, GameObject myself, float angleLimit)
     {
-        Vector3            centerOfMass = CalculateCenterOfMass(groupAgents, myself);
+        Vector3            centerOfMass = Math.CalculateCenterOfMass(groupAgents, myself);
         Vector3 directionToCenterOfMass = (centerOfMass - currentPos).normalized;    
 
         float             angle = Vector3.Angle(currentLookDir, directionToCenterOfMass);
@@ -397,33 +397,6 @@ public class SocialBehaviour : MonoBehaviour
         Vector3 rotatedVector = rotation * currentLookDir;
 
         return rotatedVector.normalized;
-    }
-
-    protected virtual Vector3 CalculateCenterOfMass(List<GameObject> groupAgents, GameObject myself)
-    {
-        if (groupAgents == null || groupAgents.Count == 0)
-        {
-            return Vector3.zero;
-        }
-
-        Vector3 sumOfPositions = Vector3.zero;
-        int count = 0;
-
-        foreach (GameObject go in groupAgents)
-        {
-            if (go != null && go != myself) 
-            {
-                sumOfPositions += go.transform.position;
-                count++; 
-            }
-        }
-
-        if (count == 0) 
-        {
-            return Vector3.zero;
-        }
-
-        return sumOfPositions / count;
     }
     #endregion
 

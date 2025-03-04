@@ -12,6 +12,8 @@ public class UpdateAvoidanceTarget : MonoBehaviour
     private CapsuleCollider myGroupCollider;
     [ReadOnly]
     public List<GameObject> othersInAvoidanceArea = new List<GameObject>();
+    [ReadOnly]
+    public List<GameObject> obstaclesInAvoidanceArea = new List<GameObject>();
 
     private void Update(){
         AvoidanceTargetActiveChecker();
@@ -26,7 +28,14 @@ public class UpdateAvoidanceTarget : MonoBehaviour
             {
                 othersInAvoidanceArea.Add(other.gameObject);
             }
-        }   
+        }  
+
+        if(other.gameObject.CompareTag("Obstacle")){
+            if (!obstaclesInAvoidanceArea.Contains(other.gameObject))
+            {
+                obstaclesInAvoidanceArea.Add(other.gameObject);
+            }
+        } 
     }
 
     void OnTriggerExit(Collider other)
@@ -38,11 +47,22 @@ public class UpdateAvoidanceTarget : MonoBehaviour
                 othersInAvoidanceArea.Remove(other.gameObject);
             }
         }
+    
+        if(other.gameObject.CompareTag("Obstacle")){
+            if (obstaclesInAvoidanceArea.Contains(other.gameObject))
+            {
+                obstaclesInAvoidanceArea.Remove(other.gameObject);
+            }
+        }
     }
 
     public List<GameObject> GetOthersInAvoidanceArea(){
         return othersInAvoidanceArea;
     }
+
+    public List<GameObject> GetObstaclesInAvoidanceArea(){
+        return obstaclesInAvoidanceArea;
+    } 
 
     // Checks each GameObject in othersInAvoidanceArea to determine if it should be removed.
     private void AvoidanceTargetActiveChecker(){

@@ -112,6 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   othersInAvoidanceArea: []
+  obstaclesInAvoidanceArea: []
 --- !u!1 &3387043039365049729
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,6 +225,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   othersInAvoidanceArea: []
+  obstaclesInAvoidanceArea: []
 --- !u!1 &4104845299899636540
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,6 +338,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   othersInAvoidanceArea: []
+  obstaclesInAvoidanceArea: []
 --- !u!1 &4215951433680714984
 GameObject:
   m_ObjectHideFlags: 0
@@ -497,3 +500,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   othersInAvoidanceArea: []
+  obstaclesInAvoidanceArea: []

@@ -67,7 +67,7 @@ namespace CollisionAvoidance{
                     averageSpeed = minSpeed;
                 }
                 while(true){
-                    Vector3 centerOfMass = CalculateCenterOfMass(groupAgents, myself);
+                    Vector3 centerOfMass = Math.CalculateCenterOfMass(groupAgents, myself);
                     Vector3 directionToCenterOfMass = (centerOfMass - (Vector3)GetCurrentPosition()).normalized;
                     Vector3 myForward = GetCurrentDirection();
                     float distFromMeToCenterOfMass = Vector3.Distance(GetCurrentPosition(), centerOfMass);

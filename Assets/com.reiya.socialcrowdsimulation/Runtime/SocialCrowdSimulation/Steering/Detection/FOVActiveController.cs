@@ -62,6 +62,7 @@ namespace CollisionAvoidance {
                         UpdateAvoidanceTarget avoidanceTarget = child.gameObject.GetComponent<UpdateAvoidanceTarget>();
                         if (avoidanceTarget != null) {
                             avoidanceTarget.othersInAvoidanceArea.Clear();
+                            avoidanceTarget.obstaclesInAvoidanceArea.Clear();
                         }
                     }
 

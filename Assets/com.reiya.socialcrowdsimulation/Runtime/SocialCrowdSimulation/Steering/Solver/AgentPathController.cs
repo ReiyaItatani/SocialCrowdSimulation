@@ -1,6 +1,7 @@
 using Drawing;
 using UnityEngine;
 using System.Collections;
+using System;
 
 namespace CollisionAvoidance{
     public class AgentPathController : ReactSolver
@@ -18,6 +19,8 @@ namespace CollisionAvoidance{
         public bool ShowGroupForce { get => showGroupForce; set => showGroupForce = value; }
         private bool showWallForce = true;
         public bool ShowWallForce { get => showWallForce; set => showWallForce = value; }
+        private bool showAvoidObstacleForce = true;
+        public bool ShowAvoidObstacleForce { get => showAvoidObstacleForce; set => showAvoidObstacleForce = value; }
 
         protected virtual void Start(){
             InitForceSolver();
@@ -70,6 +73,11 @@ namespace CollisionAvoidance{
             if(showWallForce){
                 gizmoColor = Color.black;
                 Draw.ArrowheadArc((Vector3)GetCurrentPosition(), wallRepForce, 0.55f, gizmoColor);
+            }
+
+            if(showAvoidObstacleForce){
+                gizmoColor = Color.yellow;
+                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidObstacleVector, 0.55f, gizmoColor);
             }
         }
     }
