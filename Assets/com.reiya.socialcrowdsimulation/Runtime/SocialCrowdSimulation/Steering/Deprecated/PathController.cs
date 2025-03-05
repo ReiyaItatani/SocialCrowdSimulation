@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using Drawing;
 
 using MotionMatching;
 using TrajectoryFeature = MotionMatching.MotionMatchingData.TrajectoryFeature;
@@ -202,7 +201,7 @@ public class PathController : MotionMatchingCharacterController
         ClampSimulationBone();
 
         //Draw Gizmos
-        DrawInfo();
+        // DrawInfo();
     }
 
     protected virtual void SimulatePath(float time, Vector3 _currentPosition, out Vector3 nextPosition, out Vector3 direction)
@@ -1105,32 +1104,32 @@ public class PathController : MotionMatchingCharacterController
         Color gizmoColor;
         if(showAvoidanceForce){
             gizmoColor = Color.blue;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidanceVector, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), avoidanceVector, 0.55f, gizmoColor);
         }
 
         if(showCurrentDirection){
             gizmoColor = Color.red;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), CurrentDirection, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), CurrentDirection, 0.55f, gizmoColor);
         }
         
         if(showGoalDirection){
             gizmoColor = Color.white;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), toGoalVector, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), toGoalVector, 0.55f, gizmoColor);
         }
 
         if(showAnticipatedCollisionAvoidance){
             gizmoColor = Color.green;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidNeighborsVector, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), avoidNeighborsVector, 0.55f, gizmoColor);
         }
 
         if(showGroupForce){
             gizmoColor = Color.cyan;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), groupForce, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), groupForce, 0.55f, gizmoColor);
         }
 
         if(showWallForce){
             gizmoColor = Color.black;
-            Draw.ArrowheadArc((Vector3)GetCurrentPosition(), wallRepForce, 0.55f, gizmoColor);
+            DrawUtils.DrawArrowGizmo((Vector3)GetCurrentPosition(), wallRepForce, 0.55f, gizmoColor);
         }
     }
 

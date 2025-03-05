@@ -1,10 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Drawing;
-using System;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace CollisionAvoidance{
     public class CollisionAvoidanceController : MonoBehaviour
@@ -100,10 +97,6 @@ namespace CollisionAvoidance{
             return childObjects;
         }
 
-        void Update(){
-            DrawInfo();
-        }
-
         private IEnumerator UpdateBasicAvoidanceAreaPos(float AgentHeight){
             while(true){
                 if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
@@ -186,48 +179,5 @@ namespace CollisionAvoidance{
         public AgentCollisionDetection GetAgentCollisionDetection(){
             return agentCollisionDetection;
         }
-
-        private void DrawInfo(){
-            // Color gizmoColor;
-            // if(showAgentSphere){
-                // if (pathController.GetSocialRelations() == SocialRelations.Couple){
-                //     gizmoColor = new Color(1.0f, 0.0f, 0.0f); // red
-                // }else if (pathController.GetSocialRelations() == SocialRelations.Friend){
-                //     gizmoColor = new Color(0.0f, 1.0f, 0.0f); // green
-                // }else if  (pathController.GetSocialRelations() == SocialRelations.Family){
-                //     gizmoColor = new Color(0.0f, 0.0f, 1.0f); // blue
-                // }else if  (pathController.GetSocialRelations() == SocialRelations.Coworker){
-                //     gizmoColor = new Color(1.0f, 1.0f, 0.0f); // yellow
-                // }else{
-                //     gizmoColor = new Color(1.0f, 1.0f, 1.0f); // white
-                // }
-                //Draw.WireCylinder((Vector3)pathController.GetCurrentPosition(), Vector3.up, agentCollider.height, agentCollider.radius, gizmoColor);
-            // }
-        }
-        // void OnDrawGizmos()
-        // {
-        //     if(!onGizmo) return;
-        //     if(basicAvoidanceArea==null)return;
-        //     Gizmos.color = Color.blue;
-
-        //     Vector3 position = basicAvoidanceArea.transform.position;
-        //     Quaternion rotation = basicAvoidanceArea.transform.rotation;
-        //     Vector3 size = avoidanceCollider.size;
-
-        //     Gizmos.matrix = Matrix4x4.TRS(position, rotation, Vector3.one);
-        //     Gizmos.DrawWireCube(Vector3.zero, size);
-
-        //     if(anticipatedAvoidanceArea==null)return;
-        //     Gizmos.color = Color.red;
-
-        //     Vector3 position_anticipated = anticipatedAvoidanceArea.transform.position;
-        //     Quaternion rotation_anticipated = anticipatedAvoidanceArea.transform.rotation;
-        //     Vector3 size_anticipated = anticipatedAvoidanceCollider.size;
-
-        //     Gizmos.matrix = Matrix4x4.TRS(position_anticipated, rotation_anticipated, Vector3.one);
-        //     Gizmos.DrawWireCube(Vector3.zero, size_anticipated);
-        // }
-
-
     }
 }

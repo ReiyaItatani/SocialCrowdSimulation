@@ -1,9 +1,8 @@
-using Drawing;
 using UnityEngine;
 using System.Collections;
-using System;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
     public class AgentPathController : ReactSolver
     {
         [Header("Gizmos")]
@@ -22,62 +21,72 @@ namespace CollisionAvoidance{
         private bool showAvoidObstacleForce = true;
         public bool ShowAvoidObstacleForce { get => showAvoidObstacleForce; set => showAvoidObstacleForce = value; }
 
-        protected virtual void Start(){
+        protected virtual void Start()
+        {
             InitForceSolver();
             InitSpeedSolver();
             StartCoroutine(DelayedStart(1.0f));
             InitMotionMathing();
-            
+
             StartUpdateForce();
             StartUpdateSpeed();
         }
 
-        //※For one second, the agent does not react to collisions※
-        protected virtual IEnumerator DelayedStart(float delay) {
+        // Wait for a certain delay before actually activating collision avoidance
+        protected virtual IEnumerator DelayedStart(float delay)
+        {
             yield return new WaitForSeconds(delay);
             InitReactSolver();
         }
 
-        protected override void OnUpdate(){
+        // Your update logic goes here
+        protected override void OnUpdate()
+        {
             base.OnUpdate();
+            // Gizmos can't be called here; only in OnDrawGizmos or OnDrawGizmosSelected
+        }
+
+        // This method is automatically called by Unity to draw Gizmos in the Scene View
+        private void OnDrawGizmos()
+        {
             DrawInfo();
         }
 
-        protected virtual void DrawInfo(){
-            Color gizmoColor;
-            if(showAvoidanceForce){
-                gizmoColor = Color.blue;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidanceVector, 0.55f, gizmoColor);
+        protected virtual void DrawInfo()
+        {
+            if (showAvoidanceForce)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), avoidanceVector, 0.55f, Color.blue);
             }
 
-            if(showCurrentDirection){
-                gizmoColor = Color.red;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), CurrentDirection, 0.55f, gizmoColor);
-            }
-            
-            if(showGoalDirection){
-                gizmoColor = Color.white;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), toGoalVector, 0.55f, gizmoColor);
+            if (showCurrentDirection)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), CurrentDirection, 0.55f, Color.red);
             }
 
-            if(showAnticipatedCollisionAvoidance){
-                gizmoColor = Color.green;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidNeighborsVector, 0.55f, gizmoColor);
+            if (showGoalDirection)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), toGoalVector, 0.55f, Color.white);
             }
 
-            if(showGroupForce){
-                gizmoColor = Color.cyan;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), groupForce, 0.55f, gizmoColor);
+            if (showAnticipatedCollisionAvoidance)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), avoidNeighborsVector, 0.55f, Color.green);
             }
 
-            if(showWallForce){
-                gizmoColor = Color.black;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), wallRepForce, 0.55f, gizmoColor);
+            if (showGroupForce)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), groupForce, 0.55f, Color.cyan);
             }
 
-            if(showAvoidObstacleForce){
-                gizmoColor = Color.yellow;
-                Draw.ArrowheadArc((Vector3)GetCurrentPosition(), avoidObstacleVector, 0.55f, gizmoColor);
+            if (showWallForce)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), wallRepForce, 0.55f, Color.black);
+            }
+
+            if (showAvoidObstacleForce)
+            {
+                DrawUtils.DrawArrowGizmo(GetCurrentPosition(), avoidObstacleVector, 0.55f, Color.yellow);
             }
         }
     }

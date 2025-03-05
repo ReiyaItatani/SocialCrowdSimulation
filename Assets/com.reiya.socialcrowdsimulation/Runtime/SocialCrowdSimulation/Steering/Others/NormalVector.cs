@@ -1,11 +1,8 @@
-using MotionMatching;
 using UnityEngine;
-using Drawing;
 
 namespace CollisionAvoidance{
 public class NormalVector : MonoBehaviour
 {
-    private Vector3 perpendicularVector = Vector3.zero;
     /// <summary>
     /// Calculates the normal vector from the wall (represented by the forward vector of this transform) towards a given point in the xz plane.
     /// </summary>
@@ -49,11 +46,6 @@ public class NormalVector : MonoBehaviour
         }
 
         return normalVector / distance;
-    }
-
-    
-    void Update(){
-        Draw.ArrowheadArc(this.transform.position, perpendicularVector, 0.55f, Color.blue);
     }
 }
 }

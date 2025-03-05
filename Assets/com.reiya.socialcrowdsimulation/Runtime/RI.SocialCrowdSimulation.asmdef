@@ -5,7 +5,6 @@
         "JLPM.MotionMatching",
         "Unity.Mathematics",
         "Unity.InputSystem",
-        "ALINE",
         "Unity.Collections"
     ],
     "includePlatforms": [],
