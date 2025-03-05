@@ -62,7 +62,7 @@ For a detailed overview and demo, visit the [Project Page](https://reiyaitatani.
 ---
 
 ## Quick Start: Demo Scene Setup
-
+If you prefer to watch a video instead of reading texts, [Video](https://youtu.be/U8zkxdCCsnY)
 Below is a step-by-step guide using the demo scenes included in this package. If you simply want to see an example or test the system quickly, follow these steps in order.
 
 **But, to quickly start, there is a demo scene inside `Packages/SocialCrowdSimulation/Sample`, so use it!**
