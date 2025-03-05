@@ -21,6 +21,7 @@ public class PrefabCreatorWindow : EditorWindow
     [SerializeField]private Vector3 rotationOffset = new Vector3(0,0,-20);
     [SerializeField]private MotionMatching.AvatarMaskData avatarMask;
     [SerializeField]private AudioClip[] audioClips;
+    [SerializeField]private bool ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK = true;
 
     // Adds a menu item named "Prefab Creator" to a "Window/Custom" menu in the menu bar.
     [MenuItem("CollisionAvoidance/Prefab Creator")]
@@ -63,6 +64,12 @@ public class PrefabCreatorWindow : EditorWindow
 
         // Field for Avatar Mask
         avatarMask = (MotionMatching.AvatarMaskData)EditorGUILayout.ObjectField("Avatar Mask", avatarMask, typeof(MotionMatching.AvatarMaskData), false);
+        EditorGUILayout.Space(); // Adds a separator space before the next category
+
+        //Field for ifAvatarIsNotMicrosoftRocketBoxOrAvatarFromAvatarSDK
+        GUILayout.Label("Avatar BlendShape Setting", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("Is the avatar from Microsoft Rocket Box or Avatar From AvatarSDK?", MessageType.Info);
+        ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK = EditorGUILayout.Toggle("Yes", ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK);
         EditorGUILayout.Space(); // Adds a separator space before the next category
 
         // SmartPhone Prefab Offset Settings
@@ -120,7 +127,7 @@ public class PrefabCreatorWindow : EditorWindow
     private void DrawDragAndDropArea()
     {
         // Section title for drag and drop functionality
-        GUILayout.Label("Create Avatar for Collision Avoidance!", EditorStyles.boldLabel);
+        GUILayout.Label("Create Avatar for Social Crowd Simulation!", EditorStyles.boldLabel);
         EditorGUILayout.Space(); // Adds a little space for better readability
 
         // Instructions for users
@@ -293,7 +300,9 @@ private void CreatePrefab(GameObject humanoid)
     //
     AgentCollisionDetection agentCollisionDetection  = humanoidInstance.AddComponent<AgentCollisionDetection>();
     //
-    ConversationalAgentFramework conversationalAgentFramework = humanoidInstance.AddComponent<ConversationalAgentFramework>();
+    if(ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK){
+        ConversationalAgentFramework conversationalAgentFramework = humanoidInstance.AddComponent<ConversationalAgentFramework>();
+    }
     //
     GazeController gazeController = humanoidInstance.AddComponent<GazeController>();
     //
@@ -305,7 +314,9 @@ private void CreatePrefab(GameObject humanoid)
     //
     AnimationModifier animationModifier = humanoidInstance.AddComponent<AnimationModifier>();
     //
-    RightHandRotModifier rightHandRotModifier = humanoidInstance.AddComponent<RightHandRotModifier>();
+    if(ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK){
+        RightHandRotModifier rightHandRotModifier = humanoidInstance.AddComponent<RightHandRotModifier>();
+    }
     //
     collisionAvoidanceController.pathController = pathControllerScript;
     collisionAvoidanceController.FOVMeshPrefab = FOVMeshPrefab;
