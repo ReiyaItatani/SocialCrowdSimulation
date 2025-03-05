@@ -151,10 +151,9 @@ If you find this work beneficial, kindly attribute it to the authors or cite the
   author    = {Itatani, Reiya and Pelechano, Nuria},
   title     = {Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior},
   booktitle = {Proceedings of the 17th ACM SIGGRAPH Conference on Motion, Interaction, and Games (MIG '24)}
-```
   year      = {2024},
   doi       = {10.1145/3677388.3696337}
 }
-
+```
 
 
