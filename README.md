@@ -123,15 +123,21 @@ Below is a step-by-step guide using the demo scenes included in this package. If
 1. **Configure the AvatarCreatorQuickGraph**  
    - Assign your **AgentList** (created in Step 1) or use the example under `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator` to `AvatarCreatorQuickGraph`.
    - Assign the **Path** (the one you placed in your scene) to `AgentCreator`.
+
 2. **Spawn Settings**  
    - **SpawnRadius**: Controls how scattered agents will be when they appear.  
    - **SpawnMethod**: 
      - **OnNode**: Spawns avatars around selected nodes.  
      - **OnEdge**: Spawns avatars on the paths (edges) between nodes.
-3. **Spawn the Avatars**  
+
+3. **Make Sure to Bake the Field Before Instantiation!**  
+   - **Important**: Be sure to bake the navigation field (the area where the agents will be placed) before spawning avatars to ensure the correct paths and environment setup.
+
+4. **Spawn the Avatars**  
    - Click **Instantiate Avatar** to create the avatars in your scene.
 
    <img src=".github/media/AvatarCreation2.png" alt="Avatar Creator" width="600"/>
+   
 
 ### 4. Run the Simulation
 
