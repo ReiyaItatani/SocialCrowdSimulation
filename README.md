@@ -55,7 +55,7 @@ All the necessary setup components are included in the demo scenes. Below is a s
    - Everything required for setup is located in the `Packages/SocialCrowdSimulation/Sample/QuickStart/PrefabCreator` folder.
    - Drag and drop a Humanoid Character, and it will automatically create an Agent in the **Resources** file.
 
-<img src=".github/media/PrefabCreator" alt="Prefab Creator"/>
+<img src=".github/media/PrefabCreator.png" alt="Prefab Creator"/>
 
 3. **MicroSoftRocketBoxAvatar or AvatarSDK**  
    - If you **are not** using either MicroSoftRocketBoxAvatar or AvatarSDK avatars, **uncheck** the “Yes” box related to these avatars.  
@@ -63,14 +63,14 @@ All the necessary setup components are included in the demo scenes. Below is a s
    - If using **MicroSoftRocketBoxAvatar**, open **CollisionAvoidance** tab > **Target Framework** > **RocketBox Avatar**.  
    - If using an **Avatar from Avatar SDK**, open **CollisionAvoidance** tab > **Target Framework** > **Avatar SDK**.  
    - Correctly setting this ensures that any blend shape functionality works as intended.
-<img src=".github/media/TargetFramework" alt="Target Framework"/>
+<img src=".github/media/TargetFramework.png" alt="Target Framework"/>
 
 ### 1. Define the Crowd to be Spawned in the Scene
 
 1. **Create an AgentList**  
    - In the **Project** window, right-click and select **Create > SocialCrowdSimulation > AgentList** to create a new **ScriptableObject**, or use the example found in `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator`.
 
-<img src=".github/media/AgentList" alt="Agent List"/>
+<img src=".github/media/AgentList.png" alt="Agent List"/>
 3. **Add Agents**
    -You have to make sure that you will use the Agent that you created in the previous step.
    - The **AgentList** manages who will be spawned:
@@ -88,7 +88,7 @@ All the necessary setup components are included in the demo scenes. Below is a s
      - **AgentCreator**: Contains:
        - **AgentManager**: A script for changing parameters of spawned avatars collectively.
        - **AvatarCreatorQuickGraph** (or similarly named): A script for spawning avatars in the Scene.
-<img src=".github/media/AvatarCreation" alt="Avatar Creator"/>
+<img src=".github/media/AvatarCreation.png" alt="Avatar Creator"/>
 ### 3. Path Setup and Agent Instantiation
 
 #### 3.0 Set Up Paths
@@ -112,7 +112,7 @@ All the necessary setup components are included in the demo scenes. Below is a s
    - Click **Instantiate Avatar** to create avatars in your scene.
 4. **Run the Simulation**  
    - Press **Play**. The avatars should begin moving according to the defined rules.
-<img src=".github/media/AvatarCreation2" alt="Avatar Creator"/>
+<img src=".github/media/AvatarCreation2.png" alt="Avatar Creator"/>
 ---
 
 ## Adding a First-Person Camera Player
