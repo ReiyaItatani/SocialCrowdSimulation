@@ -76,7 +76,7 @@ Below is a step-by-step guide using the demo scenes included in this package. If
 
    <img src=".github/media/PrefabCreator.png" alt="Prefab Creator" width="600"/>
 
-2. **MicroSoftRocketBoxAvatar or AvatarSDK**  
+2. **[MicroSoftRocketBoxAvatar](https://github.com/microsoft/Microsoft-Rocketbox) or [AvatarSDK](https://avatarsdk.com/)**  
    - If you **are not** using either MicroSoftRocketBoxAvatar or AvatarSDK avatars, **uncheck** the “Yes” box related to these avatars.  
      - This prevents blend shape scripts (associated with those specific avatars) from attaching incorrectly.
    - If using **MicroSoftRocketBoxAvatar**, open **CollisionAvoidance** tab > **Target Framework** > **RocketBox Avatar**.  
@@ -186,7 +186,7 @@ When adding walls or obstacles, please use the **Obstacle** and **Walls** assets
 Additionally, you can toggle **Gizmos On/Off** for debugging, fine-tune **Motion Matching** parameters, and adjust **Facial Expressions**.  
 However, to use the Facial Expression feature, you must use either the **Microsoft Rocket Box Avatar** or an avatar created with **Avatar SDK**.
 
-<img src=".github/media/AgentManager.png" alt="Avatar Creator" width="600"/>
+<img src=".github/media/AgentManager.png" alt="Avatar Creator" width="600"/> 
 
 ---
 
