@@ -53,7 +53,7 @@ All the necessary setup components are included in the demo scenes. Below is a s
 1. **Prefab Creation**  
    - In the **CollisionAvoidance** tab, click **PrefabCreator**. A window with setup options will appear.  
    - Everything required for setup is located in the `Packages/SocialCrowdSimulation/Sample/QuickStart/PrefabCreator` folder.
-   - Drag and drop a Humanoid Character, and it will automatically create an Agent in the **Resources** file.
+   - Drag and drop a Humanoid Character, and it will automatically create an Agent in the **Resources** folder.
 
 <img src=".github/media/PrefabCreator.png" alt="Prefab Creator"/>
 
