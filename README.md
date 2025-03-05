@@ -14,6 +14,23 @@ For a detailed overview and demo, visit the [Project Page](https://reiyaitatani.
 
 ---
 
+## Table of Contents
+1. [Prerequisites](#prerequisites)
+2. [Installation](#installation)
+3. [Quick Start: Demo Scene Setup](#quick-start-demo-scene-setup)
+   1. [Step 0. Prepare a Humanoid Character for Social Crowd Simulation](#0-prepare-a-humanoid-character-for-social-crowd-simulation)
+   2. [Step 1. Define the Crowd to be Spawned in the Scene](#1-define-the-crowd-to-be-spawned-in-the-scene)
+   3. [Step 2. Create the GameObjects Required for Avatar Creation](#2-create-the-gameobjects-required-for-avatar-creation)
+   4. [Step 3. Path Setup and Agent Instantiation](#3-path-setup-and-agent-instantiation)
+   5. [Step 4. Run the Simulation](#4-run-the-simulation)
+4. [Adding a First-Person Camera Player](#adding-a-first-person-camera-player)
+5. [To Add Obstacles and Walls](#to-add-obstacles-and-walls)
+6. [AgentManager](#agentmanager)
+7. [Contributions](#contributions)
+8. [Citation](#citation)
+
+---
+
 ## Prerequisites
 
 1. **Unity 2021.2 or Newer**  
@@ -30,23 +47,25 @@ For a detailed overview and demo, visit the [Project Page](https://reiyaitatani.
    Launch Unity (version 2021.2 or newer).
 
 2. **Open Package Manager**  
-   - Navigate to **Window > Package Manager**.
+   - Go to **Window > Package Manager**.
 
 3. **Add Package via Git URL**  
    - Click the **Add (+)** button, then select **Add package by git URL...**.
-   - Enter the following URL:  
+   - Enter the following URL:
      ```
      https://github.com/ReiyaItatani/SocialCrowdSimulation.git?path=Assets/com.reiya.socialcrowdsimulation
      ```
    - Click **Add** to begin the installation.
 
->**Note:** All sample scenes are configured for the **Universal Render Pipeline (URP)**. If you are using a different render pipeline, conversion of the scenes may be necessary.
+> **Note:** All sample scenes are configured for the **Universal Render Pipeline (URP)**. If you are using a different render pipeline, you may need to convert the scenes accordingly.
 
 ---
 
 ## Quick Start: Demo Scene Setup
 
-All the necessary setup components are included in the demo scenes. Below is a step-by-step guide:
+Below is a step-by-step guide using the demo scenes included in this package. If you simply want to see an example or test the system quickly, follow these steps in order.
+
+**But, to quickly start, there is a demo scene inside `Packages/SocialCrowdSimulation/Sample`, so use it!**
 
 ### 0. Prepare a Humanoid Character for Social Crowd Simulation
 
@@ -55,7 +74,7 @@ All the necessary setup components are included in the demo scenes. Below is a s
    - Everything required for setup is located in the `Packages/SocialCrowdSimulation/Sample/QuickStart/PrefabCreator` folder.
    - Drag and drop a Humanoid Character, and it will automatically create an Agent in the **Resources** folder.
 
-<img src=".github/media/PrefabCreator.png" alt="Prefab Creator" width="600"/>
+   <img src=".github/media/PrefabCreator.png" alt="Prefab Creator" width="600"/>
 
 2. **MicroSoftRocketBoxAvatar or AvatarSDK**  
    - If you **are not** using either MicroSoftRocketBoxAvatar or AvatarSDK avatars, **uncheck** the “Yes” box related to these avatars.  
@@ -63,31 +82,33 @@ All the necessary setup components are included in the demo scenes. Below is a s
    - If using **MicroSoftRocketBoxAvatar**, open **CollisionAvoidance** tab > **Target Framework** > **RocketBox Avatar**.  
    - If using an **Avatar from Avatar SDK**, open **CollisionAvoidance** tab > **Target Framework** > **Avatar SDK**.  
    - Correctly setting this ensures that any blend shape functionality works as intended.
-<img src=".github/media/TargetFramework.png" alt="Target Framework" width="600"/>
+
+   <img src=".github/media/TargetFramework.png" alt="Target Framework" width="600"/>
 
 ### 1. Define the Crowd to be Spawned in the Scene
 
-1. **Create an AgentList**
-   - In the **Project** window, right-click and select **Create > SocialCrowdSimulation > AgentList** to create a new **ScriptableObject**, or use the example found in `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator`.
-2. **Add Agents**
+1. **Create an AgentList**  
+   - In the **Project** window, right-click and select **Create > SocialCrowdSimulation > AgentList** to create a new **ScriptableObject**, or use the example in `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator`.
+2. **Add Agents**  
    - The **AgentList** manages who will be spawned:
-     - **Individual**: An agent that walks alone.
-     - **Group**: Agents in a group walk together.
-   - **maxSpeed** and **minSpeed** define individual agent speed ranges.
+     - **Individual**: An agent walking alone.
+     - **Group**: Agents in a group walking together.
+   - **maxSpeed** and **minSpeed** define individual speed ranges.
    - **Group Names** must be unique. Do not use “Individual” as a group name. A group must have at least two members (2–3 recommended).
 
-<img src=".github/media/AgentList.png" alt="Agent List" width="600"/>
+   <img src=".github/media/AgentList.png" alt="Agent List" width="600"/>
 
 ### 2. Create the GameObjects Required for Avatar Creation
 
 1. **Automatically Create Required GameObjects**  
    - In the **CollisionAvoidance** tab, click **Create AvatarCreator**.
-   - This action adds necessary tags (**Agent**, **Group**, **Wall**, **Obstacle**) and creates two GameObjects in your Scene:
+   - This adds necessary tags (**Agent**, **Group**, **Wall**, **Obstacle**) and creates two GameObjects in your Scene:
      - **OVRLipSyncObject**: Required for lip sync functionality.
      - **AgentCreator**: Contains:
        - **AgentManager**: A script for changing parameters of spawned avatars collectively.
        - **AvatarCreatorQuickGraph** (or similarly named): A script for spawning avatars in the Scene.
-<img src=".github/media/AvatarCreation.png" alt="Avatar Creator" width="600"/>
+
+   <img src=".github/media/AvatarCreation.png" alt="Avatar Creator" width="600"/>
 
 ### 3. Path Setup and Agent Instantiation
 
@@ -95,54 +116,78 @@ All the necessary setup components are included in the demo scenes. Below is a s
 
 - Use the examples under `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator`.  
 - Place one of the **PathGraph_Example** assets in your scene.  
-- Paths are defined by connecting nodes, allowing agents to know where to walk. 
+- Paths are defined by connecting nodes, allowing agents to know where to walk.
 
 #### 3.1 Instantiate Agents in the Scene
 
 1. **Configure the AvatarCreatorQuickGraph**  
    - Assign your **AgentList** (created in Step 1) or use the example under `Packages/SocialCrowdSimulation/Sample/QuickStart/ForAvatarCreator` to `AvatarCreatorQuickGraph`.
-   - Assign the **Path** (the one you placed in the scene) to `AgentCreator`.
+   - Assign the **Path** (the one you placed in your scene) to `AgentCreator`.
 2. **Spawn Settings**  
    - **SpawnRadius**: Controls how scattered agents will be when they appear.  
    - **SpawnMethod**: 
      - **OnNode**: Spawns avatars around selected nodes.  
      - **OnEdge**: Spawns avatars on the paths (edges) between nodes.
 3. **Spawn the Avatars**  
-   - Click **Instantiate Avatar** to create avatars in your scene.
-<img src=".github/media/AvatarCreation2.png" alt="Avatar Creator" width="600"/>
+   - Click **Instantiate Avatar** to create the avatars in your scene.
 
-### 4. **Run the Simulation**  
-   - Press **Play**. The avatars should begin moving according to the defined rules.
+   <img src=".github/media/AvatarCreation2.png" alt="Avatar Creator" width="600"/>
+
+### 4. Run the Simulation
+
+- Press **Play**. The avatars should begin moving according to the defined rules.
+
 ---
 
 ## Adding a First-Person Camera Player
 
-You can include a first-person player in your scene using the following steps:
+You can include a first-person camera player in your scene using the following steps:
 
-### 1. Open the "Create Player" Window
+1. **Open the "Create Player" Window**  
+   - In the Unity Editor, open the **Create Player** window (from the CollisionAvoidance tab or the plugin menu).
 
-- In the Unity Editor, open the **Create Player** window (from the CollisionAvoidance tab or wherever the plugin menu is located).
+2. **Configure Motion Matching Data**  
+   - In the **Motion Matching Data** field, select a `.asset` file from  
+     `Packages/SocialCrowdSimulation/Sample/QuickStart/ForPlayerCreator/MotionMatchingData`.
 
-### 2. Configure Motion Matching Data
+3. **Set a Humanoid Avatar**  
+   - For the **Humanoid Avatar** field, choose a humanoid rig.
 
-- In the **Motion Matching Data** field, select a `.asset` file from  
-  `Packages/SocialCrowdSimulation/Sample/QuickStart/ForPlayerCreator/MotionMatchingData`.
+4. **Create the Player**  
+   - Click **CreatePlayer** to generate a first-person camera player in your scene.
 
-### 3. Set a Humanoid Avatar
-
-- For the **Humanoid Avatar** field, choose a humanoid rig.
-
-### 4. Create the Player
-
-- Click **CreatePlayer** to generate a first-person camera player in your scene.
-
-### 5. Player Movement
-
-- The newly created player can be controlled with **WASD** keys.
-- It uses the **SpringCharacterController**, which you can learn more about in the Motion Matching documentation.
-- For detailed information on the `SpringCharacterController`, refer to the [Motion Matching documentation](https://jlpm22.github.io/motionmatching-docs/basics/character_controller/).
+5. **Player Movement**  
+   - The newly created player can be controlled with **WASD** keys.
+   - It uses the **SpringCharacterController**, which you can learn more about in the Motion Matching documentation.
+   - For detailed information on the `SpringCharacterController`, refer to the [Motion Matching documentation](https://jlpm22.github.io/motionmatching-docs/basics/character_controller/).
 
 ![Create Player Demo](.github/media/create_player.gif)
+
+---
+
+## To Add Obstacles and Walls
+
+When adding walls or obstacles, please use the **Obstacle** and **Walls** assets located in  
+`Packages/SocialCrowdSimulation/Sample/QuickStart/ForSetUpEnvironment`.
+
+---
+
+## AgentManager
+
+`AgentManager` allows you to adjust the weights of various movement behaviors. Below is an overview of each weight parameter:
+
+- **Goal Weight**: Controls how strongly agents move toward their goal.
+- **Avoid Neighbor Weight**: Prevents collisions with other agents within the field of view by adjusting the agent’s position.
+- **Avoidance Weight**: Handles sudden collision avoidance to keep agents from colliding unexpectedly.
+- **Group Force Weight**: Manages the force that encourages agents to form or maintain a group.
+- **Wall Rep Force**: Adjusts the force received from walls to keep agents from getting too close.
+- **Avoid Obstacle Weight**: Helps agents avoid obstacles that appear in their path.
+
+Additionally, you can toggle **Gizmos On/Off** for debugging, fine-tune **Motion Matching** parameters, and adjust **Facial Expressions**.  
+However, to use the Facial Expression feature, you must use either the **Microsoft Rocket Box Avatar** or an avatar created with **Avatar SDK**.
+
+<img src=".github/media/AgentManager.png" alt="Avatar Creator" width="600"/>
+
 ---
 
 ## Contributions
@@ -154,6 +199,7 @@ We encourage contributions and inquiries—please **open an issue** or submit a 
 ## Citation
 
 If you find this work beneficial, kindly attribute it to the authors or cite the following publication:
+
 ```bibtex
 @inproceedings{10.1145/3677388.3696337,
   author    = {Itatani, Reiya and Pelechano, Nuria},
@@ -162,6 +208,3 @@ If you find this work beneficial, kindly attribute it to the authors or cite the
   year      = {2024},
   doi       = {10.1145/3677388.3696337}
 }
-```
-
-
