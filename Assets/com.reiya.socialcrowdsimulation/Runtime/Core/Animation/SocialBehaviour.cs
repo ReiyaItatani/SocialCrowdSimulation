@@ -41,7 +41,7 @@ public class SocialBehaviour : MonoBehaviour
     public AudioClip[] audioClips;
 
     [Header("Animation")]
-    protected CollisionAvoidance.MotionMatchingSkinnedMeshRenderer motionMatchingRenderer;
+    protected MotionMatchingSkinnedMeshRenderer motionMatchingRenderer;
     protected GazeController gazeController;
     protected AvatarMaskData initialAvatarMask;
 
@@ -58,17 +58,22 @@ public class SocialBehaviour : MonoBehaviour
     [Header("Collision")]
     protected AgentCollisionDetection agentCollisionDetection;
 
-    //For experiment
-    public bool onAnimationShift = true;
+    protected bool isInitialized = false;
+    public bool IsInitialized{
+        get{
+            return isInitialized;
+        }
+    }
 
-    protected virtual void Awake()
-    {
-        parameterManager             = GetComponent<ParameterManager>();
-        animator                     = GetComponent<Animator>();
-        motionMatchingRenderer       = GetComponent<CollisionAvoidance.MotionMatchingSkinnedMeshRenderer>();
-        gazeController               = GetComponent<GazeController>();
-        agentCollisionDetection      = GetComponent<AgentCollisionDetection>();
-        agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;
+    protected virtual void InitSocialBehaviour(){
+        if(isInitialized == true){
+            return;
+        }
+        parameterManager = GetComponent<ParameterManager>();
+        animator = GetComponent<Animator>();
+        motionMatchingRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
+        gazeController = GetComponent<GazeController>();
+        agentCollisionDetection = GetComponent<AgentCollisionDetection>();
 
         if (motionMatchingRenderer != null)
         {
@@ -79,17 +84,29 @@ public class SocialBehaviour : MonoBehaviour
             SetSmartPhoneActiveBasedOnSocialRelations(smartPhone);
         }
 
-        parameterManager.GetPathController().OnMutualGaze += OnMutualGaze;
-
         FollowMotionMatching();
+        isInitialized = true;
     }
 
-    protected virtual void Start()
+    protected virtual void Awake()
     {
+        InitSocialBehaviour();
+    }
+
+    protected virtual void OnEnable()
+    {
+        agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;
+        parameterManager.GetPathController().OnMutualGaze += OnMutualGaze;   
+
         StartCoroutine(UpdateCurrentLookAt(LookAtUpdateTime));
-        if(onAnimationShift){
-            StartCoroutine(UpdateAnimationState());
-        }
+        StartCoroutine(UpdateAnimationState());
+    }
+
+    protected virtual void OnDisable()
+    {
+        agentCollisionDetection.OnEnterTrigger -= HandleAgentCollision;
+        parameterManager.GetPathController().OnMutualGaze -= OnMutualGaze;   
+        StopAllCoroutines();
     }
 
     #region Animation State Control
@@ -148,18 +165,16 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual void TriggerUnityAnimation(UpperBodyAnimationState animationState)
     {
-        if(onAnimationShift){
-            //Update current animation state
-            currentAnimationState = animationState;
-            motionMatchingRenderer.AvatarMask = initialAvatarMask;
+        //Update current animation state
+        currentAnimationState = animationState;
+        motionMatchingRenderer.AvatarMask = initialAvatarMask;
 
-            foreach (UpperBodyAnimationState state in Enum.GetValues(typeof(UpperBodyAnimationState)))
-            {
-                animator.SetBool(state.ToString(), state == animationState);
-            }
-            if(animationState == UpperBodyAnimationState.SmartPhone || animationState == UpperBodyAnimationState.Talk){
-                TryPlayAudio(0.0f);
-            }
+        foreach (UpperBodyAnimationState state in Enum.GetValues(typeof(UpperBodyAnimationState)))
+        {
+            animator.SetBool(state.ToString(), state == animationState);
+        }
+        if(animationState == UpperBodyAnimationState.SmartPhone || animationState == UpperBodyAnimationState.Talk){
+            TryPlayAudio(0.0f);
         }
     }
 
@@ -365,6 +380,9 @@ public class SocialBehaviour : MonoBehaviour
 
     public virtual Vector3 GetCurrentLookAt()
     {
+        if(isInitialized == false){
+            InitSocialBehaviour();
+        }
         return gazeController.GetCurrentLookAt();
     }
 

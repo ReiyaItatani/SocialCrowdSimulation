@@ -67,13 +67,20 @@ public class ForceSolver : BasePathController
         currentGoal     = agentPathManager.CurrentTargetNodePosition;  
     }
 
-    protected virtual void StartUpdateForce(){
+    protected virtual void OnEnableForceSolver(){
+        if(collisionAvoidance.IsInitialized == false){
+            collisionAvoidance.InitCollisionAvoidanceController();
+        }
         StartCoroutine(UpdateToGoalVector(0.1f));
         StartCoroutine(UpdateAvoidanceVector(0.1f, 0.3f));
         StartCoroutine(UpdateAvoidNeighborsVector(0.1f, 0.3f));
         StartCoroutine(UpdateGroupForce(0.1f, GetGroupName()));
         StartCoroutine(UpdateWallForce(0.2f, 0.5f));
         StartCoroutine(UpdateAvoidObstacleVector(0.1f, 0.3f, GetGroupName()));
+    }
+
+    protected virtual void OnDisableForceSolver(){
+        StopAllCoroutines();
     }
 
     #region UPDATE SIMULATION

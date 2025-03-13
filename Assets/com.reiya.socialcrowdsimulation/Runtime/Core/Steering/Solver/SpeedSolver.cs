@@ -28,21 +28,28 @@ namespace CollisionAvoidance{
             {
                 initialSpeed = minSpeed;
             }
+        }
 
+        protected virtual void OnEnableSpeedSolver()
+        {
             agentPathManager.OnTargetReached += () =>
             {
                 OnGoalReached?.Invoke();
             };
-        }
 
-        /// <summary>
-        /// Starts the speed adjustment coroutines.
-        /// </summary>
-        protected virtual void StartUpdateSpeed(){
-            //Update the speed of the agent based on the distance to the goal
             StartCoroutine(UpdateSpeed(collisionAvoidance.GetAgentGameObject()));
             StartCoroutine(UpdateSpeedBasedOnGoalDist(0.1f));
             StartCoroutine(CheckForGoalReached(0.1f));
+        }
+
+        protected virtual void OnDisableSpeedSolver()
+        {
+            agentPathManager.OnTargetReached -= () =>
+            {
+                OnGoalReached?.Invoke();
+            };
+
+            StopAllCoroutines();
         }
 
         #region SPEED ADJUSTMENT 

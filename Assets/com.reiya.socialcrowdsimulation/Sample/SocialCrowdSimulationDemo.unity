@@ -1382,7 +1382,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1427361681}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &28170062
 CapsuleCollider:
@@ -2382,7 +2381,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1474192909}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &47981847
 CapsuleCollider:
@@ -3259,7 +3257,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 876196111}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &66842342
 CapsuleCollider:
@@ -7444,7 +7441,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1859536678}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &195601045
 CapsuleCollider:
@@ -8450,7 +8446,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 577668802}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &214957493
 CapsuleCollider:
@@ -10998,7 +10993,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1811807363}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &285461248
 CapsuleCollider:
@@ -16118,7 +16112,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1954727379}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &450721574
 CapsuleCollider:
@@ -17124,7 +17117,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1834741827}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &474276136
 CapsuleCollider:
@@ -18484,7 +18476,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 148510595}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &512284170
 CapsuleCollider:
@@ -19621,7 +19612,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1497984824}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &549270625
 CapsuleCollider:
@@ -20765,7 +20755,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 340515740}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &579140697
 CapsuleCollider:
@@ -22383,7 +22372,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1553182214}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &624128718
 CapsuleCollider:
@@ -25722,7 +25710,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 207444765}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &721312634
 CapsuleCollider:
@@ -29655,7 +29642,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 812395364}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &836952480
 CapsuleCollider:
@@ -45021,7 +45007,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 11938295}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &1304791810
 CapsuleCollider:
@@ -45876,7 +45861,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 2053888184}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &1325458478
 CapsuleCollider:
@@ -51622,7 +51606,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 583746030}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &1496228641
 CapsuleCollider:
@@ -52404,7 +52387,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 259205072}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &1506967029
 CapsuleCollider:
@@ -66462,7 +66444,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 129127766}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &1908240497
 CapsuleCollider:
@@ -69949,7 +69930,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 777985388}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!136 &2013286436
 CapsuleCollider:

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.Events;
 
 namespace CollisionAvoidance{
     public class CollisionAvoidanceController : MonoBehaviour
@@ -35,7 +36,32 @@ namespace CollisionAvoidance{
         [Header("Repulsion Force from the wall")]
         public AgentCollisionDetection agentCollisionDetection; 
 
+        private bool isInitialized = false;
+        public bool IsInitialized{
+            get{
+                return isInitialized;
+            }
+        }
+
         void Awake(){
+            InitCollisionAvoidanceController();
+        }
+
+        void OnEnable()
+        {
+            StartCoroutine(UpdateBasicAvoidanceAreaPos(agentCollider.height/2));
+            StartCoroutine(UpdateBasicAvoidanceSemiCircleAreaPos(agentCollider.height/2, agentCollider.radius));
+        }
+
+        void OnDisable()
+        {
+            StopAllCoroutines();
+        }
+
+        public void InitCollisionAvoidanceController(){
+            if(isInitialized == true){
+                return;
+            }
             //Create Box Collider for Collision Avoidance Force
             basicAvoidanceArea                  = new GameObject("BasicCollisionAvoidanceArea");
             basicAvoidanceArea.transform.parent = this.transform;
@@ -44,15 +70,6 @@ namespace CollisionAvoidance{
             avoidanceCollider                   = basicAvoidanceArea.AddComponent<BoxCollider>();
             avoidanceCollider.size              = avoidanceColliderSize;
             avoidanceCollider.isTrigger         = true;
-
-            //Create Box Collider for Anticipated Collision Avoidance Force
-            // anticipatedAvoidanceArea                  = new GameObject("AnticipatedCollisionAvoidanceArea");
-            // anticipatedAvoidanceArea.transform.parent = this.transform;
-            // updateAnticipatedAvoidanceTarget          = anticipatedAvoidanceArea.AddComponent<UpdateAnticipatedAvoidanceTarget>();
-            // updateAnticipatedAvoidanceTarget.InitParameter(agentCollider, groupCollider);
-            // anticipatedAvoidanceCollider              = anticipatedAvoidanceArea.AddComponent<BoxCollider>();
-            // anticipatedAvoidanceCollider.size         = anticipatedAvoidanceColliderSize;
-            // anticipatedAvoidanceCollider.isTrigger    = true;
 
             //Create FOV for Collision Avoidance Force
             basicAvoidanceSemiCircleArea                  = Instantiate(FOVMeshPrefab, this.transform.position, this.transform.rotation);
@@ -76,10 +93,11 @@ namespace CollisionAvoidance{
                 Debug.Log("AgentCollisionDetection script added");
             }
 
-            //Update AvoidanceArea
-            StartCoroutine(UpdateBasicAvoidanceAreaPos(agentCollider.height/2));
-            // StartCoroutine(UpdateAnticipatedAvoidanceAreaPos(agentCollider.height/2));
-            StartCoroutine(UpdateBasicAvoidanceSemiCircleAreaPos(agentCollider.height/2, agentCollider.radius));
+            //Call Once to Initialize
+            CalculateBasicAvoidanceAreaPos(agentCollider.height/2);
+            CalculateBasicAvoidanceSemiCircleAreaPos(agentCollider.height/2, agentCollider.radius);
+            
+            isInitialized = true;
         }
 
         private List<GameObject> GetAllChildObjects(GameObject parentObject)
@@ -100,45 +118,37 @@ namespace CollisionAvoidance{
         private IEnumerator UpdateBasicAvoidanceAreaPos(float AgentHeight){
             while(true){
                 if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
-                Vector3 Center = (Vector3)pathController.GetCurrentPosition() + pathController.GetCurrentDirection().normalized * avoidanceCollider.size.z/2;
-                basicAvoidanceArea.transform.position = new Vector3(Center.x, AgentHeight, Center.z);
-                Quaternion targetRotation = Quaternion.LookRotation(pathController.GetCurrentDirection().normalized);
-                basicAvoidanceArea.transform.rotation = targetRotation;
+                CalculateBasicAvoidanceAreaPos(AgentHeight);
                 yield return null;
             }
         }
 
-        // private IEnumerator UpdateAnticipatedAvoidanceAreaPos(float AgentHeight){
-        //     while(true){
-        //         if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
-        //         Vector3 Center = (Vector3)pathController.GetCurrentPosition() + pathController.GetCurrentDirection().normalized * anticipatedAvoidanceCollider.size.z/2;
-        //         anticipatedAvoidanceArea.transform.position = new Vector3(Center.x, AgentHeight, Center.z);
-        //         Quaternion targetRotation = Quaternion.LookRotation(pathController.GetCurrentDirection().normalized);
-        //         anticipatedAvoidanceArea.transform.rotation = targetRotation;
-        //         yield return null;
-        //     }
-        // }
+        private void CalculateBasicAvoidanceAreaPos(float AgentHeight){
+            Vector3 Center = (Vector3)pathController.GetCurrentPosition() + pathController.GetCurrentDirection().normalized * avoidanceCollider.size.z/2;
+            basicAvoidanceArea.transform.position = new Vector3(Center.x, AgentHeight, Center.z);
+            Quaternion targetRotation = Quaternion.LookRotation(pathController.GetCurrentDirection().normalized);
+            basicAvoidanceArea.transform.rotation = targetRotation;
+        }
 
         private IEnumerator UpdateBasicAvoidanceSemiCircleAreaPos(float AgentHeight, float AgentRadius){
             while(true){
                 if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
-                Vector3   currentPosition = (Vector3)pathController.GetCurrentPosition();
-                Vector3   lookAtDirection = socialBehaviour.GetCurrentLookAt().normalized;
-                Vector3   newPosition     = currentPosition + lookAtDirection * AgentRadius;
-                Quaternion targetRotation = Quaternion.LookRotation(lookAtDirection);
-
-                basicAvoidanceSemiCircleArea.transform.position = new Vector3(newPosition.x, AgentHeight, newPosition.z);
-                targetRotation *= Quaternion.Euler(0, 180, 0);
-                
-                basicAvoidanceSemiCircleArea.transform.rotation = targetRotation;
+                CalculateBasicAvoidanceSemiCircleAreaPos(AgentHeight, AgentRadius);
                 yield return null;
             }
         }
 
+        private void CalculateBasicAvoidanceSemiCircleAreaPos(float AgentHeight, float AgentRadius){
+            Vector3   currentPosition = (Vector3)pathController.GetCurrentPosition();
+            Vector3   lookAtDirection = socialBehaviour.GetCurrentLookAt().normalized;
+            Vector3   newPosition     = currentPosition + lookAtDirection * AgentRadius;
+            Quaternion targetRotation = Quaternion.LookRotation(lookAtDirection);
 
-        // public List<GameObject> GetOthersInAnticipatedAvoidanceArea(){
-        //     return updateAnticipatedAvoidanceTarget.GetOthersInAnticipatedAvoidanceArea();
-        // }
+            basicAvoidanceSemiCircleArea.transform.position = new Vector3(newPosition.x, AgentHeight, newPosition.z);
+            targetRotation *= Quaternion.Euler(0, 180, 0);
+            
+            basicAvoidanceSemiCircleArea.transform.rotation = targetRotation;
+        }
 
         public List<GameObject> GetOthersInAvoidanceArea(){
             return updateAvoidanceTarget.GetOthersInAvoidanceArea();

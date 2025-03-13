@@ -11,8 +11,6 @@ namespace CollisionAvoidance
     [RequireComponent(typeof(CapsuleCollider))]
     public class AgentCollisionDetection : MonoBehaviour
     {
-        private const float MinReactionTime = 2f;
-        private const float MaxReactionTime = 4f;
         private const string AgentTag = "Agent";
         private const string WallTag = "Wall";
 
@@ -72,7 +70,6 @@ namespace CollisionAvoidance
             if (other.CompareTag(AgentTag))
             {
                 OnEnterTrigger?.Invoke(other);
-                //StartCoroutine(ReactToCollision(Random.Range(MinReactionTime, MaxReactionTime), other.gameObject));
             }
             else if (other.CompareTag(WallTag))
             {
@@ -87,12 +84,5 @@ namespace CollisionAvoidance
                 currentWallTarget = null;
             }
         }
-
-        // private IEnumerator ReactToCollision(float time, GameObject collidedAgent)
-        // {
-        //     isColliding = true;
-        //     yield return new WaitForSeconds(time);
-        //     isColliding = false;
-        // }
     }
 }

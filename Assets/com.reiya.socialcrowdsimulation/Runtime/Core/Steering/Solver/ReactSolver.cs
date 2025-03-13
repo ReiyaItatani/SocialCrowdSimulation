@@ -9,9 +9,19 @@ namespace CollisionAvoidance{
     /// </summary>
     public class ReactSolver : SpeedSolver
     {   
+        private AgentCollisionDetection agentCollisionDetection;
         protected virtual void InitReactSolver(){
-            AgentCollisionDetection agentCollisionDetection = collisionAvoidance.GetAgentCollisionDetection();
-            agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;     
+            if(collisionAvoidance.IsInitialized == false){
+                collisionAvoidance.InitCollisionAvoidanceController();
+            }
+            agentCollisionDetection = collisionAvoidance.GetAgentCollisionDetection();
+        }
+        protected virtual void OnEnableReactSolver(){
+            agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;
+        }
+
+        protected virtual void OnDisableReactSolver(){
+            agentCollisionDetection.OnEnterTrigger -= HandleAgentCollision;
         }
 
         /// <summary>

@@ -28,14 +28,22 @@ public class GroupColliderManager : MonoBehaviour
         foreach(GameObject agent in agentsInCategory){
             collisionAvoidanceControllers.Add(agent.GetComponent<ParameterManager>().GetCollisionAvoidanceController());
         }
-        
-        StartCoroutine(UpdateAgentsInGroupFOV(0.1f));
 
         groupCollider         = groupColliderGameObject.GetComponent<CapsuleCollider>();
         groupParameterManager = groupColliderGameObject.GetComponent<GroupParameterManager>();
     }
 
-    void Update()
+        void OnEnable()
+        {
+            StartCoroutine(UpdateAgentsInGroupFOV(0.1f));
+        }
+
+        void OnDisable()
+        {
+            StopAllCoroutines();
+        }
+
+        void Update()
     {
         UpdateCenterOfMass();
         DistanceChecker();

@@ -21,22 +21,44 @@ namespace CollisionAvoidance
         private bool showAvoidObstacleForce = true;
         public bool ShowAvoidObstacleForce { get => showAvoidObstacleForce; set => showAvoidObstacleForce = value; }
 
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             InitForceSolver();
             InitSpeedSolver();
-            StartCoroutine(DelayedStart(1.0f));
+            InitReactSolver();
             InitMotionMathing();
+        }
 
-            StartUpdateForce();
-            StartUpdateSpeed();
+        private Coroutine delayedStartCoroutine;
+        protected virtual void OnEnable()
+        {
+            OnEnableForceSolver();
+            OnEnableSpeedSolver();
+
+            if (delayedStartCoroutine == null)
+            {
+                delayedStartCoroutine = StartCoroutine(DelayedStart(1f));
+            }
+        }
+
+        protected virtual void OnDisable()
+        {
+            if (delayedStartCoroutine != null)
+            {
+                StopCoroutine(delayedStartCoroutine);
+                delayedStartCoroutine = null;
+            }
+
+            OnDisableForceSolver();
+            OnDisableSpeedSolver();
+            OnDisableReactSolver();
         }
 
         // Wait for a certain delay before actually activating collision avoidance
         protected virtual IEnumerator DelayedStart(float delay)
         {
             yield return new WaitForSeconds(delay);
-            InitReactSolver();
+            OnEnableReactSolver();
         }
 
         // Your update logic goes here

@@ -40,27 +40,24 @@ public class GazeController : MonoBehaviour
         if(mySocialRelations == "Individual"){
             ifIndividual = true;
         }
-    }
 
-    protected virtual void Start()
-    {
         GameObject body = FindObjectWithSkinnedMeshRenderer(gameObject);
         meshRenderer = body.GetComponentInChildren<SkinnedMeshRenderer>();
-
-        StartCoroutine(UpdateNeckState(2.0f));
     }
 
     protected virtual void OnEnable()
     {
-            //Subscribe the event
-            motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
-            motionMatchingSkinnedMeshRenderer.OnUpdateGaze += UpdateGaze;
+        //Subscribe the event
+        motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
+        motionMatchingSkinnedMeshRenderer.OnUpdateGaze += UpdateGaze;
+        StartCoroutine(UpdateNeckState(2.0f));
     }
 
     protected virtual void OnDisable()
     {
         motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
         motionMatchingSkinnedMeshRenderer.OnUpdateGaze -= UpdateGaze;
+        StopAllCoroutines();
     }
 
     GameObject FindObjectWithSkinnedMeshRenderer(GameObject parent)
