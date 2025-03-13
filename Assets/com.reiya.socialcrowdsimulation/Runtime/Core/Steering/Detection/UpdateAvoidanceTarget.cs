@@ -65,11 +65,11 @@ public class UpdateAvoidanceTarget : MonoBehaviour
     } 
 
     // Checks each GameObject in othersInAvoidanceArea to determine if it should be removed.
-    private void AvoidanceTargetActiveChecker(){
-        // Remove GameObject from the list if it's not active in the hierarchy,
+    private void AvoidanceTargetActiveChecker() {
+        // Remove GameObject from the list if it's null, not active in the hierarchy,
         // or if its CapsuleCollider is not enabled.
         othersInAvoidanceArea.RemoveAll(gameObject =>
-            !gameObject.activeInHierarchy || !IsCapsuleColliderActive(gameObject)
+            gameObject == null || !gameObject.activeInHierarchy || !IsCapsuleColliderActive(gameObject)
         );
     }
 
