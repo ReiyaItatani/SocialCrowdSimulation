@@ -26,6 +26,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
     [Header("Info After Instantiation")]
     // instantiatedAvatars: A list of instantiated avatars.
     [ReadOnly] public List<GameObject> instantiatedAvatars = new List<GameObject>();
+    [ReadOnly] public List<GameObject> instantiatedGroups = new List<GameObject>();
 
     public virtual void InstantiateAvatars()
     {
@@ -52,6 +53,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         foreach (GroupEntry group in agentsList.groups)
         {
             GameObject groupParent = GetOrCreateParent(group.groupName);
+            instantiatedGroups.Add(groupParent);
             GameObject groupColliderObject = CreateGroupCollider(groupParent, group.groupName);
             GroupParameterManager groupParameterManager = groupColliderObject.GetComponent<GroupParameterManager>();
             GroupManager groupManager = CreateGroupManager(groupParent, groupColliderObject);
@@ -160,6 +162,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             DestroyImmediate(child);
         }
         instantiatedAvatars.Clear();
+        instantiatedGroups.Clear();
     }
 
     protected bool ComputeSafeSpawnPosition(QuickGraphNode node, QuickGraphNode neighbours, out Vector3 pos)
