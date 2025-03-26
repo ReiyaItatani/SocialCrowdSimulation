@@ -300,7 +300,7 @@ public class ForceSolver : BasePathController
         otherPositionAtNearestApproach = Vector3.zero;
         foreach(GameObject other in others){
             //Skip self
-            if(other == collisionAvoidance.GetAgentGameObject()){
+            if(other == collisionAvoidance.GetAgentGameObject() || other == null){
                 continue;
             }
             IParameterManager otherParameterManager = other.GetComponent<IParameterManager>();
