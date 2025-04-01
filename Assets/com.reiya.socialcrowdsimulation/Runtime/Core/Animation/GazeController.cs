@@ -105,8 +105,6 @@ public class GazeController : MonoBehaviour
 #if MicrosoftRocketBox
         EyesMovementPass();
 #endif
-        //Set transforms
-        SetBodyTransforms(animator);
     }
     #region LOOK AT PASS
     /* * *
