@@ -59,33 +59,12 @@ namespace CollisionAvoidance
         private float3 PreviousHipsPosition;
         private float3 OffsetHipsPosition;
 
-        //EventHandler
-        //Just For Understanding eventhandler and delegate
-        public event EventDelegate OnUpdateOcean;
-        public delegate void EventDelegate();
-
-        public event EventHandler OnUpdateGaze;
-
-        //public UnityEvent OnUpdateOcean;
-
         private void Awake()
         {
             Animator = GetComponent<Animator>();
             PreviousJointMask = new bool[BodyJoints.Length];
             PreviousJointRotations = new quaternion[BodyJoints.Length];
             OffsetJointRotations = new quaternion[BodyJoints.Length];
-        }
-
-        private void OnEnable()
-        {
-            MotionMatching.OnSkeletonTransformUpdated += OnSkeletonTransformUpdated;
-
-            UpdatePreviousInertialization();
-        }
-
-        private void OnDisable()
-        {
-            MotionMatching.OnSkeletonTransformUpdated -= OnSkeletonTransformUpdated;
         }
 
         private void Start()
@@ -188,7 +167,7 @@ namespace CollisionAvoidance
             }
         }
 
-        private void OnSkeletonTransformUpdated()
+        public void OnSkeletonTransformUpdated()
         {
             // Motion
             if (RootPositionsMask)
@@ -302,17 +281,9 @@ namespace CollisionAvoidance
 
             // Update State
             UpdatePreviousInertialization();
-            OnUpdateOcean?.Invoke();
-            OnUpdateGaze?.Invoke(this, EventArgs.Empty);
-            // if(conversationalAgentFramework != null){
-            //     conversationalAgentFramework.UpdateOCEAN();
-            // }
-            // if(gazeController != null){
-            //     gazeController.UpdateGaze();
-            // }
         }
 
-        private void UpdatePreviousInertialization()
+        public void UpdatePreviousInertialization()
         {
             // Previous Joint Mask
             PreviousJointMask[0] = RootRotationsMask;

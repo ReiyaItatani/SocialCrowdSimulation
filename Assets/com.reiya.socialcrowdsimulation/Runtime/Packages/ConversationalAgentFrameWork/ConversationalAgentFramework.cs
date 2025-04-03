@@ -1,14 +1,9 @@
-using System.Collections;
 using UnityEngine;
-using Unity.Mathematics;
 using System;
-using UnityEditor;
-using CollisionAvoidance;
 
 public class ConversationalAgentFramework : MonoBehaviour
 {
     private Animator Animator;
-    private MotionMatchingSkinnedMeshRenderer motionMatchingSkinnedMeshRenderer;
 
      private void Awake()
     {
@@ -33,19 +28,6 @@ public class ConversationalAgentFramework : MonoBehaviour
         FluctuatePassInit();
     }
 
-    private void OnEnable()
-    {
-        //Subscribe the event
-        motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
-        motionMatchingSkinnedMeshRenderer.OnUpdateOcean += UpdateOCEAN;
-    }
-
-    private void OnDisable()
-    {
-        //Un-Subscribe the event
-        motionMatchingSkinnedMeshRenderer.OnUpdateOcean -= UpdateOCEAN;
-    }
-    
     // Recursive method to find a GameObject with a SkinnedMeshRenderer component
     GameObject FindObjectWithSkinnedMeshRenderer(GameObject parent)
     {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,8 +21,6 @@ public class GazeController : MonoBehaviour
     protected Transform t_Neck;
 
     protected SocialBehaviour socialBehaviour;
-
-    protected MotionMatchingSkinnedMeshRenderer motionMatchingSkinnedMeshRenderer;
 
     //For experiment
     public bool onNeckRotation = true;
@@ -47,16 +44,11 @@ public class GazeController : MonoBehaviour
 
     protected virtual void OnEnable()
     {
-        //Subscribe the event
-        motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
-        motionMatchingSkinnedMeshRenderer.OnUpdateGaze += UpdateGaze;
         StartCoroutine(UpdateNeckState(2.0f));
     }
 
     protected virtual void OnDisable()
     {
-        motionMatchingSkinnedMeshRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
-        motionMatchingSkinnedMeshRenderer.OnUpdateGaze -= UpdateGaze;
         StopAllCoroutines();
     }
 
@@ -86,7 +78,7 @@ public class GazeController : MonoBehaviour
         _animator.SetBoneLocalRotation(HumanBodyBones.Neck, t_Neck.localRotation);
     }
 
-    public virtual void UpdateGaze(object sender, EventArgs e)
+    public virtual void UpdateGaze()
     {
         GetBodyTransforms(animator);
         ParameterUpdater();

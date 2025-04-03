@@ -78,8 +78,6 @@ public class AgentManager : MonoBehaviour
     // OCEAN Personality Model Parameters: Parameters that define the personality of the agent according to the OCEAN model.
     [Space]
     [Header("  ==FACIAL EXPRESSION==  ")]
-    //Facial Expression might be expensive.
-    public bool useFacialExpression = false;
     [Header("Conversational Agent Framework Parameters")]
     public OCEAN ocean;
     [System.Serializable]
@@ -259,12 +257,6 @@ public class AgentManager : MonoBehaviour
     // }
 
     private void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){
-        if(useFacialExpression == true) {
-            conversationalAgentFramework.enabled = true;
-        } else {
-            conversationalAgentFramework.enabled = false;
-        }
-
         conversationalAgentFramework.openness          = ocean.openness;
         conversationalAgentFramework.conscientiousness = ocean.conscientiousness;
         conversationalAgentFramework.extraversion      = ocean.extraversion;

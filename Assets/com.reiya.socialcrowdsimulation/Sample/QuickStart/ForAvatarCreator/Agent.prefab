@@ -331,6 +331,7 @@ GameObject:
   - component: {fileID: 6817125915276436510}
   - component: {fileID: 1997387239648907811}
   - component: {fileID: 2804469313322414252}
+  - component: {fileID: 3040779331622563156}
   m_Layer: 0
   m_Name: female1@T-Pose(Clone)
   m_TagString: Agent
@@ -437,7 +438,6 @@ MonoBehaviour:
   audioClips: []
   currentAnimationState: 0
   smartPhone: {fileID: 1908953103725590856}
-  onAnimationShift: 1
   CustomFocalPoints: []
 --- !u!114 &6719874226824960533
 MonoBehaviour:
@@ -558,6 +558,23 @@ MonoBehaviour:
   bendAngles: []
   stopBending: 
   interpolation: 0
+--- !u!114 &3040779331622563156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 432014680628626753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a880182c1333d8a4da8d571b0871eece, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fullBodyAnimation: 0
+  useGaze: 1
+  useFacialExpression: 0
+  MotionMatching: {fileID: 8288988040382294088}
+  UnityAnimatorController: {fileID: 6847208192832596723}
 --- !u!1 &457890155323541949
 GameObject:
   m_ObjectHideFlags: 0
@@ -932,7 +949,6 @@ MonoBehaviour:
     type: 3}
   socialBehaviour: {fileID: 2701411773996413226}
   agentCollisionDetection: {fileID: 6719874226824960533}
-  showAgentSphere: 0
 --- !u!1 &1327243773458625278
 GameObject:
   m_ObjectHideFlags: 0
@@ -1966,6 +1982,7 @@ Transform:
   - {fileID: 5121458903761392613}
   - {fileID: 1546217622204022414}
   - {fileID: 5647705810209042414}
+  - {fileID: 155630325248747816}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2186,7 +2203,14 @@ MonoBehaviour:
   InertializeHalfLife: 0.1
   Responsiveness: 1
   Quality: 1
-  FeatureWeights: []
+  FeatureWeights:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
   SpheresRadius: 0.1
   DebugSkeleton: 1
   DebugCurrent: 1
@@ -2611,6 +2635,56 @@ Transform:
   m_Father: {fileID: 1993950800666835895}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6339460796586421441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 155630325248747816}
+  - component: {fileID: 6847208192832596723}
+  m_Layer: 0
+  m_Name: UnityAnimator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &155630325248747816
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6339460796586421441}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 14.202372, y: 0, z: 0.39468318}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5864799489524313711}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6847208192832596723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6339460796586421441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67dff69f59ed62346ba4020ed2dc5b51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxTurnAnglePerSecond: 90
+  _targetAnimator: {fileID: 8605189221206646816}
+  _animatorController: {fileID: 9100000, guid: 1ce277fc3983d6744ba4263c1a40beb0, type: 2}
+  _agentPathController: {fileID: 5196007775276150202}
+  _weight: 1
+  _debugSpeed: 0
 --- !u!1 &6351004540229855234
 GameObject:
   m_ObjectHideFlags: 0
@@ -2669,15 +2743,14 @@ MonoBehaviour:
   toGoalWeight: 2
   potentialAvoidanceTarget: {fileID: 0}
   avoidNeighborWeight: 2
+  groupManager: {fileID: 0}
   groupName: 
   groupForceWeight: 0.5
   wallRepForceWeight: 0.2
-  groupColliderManager: {fileID: 0}
-  currentSpeed: 1
+  avoidObstacleWeight: 1
   initialSpeed: 0.7
   minSpeed: 0
   maxSpeed: 1
-  onInSlowingArea: 0
   slowingRadius: 2
 --- !u!114 &3819924281224552219
 MonoBehaviour:

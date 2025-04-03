@@ -15,7 +15,8 @@ public class PrefabCreatorWindow : EditorWindow
     [SerializeField]private GroupNodeEventChannelSO groupNodeEventChannel;
     [SerializeField]private MotionMatchingData MMData;
     [SerializeField]private GameObject FOVMeshPrefab;
-    [SerializeField]private RuntimeAnimatorController  animator;
+    [SerializeField]private RuntimeAnimatorController  animatorMM;
+    [SerializeField]private RuntimeAnimatorController  animatorUA;
     [SerializeField]private GameObject phonePrefab;
     [SerializeField]private Vector3 positionOffset = new Vector3(0.1f, -0.03f, 0.03f);
     [SerializeField]private Vector3 rotationOffset = new Vector3(0,0,-20);
@@ -59,7 +60,11 @@ public class PrefabCreatorWindow : EditorWindow
         EditorGUILayout.Space(); // Adds spacing between fields for clarity
 
         // Field for Animator Controller
-        animator = (RuntimeAnimatorController)EditorGUILayout.ObjectField("Animator Controller", animator, typeof(RuntimeAnimatorController), false);
+        animatorMM = (RuntimeAnimatorController)EditorGUILayout.ObjectField("Upper Body", animatorMM, typeof(RuntimeAnimatorController), false);
+        EditorGUILayout.Space(); // Adds spacing between fields for clarity
+
+        // Field for Animator Controller
+        animatorUA = (RuntimeAnimatorController)EditorGUILayout.ObjectField("Lower Body", animatorUA, typeof(RuntimeAnimatorController), false);
         EditorGUILayout.Space(); // Adds spacing between fields for clarity
 
         // Field for Avatar Mask
@@ -244,6 +249,11 @@ private void CreatePrefab(GameObject humanoid)
     motionMatching.transform.SetParent(agent.transform);
     MotionMatchingController motionMatchingController = motionMatching.AddComponent<MotionMatchingController>(); // Make sure you have a MotionMatchingController script.
 
+    // Create and attach the "MotionMatching" GameObject and script.
+    GameObject unityAnimator = new GameObject("UnityAnimator");
+    unityAnimator.transform.SetParent(agent.transform);
+    UnityAnimatorController unityAnimatorController = unityAnimator.AddComponent<UnityAnimatorController>(); // Make sure you have a MotionMatchingController script.
+
     // Create and attach the "CollisionAvoidance" GameObject and script.
     GameObject collisionAvoidance = new GameObject("CollisionAvoidance");
     collisionAvoidance.transform.SetParent(agent.transform);
@@ -261,12 +271,16 @@ private void CreatePrefab(GameObject humanoid)
     motionMatchingController.MMData              = MMData;
     motionMatchingController.SearchTime          = 0.01f;
     //
+    unityAnimatorController._targetAnimator = humanoidInstance.GetComponent<Animator>();
+    unityAnimatorController._animatorController = animatorUA;
+    unityAnimatorController._agentPathController = pathControllerScript;
+    //
     Transform handTransform = humanoidInstance.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.RightHand);
     GameObject phoneInstance = Instantiate(phonePrefab, handTransform.position + positionOffset, handTransform.rotation);
     phoneInstance.transform.localEulerAngles = rotationOffset;
     phoneInstance.transform.SetParent(handTransform);
     //
-    humanoidInstance.GetComponent<Animator>().runtimeAnimatorController = animator;
+    humanoidInstance.GetComponent<Animator>().runtimeAnimatorController = animatorMM;
     humanoidInstance.GetComponent<Animator>().applyRootMotion = false;
     //
     Rigidbody rigidBody            = humanoidInstance.AddComponent<Rigidbody>();
@@ -317,6 +331,10 @@ private void CreatePrefab(GameObject humanoid)
     if(ifAvatarIsMicrosoftRocketBoxOrAvatarFromAvatarSDK){
         RightHandRotModifier rightHandRotModifier = humanoidInstance.AddComponent<RightHandRotModifier>();
     }
+    //
+    AnimationUpdateFlow animationUpdateFlow = humanoidInstance.AddComponent<AnimationUpdateFlow>();
+    animationUpdateFlow.MotionMatching = motionMatchingController;
+    animationUpdateFlow.UnityAnimatorController = unityAnimatorController;
     //
     collisionAvoidanceController.pathController = pathControllerScript;
     collisionAvoidanceController.FOVMeshPrefab = FOVMeshPrefab;
