@@ -34,7 +34,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         InstantiateGroups();
     }
 
-    private void InstantiateIndividuals()
+    protected virtual void InstantiateIndividuals()
     {
         GameObject individualParent = GetOrCreateParent("Individual");
 
@@ -48,7 +48,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         }
     }
 
-    private void InstantiateGroups()
+    protected virtual void InstantiateGroups()
     {
         foreach (GroupEntry group in agentsList.groups)
         {
@@ -69,7 +69,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         }
     }
 
-    private GameObject InstantiateAgent(GameObject agent, GameObject parent, string groupName, SpeedRange speedRange, QuickGraphNode node, QuickGraphNode neighbours, Vector3 pos)
+    protected virtual GameObject InstantiateAgent(GameObject agent, GameObject parent, string groupName, SpeedRange speedRange, QuickGraphNode node, QuickGraphNode neighbours, Vector3 pos)
     {
         Debug.Log("Instantiating agent: " + agent.name);
         GameObject instance = Instantiate(agent, pos, Quaternion.identity);
@@ -80,7 +80,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         return instance;
     }
 
-    private void AssignPathController(GameObject instance, string groupName, SpeedRange speedRange, Vector3 pos, QuickGraphNode node, QuickGraphNode neighbours)
+    protected virtual void AssignPathController(GameObject instance, string groupName, SpeedRange speedRange, Vector3 pos, QuickGraphNode node, QuickGraphNode neighbours)
     {
         AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
         AgentPathManager agentPathManager = instance.GetComponentInChildren<AgentPathManager>();
@@ -98,7 +98,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         // conversationalAgentFramework.transform.position = pos;
     }
 
-    private void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupManager groupManager)
+    protected virtual void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupManager groupManager)
     {
         AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
         CollisionAvoidanceController collisionAvoidanceController = instance.GetComponentInChildren<CollisionAvoidanceController>();
@@ -115,7 +115,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         }
     }
 
-    private GameObject GetOrCreateParent(string name)
+    protected virtual GameObject GetOrCreateParent(string name)
     {
         Transform found = transform.Find(name);
         if (found != null) return found.gameObject;
@@ -125,7 +125,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         return newParent;
     }
 
-    private GameObject CreateGroupCollider(GameObject parent, string groupName)
+    protected virtual GameObject CreateGroupCollider(GameObject parent, string groupName)
     {
         GameObject groupColliderObject = new GameObject("GroupCollider");
         groupColliderObject.transform.SetParent(parent.transform);
@@ -141,7 +141,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         return groupColliderObject;
     }
 
-    private GroupManager CreateGroupManager(GameObject parent, GameObject groupColliderObject)
+    protected virtual GroupManager CreateGroupManager(GameObject parent, GameObject groupColliderObject)
     {
         GameObject managerObject = new GameObject("GroupManager");
         managerObject.transform.SetParent(parent.transform);
@@ -165,7 +165,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         instantiatedGroups.Clear();
     }
 
-    protected bool ComputeSafeSpawnPosition(QuickGraphNode node, QuickGraphNode neighbours, out Vector3 pos)
+    protected virtual bool ComputeSafeSpawnPosition(QuickGraphNode node, QuickGraphNode neighbours, out Vector3 pos)
     {
         for (int i = 0; i < 100; i++)
         {

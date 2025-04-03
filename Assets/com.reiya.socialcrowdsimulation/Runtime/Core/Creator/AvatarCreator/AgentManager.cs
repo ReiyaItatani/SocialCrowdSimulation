@@ -116,7 +116,7 @@ public class AgentManager : MonoBehaviour
     private AvatarCreatorQuickGraph avatarCreator;
 
     // Awake is called when the script instance is being loaded.
-    void Awake(){
+    protected virtual void Awake(){
         // Get a reference to the AvatarCreatorBase component.
         avatarCreator = this.GetComponent<AvatarCreatorQuickGraph>();
         // Get a list of instantiated avatars from the AvatarCreatorBase.
@@ -124,7 +124,7 @@ public class AgentManager : MonoBehaviour
     }
 
     // Start is called before the first frame update.
-    void Start()
+    protected virtual void Start()
     {
         // Loop through all avatars and set their parameters.
         for (int i = 0; i < Avatars.Count; i++)
@@ -166,7 +166,7 @@ public class AgentManager : MonoBehaviour
     }
 
     // OnValidate is called when the script is loaded or a value is changed in the Inspector.
-    private void OnValidate() {
+    protected virtual void OnValidate() {
         // Loop through all PathControllers and set their parameters.
         foreach(GameObject controllerObject in PathControllers) 
         {
@@ -218,7 +218,7 @@ public class AgentManager : MonoBehaviour
     }
 
     // Method to set parameters for PathController.
-    private void SetPathControllerParams(AgentPathController pathController){
+    protected virtual void SetPathControllerParams(AgentPathController pathController){
         pathController.slowingRadius = goalParameters.slowingRadius;
 
         pathController.toGoalWeight               = forceWeights.toGoalWeight;
@@ -241,11 +241,11 @@ public class AgentManager : MonoBehaviour
         pathController.ShowAvoidObstacleForce            = gizmosPC.ShowObstacleAvoidanceForce;
     }
 
-    private void SetPathManagerrParams(AgentPathManager pathManager){
+    protected virtual void SetPathManagerrParams(AgentPathManager pathManager){
         pathManager.goalRadius = goalParameters.goalRadius;
     }
 
-    private void SetMotionMatchingControllerParams(MotionMatchingController motionMatchingController){
+    protected virtual void SetMotionMatchingControllerParams(MotionMatchingController motionMatchingController){
         // motionMatchingController.SpheresRadius = SphereRadius;
         motionMatchingController.DebugSkeleton   = gizmosMM.DebugSkeleton;
         motionMatchingController.DebugCurrent    = gizmosMM.DebugCurrent;
@@ -258,7 +258,7 @@ public class AgentManager : MonoBehaviour
     //     collisionAvoidanceController.agentCollider.radius           = CapsuleColliderRadius;
     // }
 
-    private void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){
+    protected virtual void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){
         if(useFacialExpression == true) {
             conversationalAgentFramework.enabled = true;
         } else {
@@ -279,24 +279,24 @@ public class AgentManager : MonoBehaviour
         conversationalAgentFramework.e_shock           = emotion.shock;      
     }
 
-    private void SetSocialBehaviourParams(SocialBehaviour socialBehaviour){
+    protected virtual void SetSocialBehaviourParams(SocialBehaviour socialBehaviour){
 
     }
 
 #if UNITY_EDITOR
-    public void SaveToFile(string path)
+    public virtual void SaveToFile(string path)
     {
         string json = JsonUtility.ToJson(this, true);
         File.WriteAllText(path, json);
     }
 
-    public void LoadFromFile(string path)
+    public virtual void LoadFromFile(string path)
     {
         string json = File.ReadAllText(path);
         JsonUtility.FromJsonOverwrite(json, this);
     }
     
-    public void SaveSettings()
+    public virtual void SaveSettings()
     {
         string path = EditorUtility.SaveFilePanel("Save Agent Settings", "", "AgentSettings", "json");
         if (!string.IsNullOrEmpty(path))
@@ -305,7 +305,7 @@ public class AgentManager : MonoBehaviour
         }
     }
 
-    public void LoadSettings()
+    public virtual void LoadSettings()
     {
         string path = EditorUtility.OpenFilePanel("Load Agent Settings", "", "json");
         if (!string.IsNullOrEmpty(path))
