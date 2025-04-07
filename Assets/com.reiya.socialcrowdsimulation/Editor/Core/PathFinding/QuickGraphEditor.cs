@@ -1,3 +1,4 @@
+#if UnityEditor
 using UnityEditor;
 using UnityEngine;
 
@@ -19,3 +20,4 @@ namespace CollisionAvoidance
         }
     }
 }
+#endif
