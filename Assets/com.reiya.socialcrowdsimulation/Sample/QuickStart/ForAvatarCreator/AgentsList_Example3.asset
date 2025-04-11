@@ -19,7 +19,7 @@ MonoBehaviour:
       minSpeed: 0.4
       maxSpeed: 0.8
   groups:
-  - groupName: OnlyOneGroup
+  - groupName: TestGroup3
     count: 3
     agents:
     - {fileID: 4127260373610900068, guid: 1718ab575ec590240a485e13ee4559a5, type: 3}
