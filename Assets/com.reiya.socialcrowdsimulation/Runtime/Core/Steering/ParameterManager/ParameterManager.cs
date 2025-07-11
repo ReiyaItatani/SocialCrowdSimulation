@@ -8,7 +8,7 @@ namespace CollisionAvoidance
     /// Provides access to an agent's movement-related data, such as position, speed, and avoidance vectors, 
     /// by delegating calls to the associated PathController.
     /// </summary>
-    public class ParameterManager : MonoBehaviour, IParameterManager
+    public class ParameterManager : CrowdSimulationMonoBehaviour, IParameterManager
     {
         /// <summary>
         /// The PathController instance that provides movement-related data.

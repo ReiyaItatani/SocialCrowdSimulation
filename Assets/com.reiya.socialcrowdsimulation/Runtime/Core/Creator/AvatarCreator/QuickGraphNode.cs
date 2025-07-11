@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace CollisionAvoidance
 {
-    public class QuickGraphNode : MonoBehaviour
+    public class QuickGraphNode : CrowdSimulationMonoBehaviour
     {
 
         public List<QuickGraphNode> _neighbours = new List<QuickGraphNode>();

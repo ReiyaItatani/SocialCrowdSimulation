@@ -13,7 +13,7 @@ using UnityEngine.Events;
 namespace CollisionAvoidance
 {
     [RequireComponent(typeof(Animator))]
-    public class MotionMatchingSkinnedMeshRenderer : MonoBehaviour
+    public class MotionMatchingSkinnedMeshRenderer : CrowdSimulationMonoBehaviour
     {
         [Header("General")]
         public MotionMatchingController MotionMatching;
@@ -38,6 +38,19 @@ namespace CollisionAvoidance
 
         // References
         private Animator Animator;
+        private Transform _motionMatchingCachedTransform
+        {
+            get
+            {
+                if (m_MotionMatchingCachedTransform == null)
+                {
+                    m_MotionMatchingCachedTransform = MotionMatching.transform;
+                }
+
+                return m_MotionMatchingCachedTransform;
+            }
+        }
+        private Transform m_MotionMatchingCachedTransform = null;
 
         // Retargeting
         // Initial orientations of the bones The code assumes the initial orientations are in T-Pose
@@ -115,8 +128,8 @@ namespace CollisionAvoidance
                 }
             }
             // Target
-            Quaternion rot = Animator.transform.rotation;
-            Animator.transform.rotation = Quaternion.identity;
+            Quaternion rot = _cachedTransform.rotation;
+            _cachedTransform.rotation = Quaternion.identity;
             SkeletonBone[] targetSkeletonBones = Animator.avatar.humanDescription.skeleton;
             Quaternion hipsRot = Quaternion.identity;
             for (int i = 0; i < BodyJoints.Length; i++)
@@ -132,7 +145,7 @@ namespace CollisionAvoidance
 
                 // Traverse up the hierarchy until reaching the Animator's transform
                 Transform currentTransform = targetJoint.parent;
-                while (currentTransform != null && currentTransform != Animator.transform)
+                while (currentTransform != null && currentTransform != _cachedTransform)
                 {
                     int parentIndex = Array.FindIndex(targetSkeletonBones, bone => bone.name == currentTransform.name);
                     if (parentIndex != -1)
@@ -153,7 +166,7 @@ namespace CollisionAvoidance
                     hipsRot = cumulativeRotation;
                 }
             }
-            Animator.transform.rotation = rot;
+            _cachedTransform.rotation = rot;
             // Find ForwardLocalVector and UpLocalVector
             float3 forwardLocalVector = math.mul(math.inverse(hipsRot), math.forward());
             float3 upLocalVector = math.mul(math.inverse(hipsRot), math.up());
@@ -193,22 +206,24 @@ namespace CollisionAvoidance
             // Motion
             if (RootPositionsMask)
             {
-                transform.position = MotionMatching.transform.position;
+                _cachedTransform.position = _motionMatchingCachedTransform.position;
             }
             else
             {
-                MotionMatching.SetPosAdjustment(transform.position - MotionMatching.transform.position);
+                MotionMatching.SetPosAdjustment(_cachedTransform.position - _motionMatchingCachedTransform.position);
             }
             // Retargeting
             for (int i = 0; i < BodyJoints.Length; i++)
             {
+                HumanBodyBones bJointID = BodyJoints[i];
                 bool currentJointMask = false;
                 // Unity's Animator Target Rotation
-                Quaternion targetRotation = TargetBones[i].rotation;
+                Quaternion targetRotation;
                 // Check Avatar Mask
-                if (AvatarMask == null ||
-                    (BodyJoints[i] == HumanBodyBones.Hips && RootRotationsMask) ||
-                    (BodyJoints[i] != HumanBodyBones.Hips && AvatarMask != null && AvatarMask.IsEnabled(BodyJoints[i])))
+                if (
+                    AvatarMask == null ||
+                    (i == 0 && RootRotationsMask) ||
+                    (i != 0 && AvatarMask.IsEnabled(bJointID)))
                 {
                     currentJointMask = true;
                     // Motion Matching Target Rotation
@@ -230,6 +245,10 @@ namespace CollisionAvoidance
                     // sourceTPoseRotation^-1 -> World (SourceTPose) -> Local Source
                     // sourceRotation -> Local Source -> World (Source)
                     targetRotation = sourceRotation * Quaternion.Inverse(sourceTPoseRotation) * HipsCorrection * targetTPoseRotation;
+                }
+                else
+                {
+                    targetRotation = TargetBones[i].rotation;
                 }
 
                 if (BlendPoses && PreviousJointMask[i] != currentJointMask)
@@ -255,6 +274,7 @@ namespace CollisionAvoidance
                     TargetBones[i].rotation = targetRotation;
                 }
             }
+
             // Hips
             float3 targetHipsPosition = TargetBones[0].position;
             if (RootPositionsMask)
@@ -314,16 +334,19 @@ namespace CollisionAvoidance
 
         private void UpdatePreviousInertialization()
         {
-            // Previous Joint Mask
-            PreviousJointMask[0] = RootRotationsMask;
-            for (int i = 1; i < BodyJoints.Length; i++)
+            if (BlendPoses)
             {
-                PreviousJointMask[i] = AvatarMask != null ? AvatarMask.IsEnabled(BodyJoints[i]) : true;
+                // Previous Joint Mask
+                PreviousJointMask[0] = RootRotationsMask;
+                for (int i = 1; i < BodyJoints.Length; i++)
+                {
+                    PreviousJointMask[i] = AvatarMask != null ? AvatarMask.IsEnabled(BodyJoints[i]) : true;
+                }
+                PreviousHipsPositionMask = RootPositionsMask;
+                // Previous Joint Rotations
+                for (int i = 0; i < PreviousJointRotations.Length; ++i) PreviousJointRotations[i] = TargetBones != null ? TargetBones[i].rotation : quaternion.identity;
+                PreviousHipsPosition = TargetBones != null ? TargetBones[0].position : float3.zero;
             }
-            PreviousHipsPositionMask = RootPositionsMask;
-            // Previous Joint Rotations
-            for (int i = 0; i < PreviousJointRotations.Length; ++i) PreviousJointRotations[i] = TargetBones != null ? TargetBones[i].rotation : quaternion.identity;
-            PreviousHipsPosition = TargetBones != null ? TargetBones[0].position : float3.zero;
         }
 
         // Used for retargeting. First parent, then children

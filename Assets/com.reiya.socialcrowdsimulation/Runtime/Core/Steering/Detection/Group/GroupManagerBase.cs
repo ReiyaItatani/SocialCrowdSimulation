@@ -7,7 +7,7 @@ using UnityEngine.PlayerLoop;
 
 namespace CollisionAvoidance{
 
-public class GroupManagerBase : MonoBehaviour
+public class GroupManagerBase : CrowdSimulationMonoBehaviour
 {
     //Group Members
     public List<GameObject> groupMembers = new List<GameObject>();

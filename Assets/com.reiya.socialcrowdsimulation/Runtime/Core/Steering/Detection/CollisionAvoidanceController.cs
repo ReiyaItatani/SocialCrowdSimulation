@@ -14,7 +14,7 @@ namespace CollisionAvoidance{
 
         [Header("Basic Collision Avoidance")]
         public Vector3 avoidanceColliderSize = new Vector3(1.5f, 1.5f, 1.5f); 
-        private GameObject basicAvoidanceArea;
+        private CrowdSimulationMonoBehaviour basicAvoidanceArea;
         private UpdateAvoidanceTarget updateAvoidanceTarget;
         private BoxCollider avoidanceCollider;
 
@@ -27,7 +27,7 @@ namespace CollisionAvoidance{
 
         [Header("Basic Collision Avoidance Semi Circle Area")]
         public GameObject FOVMeshPrefab;
-        private GameObject basicAvoidanceSemiCircleArea;
+        private CrowdSimulationMonoBehaviour basicAvoidanceSemiCircleArea;
         private List<UpdateAvoidanceTarget> updateAvoidanceTargetsInFOV;
         private FOVActiveController fovActiveController;
         public SocialBehaviour socialBehaviour;
@@ -63,20 +63,20 @@ namespace CollisionAvoidance{
                 return;
             }
             //Create Box Collider for Collision Avoidance Force
-            basicAvoidanceArea                  = new GameObject("BasicCollisionAvoidanceArea");
+            basicAvoidanceArea                  = new GameObject("BasicCollisionAvoidanceArea").AddComponent<CrowdSimulationMonoBehaviour>();
             basicAvoidanceArea.transform.parent = this.transform;
-            updateAvoidanceTarget               = basicAvoidanceArea.AddComponent<UpdateAvoidanceTarget>();
+            updateAvoidanceTarget               = basicAvoidanceArea.gameObject.AddComponent<UpdateAvoidanceTarget>();
             updateAvoidanceTarget.InitParameter(agentCollider, groupCollider);
-            avoidanceCollider                   = basicAvoidanceArea.AddComponent<BoxCollider>();
+            avoidanceCollider                   = basicAvoidanceArea.gameObject.AddComponent<BoxCollider>();
             avoidanceCollider.size              = avoidanceColliderSize;
             avoidanceCollider.isTrigger         = true;
 
             //Create FOV for Collision Avoidance Force
-            basicAvoidanceSemiCircleArea                  = Instantiate(FOVMeshPrefab, this.transform.position, this.transform.rotation);
+            basicAvoidanceSemiCircleArea                  = Instantiate(FOVMeshPrefab, this.transform.position, this.transform.rotation).AddComponent<CrowdSimulationMonoBehaviour>();
             basicAvoidanceSemiCircleArea.transform.parent = this.transform;
             fovActiveController                           = basicAvoidanceSemiCircleArea.GetComponent<FOVActiveController>();
             fovActiveController.InitParameter(gameObject.GetComponent<CollisionAvoidanceController>());
-            updateAvoidanceTargetsInFOV = GetAllChildObjects(basicAvoidanceSemiCircleArea)
+            updateAvoidanceTargetsInFOV = GetAllChildObjects(basicAvoidanceSemiCircleArea.gameObject)
                 .Select(child => child.GetComponent<UpdateAvoidanceTarget>())
                 .Where(component => component != null)
                 .ToList();
@@ -124,10 +124,12 @@ namespace CollisionAvoidance{
         }
 
         private void CalculateBasicAvoidanceAreaPos(float AgentHeight){
-            Vector3 Center = (Vector3)pathController.GetCurrentPosition() + pathController.GetCurrentDirection().normalized * avoidanceCollider.size.z/2;
-            basicAvoidanceArea.transform.position = new Vector3(Center.x, AgentHeight, Center.z);
-            Quaternion targetRotation = Quaternion.LookRotation(pathController.GetCurrentDirection().normalized);
-            basicAvoidanceArea.transform.rotation = targetRotation;
+            Transform t = basicAvoidanceArea._cachedTransform;
+            Vector3 currentDir = pathController.GetCurrentDirection().normalized;
+            Vector3 Center = (Vector3)pathController.GetCurrentPosition() + currentDir * avoidanceCollider.size.z/2;
+            t.position = new Vector3(Center.x, AgentHeight, Center.z);
+            Quaternion targetRotation = Quaternion.LookRotation(currentDir);
+            t.rotation = targetRotation;
         }
 
         private IEnumerator UpdateBasicAvoidanceSemiCircleAreaPos(float AgentHeight, float AgentRadius){
@@ -144,10 +146,11 @@ namespace CollisionAvoidance{
             Vector3   newPosition     = currentPosition + lookAtDirection * AgentRadius;
             Quaternion targetRotation = Quaternion.LookRotation(lookAtDirection);
 
-            basicAvoidanceSemiCircleArea.transform.position = new Vector3(newPosition.x, AgentHeight, newPosition.z);
+            Transform t = basicAvoidanceSemiCircleArea._cachedTransform;
+            t.position = new Vector3(newPosition.x, AgentHeight, newPosition.z);
             targetRotation *= Quaternion.Euler(0, 180, 0);
             
-            basicAvoidanceSemiCircleArea.transform.rotation = targetRotation;
+            t.rotation = targetRotation;
         }
 
         public List<GameObject> GetOthersInAvoidanceArea(){
@@ -155,14 +158,12 @@ namespace CollisionAvoidance{
         }
 
         public List<GameObject> GetOthersInFOV(){
-            GameObject             activeGameObject      = fovActiveController.GetActiveChildObject();
-            UpdateAvoidanceTarget _updateAvoidanceTarget = activeGameObject.GetComponent<UpdateAvoidanceTarget>();
+            UpdateAvoidanceTarget _updateAvoidanceTarget = fovActiveController.GetChildObjectActive()._avoidanceTarget;
             return _updateAvoidanceTarget.GetOthersInAvoidanceArea();
         }
 
         public List<GameObject> GetObstaclesInFOV(){
-            GameObject             activeGameObject      = fovActiveController.GetActiveChildObject();
-            UpdateAvoidanceTarget _updateAvoidanceTarget = activeGameObject.GetComponent<UpdateAvoidanceTarget>();
+            UpdateAvoidanceTarget _updateAvoidanceTarget = fovActiveController.GetChildObjectActive()._avoidanceTarget;
             return _updateAvoidanceTarget.GetObstaclesInAvoidanceArea();
         }
 

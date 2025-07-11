@@ -29,7 +29,11 @@ public enum UpperBodyAnimationState
 /// </summary>
 public class SocialBehaviour : MonoBehaviour
 {
-    protected const float LookAtUpdateTime = 1.5f;
+        private static int _animParamID_Walk = Animator.StringToHash(UpperBodyAnimationState.Walk.ToString());
+        private static int _animParamID_Talk = Animator.StringToHash(UpperBodyAnimationState.Talk.ToString());
+        private static int _animParamID_SmartPhone = Animator.StringToHash(UpperBodyAnimationState.SmartPhone.ToString());
+
+        protected const float LookAtUpdateTime = 1.5f;
     protected const float AnimationStateUpdateMinTime = 5.0f;
     protected const float AnimationStateUpdateMaxTime = 10.0f;
     [Range(0,1)]
@@ -63,6 +67,26 @@ public class SocialBehaviour : MonoBehaviour
         get{
             return isInitialized;
         }
+    }
+
+    private static int GetAnimParamID(UpperBodyAnimationState state)
+    {
+        if (state == UpperBodyAnimationState.Walk)
+        {
+            return _animParamID_Walk;
+        }
+
+        if (state == UpperBodyAnimationState.Talk)
+        {
+            return _animParamID_Talk;
+        }
+
+        if (state == UpperBodyAnimationState.SmartPhone)
+        {
+            return _animParamID_SmartPhone;
+        }
+
+        return -1;
     }
 
     protected virtual void InitSocialBehaviour(){
@@ -171,7 +195,8 @@ public class SocialBehaviour : MonoBehaviour
 
         foreach (UpperBodyAnimationState state in Enum.GetValues(typeof(UpperBodyAnimationState)))
         {
-            animator.SetBool(state.ToString(), state == animationState);
+                //animator.SetBool(state.ToString(), state == animationState);
+                animator.SetBool(GetAnimParamID(state), state == animationState);
         }
         if(animationState == UpperBodyAnimationState.SmartPhone || animationState == UpperBodyAnimationState.Talk){
             TryPlayAudio(0.0f);
@@ -281,7 +306,7 @@ public class SocialBehaviour : MonoBehaviour
 
     public virtual IEnumerator ReactionToCollisionGazeAndAnim(float talkDuration, GameObject collidedAgent)
     {
-        collidedTarget = collidedAgent;
+        collidedTarget = collidedAgent.transform;
         TriggerUnityAnimation(UpperBodyAnimationState.Talk);
         yield return new WaitForSeconds(talkDuration);
         FollowMotionMatching();
@@ -290,7 +315,7 @@ public class SocialBehaviour : MonoBehaviour
 
     public virtual IEnumerator ReactionToCollisionGaze(float gazeDuration, GameObject collidedAgent)
     {
-        collidedTarget = collidedAgent;
+        collidedTarget = collidedAgent.transform;
         yield return new WaitForSeconds(gazeDuration);
         collidedTarget = null;
     }
@@ -423,12 +448,12 @@ public class SocialBehaviour : MonoBehaviour
         return onSmartPhone;
     }
 
-    GameObject collidedTarget;
+    Transform collidedTarget;
     Vector3 currentDirection;
     Vector3 lookAtCenterOfMass;
     Vector3 potentialAvoidanceTarget;
     GameObject potentialAvoidanceObject;
-    GameObject avoidanceCoordinateTarget;
+    Transform avoidanceCoordinateTarget;
 
     public List<GameObject> CustomFocalPoints = new List<GameObject>();
 
@@ -524,7 +549,7 @@ public class SocialBehaviour : MonoBehaviour
         // Set the flag indicating the process is running
         isMutualGazeRunning = true;
 
-        avoidanceCoordinateTarget = currentAvoidanceTarget;
+        avoidanceCoordinateTarget = currentAvoidanceTarget.transform;
 
         // Call ResetAvoidanceCoordinateTarget method after 1 second
         Invoke("ResetAvoidanceCoordinateTarget", 2f);
@@ -539,7 +564,7 @@ public class SocialBehaviour : MonoBehaviour
         isMutualGazeRunning = false;
     }
 
-    public virtual GameObject GetCustomFocalPoint()
+    public virtual Transform GetCustomFocalPoint()
     {
         if (!parameterManager.GetOnInSlowingArea())
         {
@@ -564,15 +589,15 @@ public class SocialBehaviour : MonoBehaviour
             }
         }
 
-        return minDistanceFocalPoint;
+        return minDistanceFocalPoint.transform;
 
     }
 
-    public virtual GameObject GetAvoidanceCoordinationTarget(){
+    public virtual Transform GetAvoidanceCoordinationTarget(){
         return avoidanceCoordinateTarget;
     }
 
-    public virtual GameObject GetCollidedTarget(){
+    public virtual Transform GetCollidedTarget(){
         return collidedTarget;
     }
     public virtual Vector3 GetCurrentDirection(){

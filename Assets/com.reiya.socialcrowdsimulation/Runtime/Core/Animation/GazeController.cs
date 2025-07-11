@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CollisionAvoidance{
 [RequireComponent(typeof(ParameterManager))]
 [RequireComponent(typeof(SocialBehaviour))]
-public class GazeController : MonoBehaviour
+public class GazeController : CrowdSimulationMonoBehaviour
 {
     public enum CurrentLookTarget{
         CollidedTarget,
@@ -31,7 +31,7 @@ public class GazeController : MonoBehaviour
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>();
-        GetBodyTransforms(animator);
+        t_Neck = animator.GetBoneTransform(HumanBodyBones.Neck);
 
         socialBehaviour = GetComponent<SocialBehaviour>();
 
@@ -78,17 +78,8 @@ public class GazeController : MonoBehaviour
         return null;
     }
 
-    protected virtual void GetBodyTransforms(Animator _animator){
-        t_Neck = _animator.GetBoneTransform(HumanBodyBones.Neck);
-    }
-    protected virtual void SetBodyTransforms(Animator _animator)
-    {
-        _animator.SetBoneLocalRotation(HumanBodyBones.Neck, t_Neck.localRotation);
-    }
-
     public virtual void UpdateGaze(object sender, EventArgs e)
     {
-        GetBodyTransforms(animator);
         ParameterUpdater();
 
         AdjustVerticalEyeLevelPass();
@@ -115,7 +106,7 @@ public class GazeController : MonoBehaviour
     [Header("Look At Params")]
     [ReadOnly]
     public CurrentLookTarget currentLookTarget;
-    protected GameObject collidedTarget;
+    protected Transform collidedTarget;
     protected Vector3 horizontalAttractionPoint;
     protected Quaternion saveLookAtRot = Quaternion.identity;
     protected Vector3 currentLookAt = Vector3.zero;
@@ -124,8 +115,8 @@ public class GazeController : MonoBehaviour
     protected Vector3 currentCenterOfMass = Vector3.zero;
     protected Vector3 currentAvoidanceTarget = Vector3.zero;
     protected Vector3 currentAgentDirection = Vector3.zero;
-    protected GameObject avoidanceCoordinationTarget = null;
-    protected GameObject customFocalPoint = null;
+    protected Transform avoidanceCoordinationTarget = null;
+    protected Transform customFocalPoint = null;
 
 
     protected virtual void HorizontalLookAtPass(Vector3 currentLookAtDir, Vector3 targetLookAtDir, float rotationSpeed){
@@ -155,16 +146,16 @@ public class GazeController : MonoBehaviour
     protected virtual void LookAtAttractionPointUpdater(){
         if(collidedTarget != null){
             //when collide
-            horizontalAttractionPoint = (collidedTarget.transform.position - this.transform.position).normalized;
+            horizontalAttractionPoint = (collidedTarget.position - _cachedTransform.position).normalized;
             currentLookTarget = CurrentLookTarget.CollidedTarget;
         }else if(avoidanceCoordinationTarget != null){
-            horizontalAttractionPoint = (avoidanceCoordinationTarget.transform.position - this.transform.position).normalized;
+            horizontalAttractionPoint = (avoidanceCoordinationTarget.position - _cachedTransform.position).normalized;
             currentLookTarget = CurrentLookTarget.CoordinationTarget;
         }else if(currentAvoidanceTarget != Vector3.zero){
-            horizontalAttractionPoint = (currentAvoidanceTarget - this.transform.position).normalized;
+            horizontalAttractionPoint = (currentAvoidanceTarget - _cachedTransform.position).normalized;
             currentLookTarget = CurrentLookTarget.CurerntAvoidancetarget;
         }else if(customFocalPoint != null){
-            horizontalAttractionPoint = (customFocalPoint.transform.position - this.transform.position).normalized;
+            horizontalAttractionPoint = (customFocalPoint.position - _cachedTransform.position).normalized;
             currentLookTarget = CurrentLookTarget.CustomFocalPoint;
         }else{
             //in normal situation
@@ -191,14 +182,14 @@ public class GazeController : MonoBehaviour
         Vector3 offset = new Vector3(0f, 0f, 0f);
         Vector3 eyePosition = animator.GetBoneTransform(HumanBodyBones.Head).transform.position + offset;
         Gizmos.color = Color.magenta;
-        Vector3 targetPosition = this.transform.position + horizontalAttractionPoint;
+        Vector3 targetPosition = _cachedTransform.position + horizontalAttractionPoint;
         Vector3 lineEndPoint = new Vector3(targetPosition.x, eyePosition.y, targetPosition.z);
         Gizmos.DrawLine(eyePosition, lineEndPoint);  
         float sphereSize = 0.02f; 
         Gizmos.DrawSphere(lineEndPoint, sphereSize);
 
         Gizmos.color = Color.green;
-        Vector3 currentLookAt = this.transform.position + GetCurrentLookAt();
+        Vector3 currentLookAt = _cachedTransform.position + GetCurrentLookAt();
         Vector3 currentLookAtEndPoint = new Vector3(currentLookAt.x, eyePosition.y, currentLookAt.z);
         Gizmos.DrawLine(eyePosition, currentLookAtEndPoint);  
         Gizmos.DrawSphere(currentLookAtEndPoint, sphereSize);
@@ -247,7 +238,7 @@ public class GazeController : MonoBehaviour
     }
     
     protected virtual void AdjustVerticalEyeLevelPass(){
-        Vector3 horizontalForward = new Vector3(t_Neck.forward.x, 0, t_Neck.forward.z).normalized;
+        Vector3 horizontalForward = Vector3.Scale(t_Neck.forward, new Vector3(1, 0, 1)).normalized;
         Quaternion horizontalRotation = Quaternion.LookRotation(horizontalForward, Vector3.up);
         t_Neck.localRotation *= Quaternion.Inverse(t_Neck.rotation) * horizontalRotation;
     }
