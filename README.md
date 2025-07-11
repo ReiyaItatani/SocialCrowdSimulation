@@ -5,6 +5,8 @@ Welcome to the **Social Crowd Simulation: Improving Realism with Social Rules an
 - Steer toward their goals.
 - Avoid collisions.
 - Form natural groups.
+- Realistic Attention Model
+- Natural Animation by [motion matching](https://github.com/JLPM22/MotionMatching)
 
 For a detailed overview and demo, visit the [Project Page](https://reiyaitatani.github.io/SocialCrowdSimulation/).
 For the paper, [MIG2024](https://dl.acm.org/doi/10.1145/3677388.3696337), [Computers & Graphics 2025](https://www.sciencedirect.com/science/article/pii/S009784932500127X)
