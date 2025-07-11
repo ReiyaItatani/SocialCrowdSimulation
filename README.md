@@ -210,10 +210,16 @@ We encourage contributions and inquiries—please **open an issue** or submit a 
 If you find this work beneficial, kindly attribute it to the authors or cite the following publication:
 
 ```bibtex
-@inproceedings{10.1145/3677388.3696337,
-  author    = {Itatani, Reiya and Pelechano, Nuria},
-  title     = {Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior},
-  booktitle = {Proceedings of the 17th ACM SIGGRAPH Conference on Motion, Interaction, and Games (MIG '24)},
-  year      = {2024},
-  doi       = {10.1145/3677388.3696337}
+@article{Reiya2025,
+title = {Social crowd simulation: Improving realism with social rules and gaze behavior},
+journal = {Computers & Graphics},
+volume = {131},
+pages = {104286},
+year = {2025},
+issn = {0097-8493},
+doi = {https://doi.org/10.1016/j.cag.2025.104286},
+url = {https://www.sciencedirect.com/science/article/pii/S009784932500127X},
+author = {Reiya Itatani and Nuria Pelechano},
+keywords = {Crowd simulation, Collision avoidance, Gaze behavior, Social rules}
+}
 }
