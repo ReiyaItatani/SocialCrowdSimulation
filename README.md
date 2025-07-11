@@ -2,9 +2,9 @@
 
 Welcome to the **Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior** repository. This system simulates dynamic pedestrian movement by integrating various social and physical forces. Agents will:
 
-- Steer toward their goals.
-- Avoid collisions.
-- Form natural groups.
+- Steer toward their goals
+- Avoid collisions
+- Form natural groups
 - Realistic Attention Model
 - Natural Animation by [motion matching](https://github.com/JLPM22/MotionMatching)
 
