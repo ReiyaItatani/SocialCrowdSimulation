@@ -62,19 +62,25 @@ public class UpdateAvoidanceTarget : MonoBehaviour
 
     public List<GameObject> GetObstaclesInAvoidanceArea(){
         return obstaclesInAvoidanceArea;
-    } 
-
-    // Checks each GameObject in othersInAvoidanceArea to determine if it should be removed.
-    private void AvoidanceTargetActiveChecker() {
-        // Remove GameObject from the list if it's null, not active in the hierarchy,
-        // or if its CapsuleCollider is not enabled.
-        othersInAvoidanceArea.RemoveAll(gameObject =>
-            gameObject == null || !gameObject.activeInHierarchy || !IsCapsuleColliderActive(gameObject)
-        );
     }
 
-    // Determines if the CapsuleCollider component of the given GameObject is active and enabled.
-    private bool IsCapsuleColliderActive(GameObject obj) {
+        // Checks each GameObject in othersInAvoidanceArea to determine if it should be removed.
+        private void AvoidanceTargetActiveChecker()
+        {
+            // Remove GameObject from the list if it's null, not active in the hierarchy,
+            // or if its CapsuleCollider is not enabled.
+            for (int i = othersInAvoidanceArea.Count - 1; i >= 0; i--)
+            {
+                var go = othersInAvoidanceArea[i];
+                if (go == null || !go.activeInHierarchy || !IsCapsuleColliderActive(go))
+                {
+                    othersInAvoidanceArea.RemoveAt(i);
+                }
+            }
+        }
+
+        // Determines if the CapsuleCollider component of the given GameObject is active and enabled.
+        private bool IsCapsuleColliderActive(GameObject obj) {
         // Retrieve the CapsuleCollider component from the GameObject.
         CapsuleCollider capsuleCollider = obj.GetComponent<CapsuleCollider>();
 

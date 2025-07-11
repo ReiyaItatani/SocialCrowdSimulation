@@ -13,11 +13,11 @@ namespace CollisionAvoidance{
 
         [SerializeField, ReadOnly]
         protected QuickGraphNode _prevTargetNode = null;
-        public Vector3 PrevTargetNodePosition => _prevTargetNode.transform.position;
+        public Vector3 PrevTargetNodePosition => _prevTargetNode._cachedTransform.position;
 
         [SerializeField, ReadOnly]
         protected QuickGraphNode _currentTargetNode = null;
-        public Vector3 CurrentTargetNodePosition => _currentTargetNode.transform.position;
+        public Vector3 CurrentTargetNodePosition => _currentTargetNode._cachedTransform.position;
 
         #endregion
 

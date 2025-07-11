@@ -7,6 +7,25 @@ using Unity.Collections;
 namespace CollisionAvoidance{
     public class BasePathController : MotionMatchingCharacterController
     {
+
+        #region PUBLIC ATTRIBUTES
+
+        public Transform _cachedTransform
+        {
+            get
+            {
+                if (m_CachedTransform == null)
+                {
+                    m_CachedTransform = transform;
+                }
+
+                return m_CachedTransform;
+            }
+        }
+        protected Transform m_CachedTransform = null;
+
+        #endregion
+
         // --------------------------------------------------------------------------
         // Motion Matching ----------------------------------------------------------
         [Header("Motion Matching Parameters")]
@@ -103,7 +122,7 @@ namespace CollisionAvoidance{
 #region GET AND SET
         public float3 GetCurrentPosition()
         {
-            return transform.position + CurrentPosition;
+            return _cachedTransform.position + CurrentPosition;
         }
         public Vector3 GetCurrentDirection()
         {

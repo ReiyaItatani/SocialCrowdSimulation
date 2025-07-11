@@ -223,10 +223,11 @@ public class ForceSolver : BasePathController
             //Calculate Avoidance Force
             if (currentAvoidanceTarget != null)
             {
-                Vector3 currentPosition          = GetCurrentPosition();
-                Vector3 currentDirection         = GetCurrentDirection();
-                Vector3 avoidanceTargetPosition  = currentAvoidanceTarget.GetComponent<IParameterManager>().GetCurrentPosition();
-                Vector3 avoidanceTargetAvoidanceVector = currentAvoidanceTarget.GetComponent<IParameterManager>().GetCurrentAvoidanceVector();
+                IParameterManager paramManager         = currentAvoidanceTarget.GetComponent<IParameterManager>();
+                Vector3 currentPosition                = GetCurrentPosition();
+                Vector3 currentDirection               = GetCurrentDirection();
+                Vector3 avoidanceTargetPosition        = paramManager.GetCurrentPosition();
+                Vector3 avoidanceTargetAvoidanceVector = paramManager.GetCurrentAvoidanceVector();
 
                 avoidanceVector = ComputeAvoidanceVector(currentAvoidanceTarget, currentDirection, currentPosition);
 
@@ -256,7 +257,7 @@ public class ForceSolver : BasePathController
                 elapsedTime += Time.deltaTime;
                 if(transitionTime > elapsedTime){
                     avoidanceVector = Vector3.Lerp(avoidanceVector, Vector3.zero, elapsedTime/transitionTime);
-                    yield return new WaitForSeconds(Time.deltaTime);
+                        yield return null;
                 }else{
                     avoidanceVector = Vector3.zero;
                     elapsedTime = 0.0f;
@@ -298,9 +299,10 @@ public class ForceSolver : BasePathController
         GameObject _currentAvoidanceTarget = null;
         myPositionAtNearestApproach = Vector3.zero;
         otherPositionAtNearestApproach = Vector3.zero;
-        foreach(GameObject other in others){
+            GameObject goCollisionAvoidance = collisionAvoidance.GetAgentGameObject();
+        foreach (GameObject other in others){
             //Skip self
-            if(other == collisionAvoidance.GetAgentGameObject() || other == null){
+            if(other == null || other == goCollisionAvoidance){
                 continue;
             }
             IParameterManager otherParameterManager = other.GetComponent<IParameterManager>();
@@ -483,43 +485,52 @@ public class ForceSolver : BasePathController
     * It takes into account the interactions and influences of multiple objects within a group to determine the overall force or direction.
     ********************************************************************************************************************************/
     #region GROUP FORCE
-    //protected float socialInteractionWeight = 1.0f;
-    protected float cohesionWeight = 2.0f;
-    protected float repulsionForceWeight = 1.5f;
-    protected float alignmentForceWeight = 1.5f;
+        //protected float socialInteractionWeight = 1.0f;
+        protected float cohesionWeight = 2.0f;
+        protected float repulsionForceWeight = 1.5f;
+        protected float alignmentForceWeight = 1.5f;
 
-    protected virtual IEnumerator UpdateGroupForce(float updateTime, string  _groupName){
-        if(_groupName == "Individual"){
-            groupForce = Vector3.zero;
-        }else{
-            List<GameObject> groupAgents = groupManager.GetGroupAgents();
-            CapsuleCollider  agentCollider = collisionAvoidance.GetAgentCollider();
-            float              agentRadius = agentCollider.radius;
-            GameObject     agentGameObject = collisionAvoidance.GetAgentGameObject();
+        protected virtual IEnumerator UpdateGroupForce(float updateTime, string  _groupName)
+        {
+            if(_groupName == "Individual"){
+                groupForce = Vector3.zero;
+            }else{
+                List<GameObject> groupAgents = groupManager.GetGroupAgents();
+                CapsuleCollider  agentCollider = collisionAvoidance.GetAgentCollider();
+                float              agentRadius = agentCollider.radius;
+                GameObject     agentGameObject = collisionAvoidance.GetAgentGameObject();
 
-            while(true){
-                Vector3  _currentPosition = GetCurrentPosition();   
-                Vector3 _currentDirection = GetCurrentDirection();  
+                while(true){
+                    Vector3  _currentPosition = GetCurrentPosition();   
+                    Vector3 _currentDirection = GetCurrentDirection();  
 
-                Vector3    cohesionForce = CalculateCohesionForce (groupAgents, cohesionWeight,       agentGameObject, _currentPosition);
-                Vector3   repulsionForce = CalculateRepulsionForce(groupAgents, repulsionForceWeight, agentGameObject, _currentPosition, agentRadius);
-                Vector3   alignmentForce = CalculateAlignment     (groupAgents, alignmentForceWeight, agentGameObject, _currentDirection, agentRadius);
-                Vector3    newGroupForce = (cohesionForce + repulsionForce + alignmentForce).normalized;
+                    Vector3    cohesionForce = CalculateCohesionForce (groupAgents, cohesionWeight,       agentGameObject, _currentPosition);
+                    Vector3   repulsionForce = CalculateRepulsionForce(groupAgents, repulsionForceWeight, agentGameObject, _currentPosition, agentRadius);
+                    Vector3   alignmentForce = CalculateAlignment     (groupAgents, alignmentForceWeight, agentGameObject, _currentDirection, agentRadius);
+                    Vector3    newGroupForce = (cohesionForce + repulsionForce + alignmentForce).normalized;
 
-                //Vector3 AdjustPosForce = Vector3.zero;
-                //Vector3  headDirection = socialBehaviour.GetCurrentLookAt();
-                // if(headDirection!=null){
-                //     float GazeAngle = CalculateGazingAngle(groupAgents, _currentPosition, headDirection, fieldOfView);
-                //     AdjustPosForce = CalculateAdjustPosForce(socialInteractionWeight, GazeAngle, headDirection);
-                // }
-                //Vector3 newGroupForce = (AdjustPosForce + cohesionForce + repulsionForce + alignmentForce).normalized;
+                    //Vector3 AdjustPosForce = Vector3.zero;
+                    //Vector3  headDirection = socialBehaviour.GetCurrentLookAt();
+                    // if(headDirection!=null){
+                    //     float GazeAngle = CalculateGazingAngle(groupAgents, _currentPosition, headDirection, fieldOfView);
+                    //     AdjustPosForce = CalculateAdjustPosForce(socialInteractionWeight, GazeAngle, headDirection);
+                    // }
+                    //Vector3 newGroupForce = (AdjustPosForce + cohesionForce + repulsionForce + alignmentForce).normalized;
 
-                StartCoroutine(GroupForceGradualTransition(updateTime, groupForce, newGroupForce));
-
-                yield return new WaitForSeconds(updateTime);
+                    //yield return StartCoroutine(GroupForceGradualTransition(updateTime, groupForce, newGroupForce));
+                    //Group Force Gradual Transition.
+                    float elapsedTime = 0.0f;
+                    Vector3 initialGroupForce = groupForce;
+                    while (elapsedTime < updateTime)
+                    {
+                        elapsedTime += Time.deltaTime;
+                        groupForce = Vector3.Slerp(initialGroupForce, newGroupForce, elapsedTime / updateTime);
+                        yield return null;
+                    }
+                    groupForce = newGroupForce;
+                }
             }
         }
-    }
 
     protected virtual float CalculateGazingAngle(List<GameObject> groupAgents, Vector3 currentPos, Vector3 currentDir, float angleLimit, GameObject myself)
     {
@@ -558,25 +569,48 @@ public class ForceSolver : BasePathController
         return judgeWithinThreshold*cohesionWeight*toCenterOfMassDir;
     }
 
-    protected virtual Vector3 CalculateRepulsionForce(List<GameObject> groupAgents, float repulsionForceWeight, GameObject myself, Vector3 currentPos, float agentRadius){
-        Vector3 repulsionForceDir = Vector3.zero;
-        foreach(GameObject agent in groupAgents){
-            //skip myselfVector3.Cross
-            if(agent == myself) continue;
-            Vector3 toOtherDir = agent.transform.position - currentPos;
-            float dist = Vector3.Distance(currentPos, agent.transform.position);
-            float threshold = 0;
-            float safetyDistance = 0.05f;
-            if(dist < 2*agentRadius + safetyDistance){
-                threshold = 1.0f / dist;
-            }
-            toOtherDir = toOtherDir.normalized;
-            repulsionForceDir += threshold*repulsionForceWeight*toOtherDir;
-        }
-        return -repulsionForceDir;
-    }
+        //protected virtual Vector3 CalculateRepulsionForce(List<GameObject> groupAgents, float repulsionForceWeight, GameObject myself, Vector3 currentPos, float agentRadius){
+        //    Vector3 repulsionForceDir = Vector3.zero;
+        //    foreach(GameObject agent in groupAgents){
+        //        //skip myselfVector3.Cross
+        //        if(agent == myself) continue;
+        //        Vector3 toOtherDir = agent.transform.position - currentPos;
+        //        float dist = Vector3.Distance(currentPos, agent.transform.position);
+        //        float threshold = 0;
+        //        float safetyDistance = 0.05f;
+        //        if(dist < 2*agentRadius + safetyDistance){
+        //            threshold = 1.0f / dist;
+        //        }
+        //        toOtherDir = toOtherDir.normalized;
+        //        repulsionForceDir += threshold*repulsionForceWeight*toOtherDir;
+        //    }
+        //    return -repulsionForceDir;
+        //}
 
-    protected virtual Vector3 CalculateAlignment(List<GameObject> groupAgents, float alignmentForceWeight, GameObject myself, Vector3 currentDirection, float agentRadius){
+        protected virtual Vector3 CalculateRepulsionForce(List<GameObject> groupAgents, float repulsionForceWeight, GameObject myself, Vector3 currentPos, float agentRadius)
+        {
+            Vector3 repulsionForceDir = Vector3.zero;
+            float minDist = 2 * agentRadius + 0.05f;
+
+            foreach (var agent in groupAgents)
+            {
+                if (agent == null || agent == myself) continue;
+
+                Vector3 offset = agent.transform.position - currentPos;
+                float sqrDist = offset.sqrMagnitude;
+
+                if (sqrDist < minDist * minDist)
+                {
+                    float invDist = 1.0f / Mathf.Sqrt(sqrDist); // Equivalent to 1 / dist
+                    Vector3 dir = offset.normalized;
+                    repulsionForceDir += repulsionForceWeight * invDist * dir;
+                }
+            }
+
+            return -repulsionForceDir;
+        }
+
+        protected virtual Vector3 CalculateAlignment(List<GameObject> groupAgents, float alignmentForceWeight, GameObject myself, Vector3 currentDirection, float agentRadius){
         Vector3 steering = Vector3.zero;
         int neighborsCount = 0;
 
@@ -633,18 +667,18 @@ public class ForceSolver : BasePathController
         }
     }
 
-    protected virtual IEnumerator GroupForceGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector){
-        float elapsedTime = 0.0f;
-        Vector3 initialGroupForce = initialVector;
-        while(elapsedTime < duration){
-            elapsedTime += Time.deltaTime;
-            groupForce = Vector3.Slerp(initialGroupForce, targetVector, elapsedTime/duration);
-            yield return new WaitForSeconds(Time.deltaTime);
-        }
-        groupForce = targetVector;
+    //protected virtual IEnumerator GroupForceGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector){
+    //    float elapsedTime = 0.0f;
+    //    Vector3 initialGroupForce = initialVector;
+    //    while(elapsedTime < duration)
+    //    {
+    //        elapsedTime += Time.deltaTime;
+    //        groupForce = Vector3.Slerp(initialGroupForce, targetVector, elapsedTime/duration);
+    //        yield return null;
+    //    }
+    //    groupForce = targetVector;
+    //}
 
-        yield return null;
-    }
     #endregion
 
     /********************************************************************************************************************************
@@ -672,7 +706,7 @@ public class ForceSolver : BasePathController
         while(elapsedTime < duration){
             elapsedTime += Time.deltaTime;
             wallRepForce = Vector3.Slerp(initialWallForce, targetVector, elapsedTime/duration);
-            yield return new WaitForSeconds(Time.deltaTime);
+                yield return null;
         }
         wallRepForce = targetVector;
 
@@ -688,8 +722,7 @@ public class ForceSolver : BasePathController
     protected virtual IEnumerator UpdateAvoidObstacleVector(float updateTime, float transitionTime, string groupName){
         while(true){
             //Get Obstacles//
-            List<GameObject> _obstacles = new List<GameObject>();
-            _obstacles = collisionAvoidance.GetObstaclesInFOV();
+            List<GameObject> _obstacles = collisionAvoidance.GetObstaclesInFOV();
 
             Vector3 newAvoidObstacleVector;
             if(_obstacles == null || _obstacles.Count == 0){
@@ -711,9 +744,38 @@ public class ForceSolver : BasePathController
                     newAvoidObstacleVector = normalVector.CalculateNormalVectorFromWall(_currentPosition);
                 }
             }
-            StartCoroutine(AvoidObstacleVectorGradualTransition(transitionTime, avoidObstacleVector, newAvoidObstacleVector.normalized));
-            yield return new WaitForSeconds(updateTime);
-        }
+
+                //    StartCoroutine(AvoidObstacleVectorGradualTransition(transitionTime, avoidObstacleVector, newAvoidObstacleVector.normalized));
+                //yield return new WaitForSeconds(updateTime);
+
+                float elapsedTime = 0.0f;
+                Vector3 initialavoidNeighborsVector = avoidObstacleVector;
+                Vector3 targetavoidNeighborsVector = newAvoidObstacleVector.normalized;
+                while (elapsedTime < transitionTime)
+                {
+                    elapsedTime += Time.deltaTime;
+                    avoidObstacleVector = Vector3.Slerp(initialavoidNeighborsVector, targetavoidNeighborsVector, elapsedTime / transitionTime);
+                    yield return new WaitForSeconds(Time.deltaTime);
+                }
+                avoidObstacleVector = targetavoidNeighborsVector;
+
+                yield return null;
+            }
+
+        //protected virtual IEnumerator AvoidObstacleVectorGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector)
+        //{
+        //    float elapsedTime = 0.0f;
+        //    Vector3 initialavoidNeighborsVector = initialVector;
+        //    while (elapsedTime < duration)
+        //    {
+        //        elapsedTime += Time.deltaTime;
+        //        avoidObstacleVector = Vector3.Slerp(initialavoidNeighborsVector, targetVector, elapsedTime / duration);
+        //        yield return new WaitForSeconds(Time.deltaTime);
+        //    }
+        //    avoidObstacleVector = targetVector;
+
+        //    yield return null;
+        //}
     }
     protected GameObject CalculateClosestObstacle(List<GameObject> obstacles, Vector3 pos){
         GameObject closestObstacle = null;
@@ -730,18 +792,7 @@ public class ForceSolver : BasePathController
         }
         return closestObstacle;
     }
-    protected virtual IEnumerator AvoidObstacleVectorGradualTransition(float duration, Vector3 initialVector, Vector3 targetVector){
-        float elapsedTime = 0.0f;
-        Vector3 initialavoidNeighborsVector = initialVector;
-        while(elapsedTime < duration){
-            elapsedTime += Time.deltaTime;
-            avoidObstacleVector = Vector3.Slerp(initialavoidNeighborsVector, targetVector, elapsedTime/duration);
-            yield return new WaitForSeconds(Time.deltaTime);
-        }
-        avoidObstacleVector = targetVector;
 
-        yield return null;
-    }
     #endregion
     
     /********************************************************************************************************************************

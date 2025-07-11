@@ -5,7 +5,7 @@ using MotionMatching;
 
 namespace CollisionAvoidance{
 
-public class GroupParameterManager : MonoBehaviour, IParameterManager
+public class GroupParameterManager : CrowdSimulationMonoBehaviour, IParameterManager
 {
     public List<AgentPathController> pathControllers = new List<AgentPathController>();
 
