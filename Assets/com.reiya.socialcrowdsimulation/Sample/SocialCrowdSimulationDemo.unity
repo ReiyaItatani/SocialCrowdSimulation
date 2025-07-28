@@ -15647,6 +15647,7 @@ MonoBehaviour:
   - {fileID: 175632973}
   - {fileID: 1621922911}
   - {fileID: 246818124}
+  instantiatedGroups: []
 --- !u!114 &447124467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15687,6 +15688,7 @@ MonoBehaviour:
     DebugPose: 0
     DebugTrajectory: 0
     DebugContacts: 0
+  useFacialExpression: 0
   ocean:
     openness: 0
     conscientiousness: 0
@@ -25379,6 +25381,7 @@ MonoBehaviour:
     DebugPose: 0
     DebugTrajectory: 0
     DebugContacts: 0
+  useFacialExpression: 0
   ocean:
     openness: 0
     conscientiousness: 0
@@ -25432,6 +25435,7 @@ MonoBehaviour:
   - {fileID: 1759238319}
   - {fileID: 239762649}
   - {fileID: 698343089}
+  instantiatedGroups: []
 --- !u!1 &718544033
 GameObject:
   m_ObjectHideFlags: 0
@@ -43019,6 +43023,7 @@ MonoBehaviour:
   - {fileID: 1725765529}
   - {fileID: 914859968}
   - {fileID: 760783801}
+  instantiatedGroups: []
 --- !u!114 &1240008595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43059,6 +43064,7 @@ MonoBehaviour:
     DebugPose: 0
     DebugTrajectory: 0
     DebugContacts: 0
+  useFacialExpression: 0
   ocean:
     openness: 0
     conscientiousness: 0
@@ -55263,6 +55269,7 @@ MonoBehaviour:
   - {fileID: 1219039380}
   - {fileID: 1550699781}
   - {fileID: 755577018}
+  instantiatedGroups: []
 --- !u!114 &1591234929
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55303,6 +55310,7 @@ MonoBehaviour:
     DebugPose: 0
     DebugTrajectory: 0
     DebugContacts: 0
+  useFacialExpression: 0
   ocean:
     openness: 0
     conscientiousness: 0

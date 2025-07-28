@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7167486191166410274}
   - component: {fileID: 4748662986474111886}
   m_Layer: 0
-  m_Name: SmarthPhoneMesh
+  m_Name: PhoneMesh(Old)
   m_TagString: Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
