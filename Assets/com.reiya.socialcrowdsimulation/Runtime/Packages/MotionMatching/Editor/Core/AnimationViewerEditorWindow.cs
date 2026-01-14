@@ -884,7 +884,21 @@ namespace MotionMatching
                 }
 
                 // Show the context menu
-                dropdownMenu.DropDown(new Rect(e.position, Vector2.zero), element);
+                #if UNITY_2021_2_OR_NEWER
+                dropdownMenu.DropDown(
+                    new Rect(e.position, Vector2.zero),
+                    element,
+                    true,
+                    false
+                );
+                #else
+                dropdownMenu.DropDown(
+                    new Rect(e.position, Vector2.zero),
+                    element,
+                    true
+                );
+                #endif
+
             }
         }
 
