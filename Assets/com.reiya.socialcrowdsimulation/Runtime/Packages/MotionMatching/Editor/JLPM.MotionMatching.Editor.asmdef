@@ -1,0 +1,19 @@
+{
+    "name": "JLPM.MotionMatching.Editor",
+    "rootNamespace": "",
+    "references": [
+        "JLPM.MotionMatching",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,22 +1,22 @@
 {
-    "name": "com.reiya.socialcrowdsimulation",
-    "version": "0.2.1",
-    "displayName": "Social Crowd Simulation",
-    "description": "Motion Matching with Collision Avoidance including social behabvior implementation for Unity",
-    "unity": "2020.1",
-    "documentationUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
-    "changelogUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
-    "licensesUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation#license",
-    "keywords": [
-      "crowd simulation"
-    ],
-    "author": {
-      "name": "Reiya",
-      "url": "https://reiyaitatani.work/"
-    },
-    "dependencies": {
-      "com.jlpm.motionmatching": "https://github.com/JLPM22/MotionMatching?path=/com.jlpm.motionmatching#2985170ffe",
-      "com.unity.collections": "1.4.0"
-    }
+  "name": "com.reiya.socialcrowdsimulation",
+  "version": "0.2.1",
+  "displayName": "Social Crowd Simulation",
+  "description": "Motion Matching with Collision Avoidance including social behavior implementation for Unity",
+  "unity": "2020.1",
+  "documentationUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
+  "changelogUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation",
+  "licensesUrl": "https://github.com/ReiyaItatani/SocialCrowdSimulation#license",
+  "keywords": [
+    "crowd simulation"
+  ],
+  "author": {
+    "name": "Reiya",
+    "url": "https://reiyaitatani.work/"
+  },
+  "dependencies": {
+    "com.unity.collections": "1.4.0",
+    "com.unity.burst": "1.6.4",
+    "com.unity.inputsystem": "1.5.1"
   }
-  
+}
