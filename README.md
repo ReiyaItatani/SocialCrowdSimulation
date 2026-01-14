@@ -38,10 +38,6 @@ For the paper, [MIG2024](https://dl.acm.org/doi/10.1145/3677388.3696337), [Compu
 
 1. **Unity 2021.2 or Newer**  
    This project requires Unity 2021.2 or later. Compatibility is not guaranteed on older versions.
-
-2. **Motion Matching Package**  
-   You need to add the Motion Matching package to your Unity project. Please see [JLPM22's Motion Matching GitHub repository](https://github.com/JLPM22/MotionMatching) for detailed instructions on setting it up.
-
 ---
 
 ## Installation
