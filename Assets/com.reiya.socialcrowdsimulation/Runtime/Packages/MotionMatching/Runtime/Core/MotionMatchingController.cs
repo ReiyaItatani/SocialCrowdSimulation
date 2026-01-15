@@ -53,7 +53,7 @@ namespace MotionMatching
         private int LastMMSearchFrame; // Frame before the last Motion Matching Search
         private int CurrentFrame; // Current frame index in the pose/feature set
         private float CurrentFrameTime; // Current frame index as float to keep track of variable frame rate
-        private float SearchTimeLeft;
+        protected float SearchTimeLeft;
         private NativeArray<float> QueryFeature;
         private NativeArray<int> SearchResult;
         private NativeArray<float> FeaturesWeightsNativeArray;
@@ -183,14 +183,14 @@ namespace MotionMatching
             SkeletonTransforms[0].rotation = quaternion.LookRotation(CharacterController.GetWorldInitDirection(), Vector3.up);
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             SearchTimeLeft = 0;
             CharacterController.OnUpdated += OnCharacterControllerUpdated;
             CharacterController.OnInputChangedQuickly += OnInputChangedQuickly;
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             CharacterController.OnUpdated -= OnCharacterControllerUpdated;
             CharacterController.OnInputChangedQuickly -= OnInputChangedQuickly;
