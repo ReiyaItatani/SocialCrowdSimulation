@@ -1,47 +1,65 @@
-# Environment Setup: Walls and Obstacles
+# Environment Setup
 
-Walls and obstacles influence agent movement through repulsion forces computed in the L4 Decision layer.
+Walls and obstacles create repulsion forces that push agents away.
+
+---
 
 ## Adding Walls
 
-1. Use the **Walls** prefab from `Sample/QuickStart/ForSetUpEnvironment/`
-2. Place it in your scene
-3. Ensure the GameObject has the **Wall** tag
-4. The wall must have a `NormalVector` component — this computes the repulsion direction that pushes agents away
+Use the **Walls** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
+
+<!-- TODO: images/wall-prefab.png — Wall prefab in Project window -->
+
+<!-- TODO: images/wall-scene.png — Scene view with wall placed, showing agents being repelled -->
+
+| Requirement | |
+|-------------|---|
+| **Tag** | `Wall` |
+| **Component** | `NormalVector` (computes repulsion direction) |
+
+---
 
 ## Adding Obstacles
 
-1. Use the **Obstacle** prefab from `Sample/QuickStart/ForSetUpEnvironment/`
-2. Place it in your scene
-3. Ensure the GameObject has the **Obstacle** tag
-4. The obstacle must have a `NormalVector` component
+Use the **Obstacle** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
+
+<!-- TODO: images/obstacle-prefab.png — Obstacle prefab in Project window -->
+
+<!-- TODO: images/obstacle-scene.png — Scene view with obstacle, agents avoiding it -->
+
+| Requirement | |
+|-------------|---|
+| **Tag** | `Obstacle` |
+| **Component** | `NormalVector` |
+
+---
 
 ## How NormalVector Works
 
-`NormalVector` computes a repulsion vector from the wall/obstacle surface toward the agent:
+<!-- TODO: images/normal-vector-diagram.png — Diagram showing wall surface, normal direction pointing toward agent, distance-based scaling -->
 
-1. The wall's forward direction (`transform.forward`) defines the wall orientation
-2. The normal is computed perpendicular to the wall direction, pointing toward the agent
-3. The magnitude is scaled inversely with distance — closer agents receive stronger repulsion
+`NormalVector` computes a repulsion vector from the wall surface toward the agent:
+- Normal is perpendicular to wall direction, pointing toward agent
+- Magnitude scales inversely with distance (closer = stronger)
 
-## Pipeline Integration
+---
 
-1. **CollisionAvoidanceController** detects walls (via `AgentCollisionDetection` trigger) and obstacles in the agent's field of view
-2. **L1-2 (Perception + Attention)** resolves `NormalVector` components to get repulsion normals
-3. **L4 (Decision)** applies wall/obstacle forces using the configured weights:
-   - `wallRepForceWeight` (default: 0.3) — strength of wall repulsion
-   - `avoidObstacleWeight` (default: 1.0) — strength of obstacle avoidance
+## Force Weights
 
-These weights are configured via [Agent Manager](Agent-Manager.md).
+Configured in [Agent Manager](Agent-Manager.md):
+
+| Force | Default | |
+|-------|---------|-|
+| `wallRepForceWeight` | 0.3 | Wall repulsion strength |
+| `avoidObstacleWeight` | 1.0 | Obstacle avoidance strength |
+
+---
 
 ## Required Tags
 
-The following tags are automatically created when you click **Create AvatarCreator** in the [Scene Setup](Quick-Start.md):
-- **Agent** — agent GameObjects
-- **Group** — group collider GameObjects
-- **Wall** — wall GameObjects
-- **Object** — general objects
-- **Obstacle** — obstacle GameObjects
+Auto-created by **Scene Setup > Create AvatarCreator**:
+
+`Agent` · `Group` · `Wall` · `Object` · `Obstacle`
 
 ---
 

@@ -1,16 +1,26 @@
-# Adding a First-Person Camera Player
+# First-Person Camera
 
-You can include a controllable first-person player in the simulation.
+Add a controllable first-person player to the simulation.
+
+---
 
 ## Setup
 
-1. Open **CollisionAvoidance > Social Crowd Simulation**
-2. Expand the **Create Player** section
-3. Assign **Motion Matching Data** — use the asset from `Sample/QuickStart/ForPlayerCreator/MotionMatchingData.asset`
-4. Assign **Humanoid Avatar** — select a humanoid model (must have a Humanoid rig)
-5. Click **Create Player**
+**CollisionAvoidance > Social Crowd Simulation** > **Create Player**
 
-### Generated Player Hierarchy
+<!-- TODO: images/create-player-section.png — Create Player section of the unified window showing MMData and Avatar fields -->
+
+1. Assign **Motion Matching Data** — use `Sample/QuickStart/ForPlayerCreator/MotionMatchingData.asset`
+2. Assign **Humanoid Avatar** — any humanoid model
+3. Click **Create Player**
+
+<!-- TODO: images/create-player-result.png — Scene view or Hierarchy after player creation -->
+
+---
+
+## Generated Hierarchy
+
+<!-- TODO: images/player-hierarchy.png — Unity Hierarchy showing the Player prefab structure -->
 
 ```
 Player (tag="Agent")
@@ -27,13 +37,17 @@ Player (tag="Agent")
     SpringCharacterController
 ```
 
+---
+
 ## Controls
 
-- Move with **WASD** keys
-- Uses the **SpringCharacterController** from the Motion Matching system
-- For details on `SpringCharacterController`, see the [Motion Matching documentation](https://jlpm22.github.io/motionmatching-docs/basics/character_controller/)
+| Key | Action |
+|-----|--------|
+| **WASD** | Move |
 
-<!-- TODO: screenshot/gif of player creation -->
+Uses `SpringCharacterController` from [Motion Matching](https://jlpm22.github.io/motionmatching-docs/basics/character_controller/).
+
+<!-- TODO: images/first-person-view.gif — First-person view of walking among crowd agents -->
 
 ---
 

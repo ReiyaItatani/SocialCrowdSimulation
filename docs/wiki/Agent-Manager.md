@@ -1,79 +1,82 @@
 # Agent Manager
 
-`AgentManager` is a centralized parameter distributor attached to the **AgentCreator** GameObject. It configures all spawned agents simultaneously from a single Inspector panel.
+Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply to all agents in real-time.
+
+<!-- TODO: images/agent-manager-inspector.png — Full AgentManager Inspector showing all sections -->
+
+---
 
 ## Force Weights
 
-These control the strength of each social force in the L4 Decision layer:
+<!-- TODO: images/force-weights.png — Force Weights section of AgentManager Inspector -->
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `toGoalWeight` | 1.5 | How strongly agents move toward their goal |
-| `avoidNeighborWeight` | 0.5 | Avoidance of nearby agents within the avoidance area |
-| `avoidanceWeight` | 2.3 | Urgent collision avoidance (sudden evasion) |
-| `groupForceWeight` | 0.5 | Force to maintain group formation (cohesion + repulsion + alignment) |
-| `wallRepForceWeight` | 0.3 | Repulsion from walls |
-| `avoidObstacleWeight` | 1.0 | Avoidance of obstacles |
+| Parameter | Default | |
+|-----------|---------|---|
+| `toGoalWeight` | 1.5 | Strength toward goal |
+| `avoidNeighborWeight` | 0.5 | Nearby agent avoidance |
+| `avoidanceWeight` | 2.3 | Urgent collision evasion |
+| `groupForceWeight` | 0.5 | Group formation (cohesion + repulsion + alignment) |
+| `wallRepForceWeight` | 0.3 | Wall repulsion |
+| `avoidObstacleWeight` | 1.0 | Obstacle avoidance |
+
+---
 
 ## Goal Parameters
 
-| Parameter | Default | Range | Description |
-|-----------|---------|-------|-------------|
-| `goalRadius` | 2.0 | 0.1 - 5.0 | Distance to consider the goal reached |
-| `slowingRadius` | 3.0 | 0.1 - 5.0 | Distance at which agents start slowing down |
+<!-- TODO: images/goal-parameters.png — Goal Parameters section of AgentManager Inspector -->
+
+| Parameter | Default | Range |
+|-----------|---------|-------|
+| `goalRadius` | 2.0 | 0.1 - 5.0 |
+| `slowingRadius` | 3.0 | 0.1 - 5.0 |
+
+---
 
 ## Motion Matching Parameters
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `MaxDistanceMMAndCharacterController` | 0.1 | Max distance between SimulationBone and SimulationObject |
-| `PositionAdjustmentHalflife` | 0.1 | Time to move half the distance between them |
-| `PosMaximumAdjustmentRatio` | 0.1 | Ratio between adjustment and character velocity |
+<!-- TODO: images/mm-parameters.png — Motion Matching Parameters section -->
+
+| Parameter | Default |
+|-----------|---------|
+| `MaxDistanceMMAndCharacterController` | 0.1 |
+| `PositionAdjustmentHalflife` | 0.1 |
+| `PosMaximumAdjustmentRatio` | 0.1 |
+
+---
 
 ## Debug Gizmos
 
-### Path Controller Debug
-| Toggle | Description |
-|--------|-------------|
-| `ShowAvoidanceForce` | Visualize urgent avoidance force vector |
-| `ShowAnticipatedCollisionAvoidance` | Visualize anticipated collision force |
-| `ShowGoalDirection` | Visualize goal direction vector |
-| `ShowCurrentDirection` | Visualize current movement direction |
-| `ShowGroupForce` | Visualize group cohesion/repulsion/alignment force |
-| `ShowWallForce` | Visualize wall repulsion force |
-| `ShowObstacleAvoidanceForce` | Visualize obstacle avoidance force |
+<!-- TODO: images/debug-gizmos-toggles.png — Both PathController and MotionMatching gizmo toggle sections -->
 
-### Motion Matching Debug
-| Toggle | Description |
-|--------|-------------|
-| `DebugSkeleton` | Show skeleton visualization |
-| `DebugCurrent` | Show current pose |
-| `DebugPose` | Show target pose |
-| `DebugTrajectory` | Show predicted trajectory |
-| `DebugContacts` | Show contact points |
+### Path Controller
+| Toggle | |
+|--------|-|
+| `ShowAvoidanceForce` | Urgent avoidance vector |
+| `ShowAnticipatedCollisionAvoidance` | Anticipated collision vector |
+| `ShowGoalDirection` | Goal direction |
+| `ShowCurrentDirection` | Current movement direction |
+| `ShowGroupForce` | Group force vector |
+| `ShowWallForce` | Wall repulsion vector |
+| `ShowObstacleAvoidanceForce` | Obstacle avoidance vector |
 
-## How It Works
+### Motion Matching
+| Toggle | |
+|--------|-|
+| `DebugSkeleton` | Skeleton visualization |
+| `DebugCurrent` | Current pose |
+| `DebugPose` | Target pose |
+| `DebugTrajectory` | Predicted trajectory |
+| `DebugContacts` | Contact points |
 
-`AgentManager` distributes parameters to all agents during `Start()` and `OnValidate()`:
+<!-- TODO: images/debug-gizmos-scene.png — Scene view showing colored force vectors on agents -->
 
-```
-AgentManager.Start()
-  └── for each avatar:
-      ├── SetPathControllerParams(AgentPathController)
-      ├── SetPathManagerParams(AgentPathManager)
-      ├── SetMotionMatchingControllerParams(MotionMatchingController)
-      └── SetSocialBehaviourParams(SocialBehaviour)
-```
-
-Changing values in the Inspector updates all agents in real-time via `OnValidate()`.
+---
 
 ## Save / Load Settings
 
-In the Editor, `AgentManager` provides Save/Load functionality:
-- **Save Settings**: Exports all parameters to a JSON file
-- **Load Settings**: Imports parameters from a JSON file
+<!-- TODO: images/save-load-buttons.png — Save Settings / Load Settings buttons in Inspector -->
 
-![Agent Manager](../../.github/media/AgentManager.png)
+Export/import all parameters as JSON via the Inspector buttons.
 
 ---
 

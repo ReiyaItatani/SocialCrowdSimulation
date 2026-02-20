@@ -1,31 +1,40 @@
 # Data Contracts
 
-All inter-layer data is defined as `readonly struct` in `PipelineContracts.cs`. These structs are immutable — once created, they cannot be modified. This guarantees predictable data flow through the pipeline.
+All inter-layer data: `readonly struct` in `PipelineContracts.cs`. Immutable — once created, cannot be modified.
+
+---
+
+## Data Flow
+
+```
+Coordinator builds:  SensorInput, GroupContext, AgentFrame  →  all layers
+L1-2 produces:       AttentionOutput                       →  L3, Coordinator
+Coordinator builds:  DecisionInput                         →  L4
+L3 produces:         PredictionOutput                      →  Coordinator
+L4 produces:         DecisionOutput                        →  L5
+L5 produces:         MotorOutput                           →  AgentPathController
+```
 
 ---
 
 ## Input Structs (Built by Coordinator)
 
 ### SensorInput
-Raw sensor data fed into L1-2. Built by `AgentPipelineCoordinator.BuildSensorInput()` from `CollisionAvoidanceController`.
-
 ```csharp
 public readonly struct SensorInput
 {
     public readonly List<GameObject> FOVAgents;
     public readonly List<GameObject> AvoidanceAreaAgents;
     public readonly GameObject SelfGameObject;
-    public readonly List<GameObject> SharedFOVAgents;    // From GroupManager shared FOV
-    public readonly GameObject WallTarget;               // Has NormalVector component
-    public readonly List<GameObject> ObstaclesInFOV;     // Each has NormalVector component
+    public readonly List<GameObject> SharedFOVAgents;
+    public readonly GameObject WallTarget;
+    public readonly List<GameObject> ObstaclesInFOV;
     public readonly Vector3 AvoidanceColliderSize;
     public readonly float AgentColliderRadius;
 }
 ```
 
 ### AgentFrame
-Current per-agent state. Shared by all pipeline layers. Replaces repeated `(position, direction, speed)` triples.
-
 ```csharp
 public readonly struct AgentFrame
 {
@@ -36,37 +45,21 @@ public readonly struct AgentFrame
 ```
 
 ### GroupContext
-Pre-resolved group data. Built by `AgentPipelineCoordinator.BuildGroupContext()` from `GroupManager`. Returns `GroupContext.None` for individual (non-group) agents.
-
 ```csharp
 public readonly struct GroupContext
 {
     public readonly bool IsInGroup;
     public readonly bool IsGroupColliderActive;
     public readonly string GroupName;
-    public readonly List<GroupMember> Members;       // Excluding self
-    public readonly AgentFrame GroupFrame;            // From GroupParameterManager
-    public readonly Vector3 CenterOfMass;            // Of members excluding self
+    public readonly List<GroupMember> Members;    // Excluding self
+    public readonly AgentFrame GroupFrame;
+    public readonly Vector3 CenterOfMass;
 
-    public static GroupContext None => ...;           // Default for individuals
-}
-```
-
-### GroupMember
-Pre-resolved group member data. Replaces `GetComponent<IParameterManager>` calls inside downstream layers.
-
-```csharp
-public readonly struct GroupMember
-{
-    public readonly Vector3 Position;
-    public readonly Vector3 Direction;
-    public readonly float Speed;
+    public static GroupContext None => ...;
 }
 ```
 
 ### ForceWeights
-The 6 force weight "sliders". Set by `AgentManager` via `AgentPathController` properties.
-
 ```csharp
 public readonly struct ForceWeights
 {
@@ -80,8 +73,6 @@ public readonly struct ForceWeights
 ```
 
 ### MotorContext
-Per-tick context for L5. Contains runtime configuration that changes per tick.
-
 ```csharp
 public readonly struct MotorContext
 {
@@ -95,8 +86,6 @@ public readonly struct MotorContext
 ```
 
 ### DecisionInput
-Fully-resolved input for L4. Combines L3 prediction output with attention targets and environment normals. No `GetComponent` calls needed inside L4.
-
 ```csharp
 public readonly struct DecisionInput
 {
@@ -118,9 +107,7 @@ public readonly struct DecisionInput
 
 ## Layer Output Structs
 
-### PerceivedAgent (L1-2 internal)
-A neighboring agent resolved from `GetComponent<IParameterManager>()`. Downstream layers never need to query Unity components.
-
+### PerceivedAgent (L1-2)
 ```csharp
 public readonly struct PerceivedAgent
 {
@@ -137,7 +124,7 @@ public readonly struct PerceivedAgent
 }
 ```
 
-### AttentionOutput (L1-2 output)
+### AttentionOutput (L1-2 →)
 ```csharp
 public readonly struct AttentionOutput
 {
@@ -155,7 +142,7 @@ public readonly struct AttentionOutput
 }
 ```
 
-### PredictedNeighbor (L3 internal)
+### PredictedNeighbor (L3)
 ```csharp
 public readonly struct PredictedNeighbor
 {
@@ -167,7 +154,7 @@ public readonly struct PredictedNeighbor
 }
 ```
 
-### PredictionOutput (L3 output)
+### PredictionOutput (L3 →)
 ```csharp
 public readonly struct PredictionOutput
 {
@@ -177,7 +164,7 @@ public readonly struct PredictionOutput
 }
 ```
 
-### DecisionOutput (L4 output)
+### DecisionOutput (L4 →)
 ```csharp
 public readonly struct DecisionOutput
 {
@@ -185,7 +172,7 @@ public readonly struct DecisionOutput
     public readonly float DesiredSpeed;
     public readonly bool MutualAvoidanceDetected;
     public readonly GameObject MutualAvoidanceTarget;
-    // Debug vectors:
+    // Debug:
     public readonly Vector3 ToGoalForce;
     public readonly Vector3 AvoidanceForce;
     public readonly Vector3 AnticipatedCollisionForce;
@@ -195,7 +182,7 @@ public readonly struct DecisionOutput
 }
 ```
 
-### MotorOutput (L5 output)
+### MotorOutput (L5 →)
 ```csharp
 public readonly struct MotorOutput
 {
@@ -204,32 +191,6 @@ public readonly struct MotorOutput
     public readonly float ActualSpeed;
     public readonly bool IsInSlowingArea;
 }
-```
-
----
-
-## Data Flow Summary
-
-```
-Coordinator builds:
-  SensorInput  ──→  L1-2
-  GroupContext  ──→  L1-2, L3, L4, L5
-  AgentFrame   ──→  L1-2, L3, L4, L5
-
-L1-2 produces:
-  AttentionOutput  ──→  L3, Coordinator
-
-Coordinator builds:
-  DecisionInput (from AttentionOutput + PredictionOutput + goal)  ──→  L4
-
-L3 produces:
-  PredictionOutput  ──→  Coordinator
-
-L4 produces:
-  DecisionOutput  ──→  L5
-
-L5 produces:
-  MotorOutput  ──→  AgentPathController
 ```
 
 ---

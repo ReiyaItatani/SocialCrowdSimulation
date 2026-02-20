@@ -1,8 +1,10 @@
 # Architecture Overview
 
-The steering system uses a **layered pipeline** architecture. Each agent runs a 5-layer Perception-to-Action pipeline every frame, orchestrated by `AgentPipelineCoordinator`. All inter-layer communication uses **immutable `readonly struct` data contracts**.
+Each agent runs a **5-layer pipeline** every frame, orchestrated by `AgentPipelineCoordinator`. All inter-layer communication uses **immutable `readonly struct` data contracts**.
 
-## Pipeline Overview
+---
+
+## Pipeline
 
 ```mermaid
 flowchart LR
@@ -26,31 +28,24 @@ flowchart LR
     style APC fill:#c9a0dc,color:#fff
 ```
 
+---
+
 ## Design Principles
 
-### Immutable Data Flow
-Every struct passed between layers is `readonly`. No layer can mutate another layer's output. This makes the data flow predictable and easy to debug.
+| Principle | |
+|-----------|---|
+| **Immutable Data** | All structs are `readonly`. No layer mutates another's output |
+| **GetComponent Boundary** | Only L1-2 calls `GetComponent`. Downstream layers receive pure data |
+| **Interface-Based** | Each layer implements an interface — swap any layer freely |
+| **Coordinator Pattern** | Only `AgentPipelineCoordinator` touches concrete Unity components |
 
-### GetComponent Boundary
-Only **L1-2** calls `GetComponent` on neighboring agents. It resolves raw `GameObject` lists into `PerceivedAgent` structs. Downstream layers (L3, L4, L5) receive pure data — no Unity API calls needed. This makes them easy to unit test and swap.
+---
 
-### Interface-Based Layers
-Each layer implements an interface:
-- `IPerceptionAttentionLayer` (L1-2)
-- `IPredictionLayer` (L3)
-- `IDecisionLayer` (L4)
-- `IMotorLayer` (L5)
-
-You can replace any layer with a custom implementation. See [Customization](Customization.md).
-
-### Coordinator Pattern
-`AgentPipelineCoordinator` is the only component that touches concrete Unity components (CollisionAvoidanceController, GroupManager, NormalVector). It builds input structs and passes them through the pipeline. No layer has direct references to Unity MonoBehaviour components.
-
-## Full Data Flow
+## Data Flow
 
 ```mermaid
 flowchart TD
-    subgraph "Input (Concrete Unity Components)"
+    subgraph "Input (Unity Components)"
         CAC["CollisionAvoidanceController<br/>FOV, Avoidance Area, Walls"]
         GM["GroupManager<br/>Shared FOV, Group Members"]
         APM["AgentPathManager<br/>Goal Position"]
@@ -58,16 +53,15 @@ flowchart TD
 
     COORD["AgentPipelineCoordinator<br/>Builds SensorInput, GroupContext, AgentFrame"]
 
-    subgraph "Pipeline Layers"
-        L12["L1-2: DefaultPerceptionAttentionLayer<br/>Resolves GameObjects to PerceivedAgent structs"]
-        L3["L3: DefaultPredictionLayer<br/>Linear extrapolation of neighbor positions"]
-        L4["L4: DefaultDecisionLayer<br/>6 weighted forces (Social Force Model)"]
-        L5["L5: DefaultMotorLayer<br/>Speed management, goal slowing"]
+    subgraph "Pipeline"
+        L12["L1-2: Perception + Attention<br/>GameObject → PerceivedAgent"]
+        L3["L3: Prediction<br/>Linear extrapolation"]
+        L4["L4: Decision<br/>6 weighted forces"]
+        L5["L5: Motor<br/>Speed + position constraints"]
     end
 
     subgraph "Output"
-        APC["AgentPathController<br/>Syncs to Motion Matching trajectory"]
-        AS["AgentState<br/>Backward-compat sync"]
+        APC["AgentPathController<br/>→ Motion Matching"]
     end
 
     CAC --> COORD
@@ -78,7 +72,6 @@ flowchart TD
     L3 -->|PredictionOutput| L4
     L4 -->|DecisionOutput| L5
     L5 -->|MotorOutput| APC
-    APC -->|sync each frame| AS
 
     style COORD fill:#d97706,color:#fff
     style L12 fill:#4a90d9,color:#fff
@@ -87,7 +80,9 @@ flowchart TD
     style L5 fill:#7bc67e,color:#fff
 ```
 
-## Initialization Order
+---
+
+## Initialization
 
 ```mermaid
 sequenceDiagram
@@ -108,28 +103,41 @@ sequenceDiagram
     APC->>APC: Sync to AgentState + Motion Matching
 ```
 
+---
+
 ## Agent Prefab Hierarchy
 
-![Agent Prefab Hierarchy](images/agent-prefab-hierarchy.png)
+<!-- TODO: images/agent-prefab-hierarchy.png — Unity Hierarchy showing Agent prefab with Pipeline children -->
 
-Each layer lives on its own child GameObject under `Pipeline/`:
-- **Navigation** — `AgentPathManager`
-- **PerceptionAttention** — `CollisionAvoidanceController` + `DefaultPerceptionAttentionLayer`
-- **Prediction** — `DefaultPredictionLayer`
-- **Decision** — `DefaultDecisionLayer`
-- **Motor** — `DefaultMotorLayer`
+```
+Agent (tag="Agent")
+  Avatar/
+    Rigidbody, CapsuleCollider
+    ParameterManager, SocialBehaviour, GazeController
+    MotionMatchingSkinnedMeshRenderer
+  Pipeline/
+    AgentPathController, AgentPipelineCoordinator
+    Navigation/          → AgentPathManager
+    PerceptionAttention/ → CollisionAvoidanceController + DefaultPerceptionAttentionLayer
+    Prediction/          → DefaultPredictionLayer
+    Decision/            → DefaultDecisionLayer
+    Motor/               → DefaultMotorLayer
+  Animation/
+    MotionMatchingController
+```
+
+---
 
 ## Key Files
 
 | File | Role |
 |------|------|
-| `AgentPipelineCoordinator.cs` | Orchestrator — runs pipeline per tick |
-| `IPipelineLayer.cs` | Interface definitions for all 4 layers |
-| `PipelineContracts.cs` | All `readonly struct` data contracts |
-| `AgentPathController.cs` | Per-agent driver, bridges pipeline with Motion Matching |
-| `BasePathController.cs` | Motion Matching integration base class |
-| `PredictionMath.cs` | Shared collision prediction math |
-| `TimedForce.cs` | Smooth force transition utility |
+| `AgentPipelineCoordinator.cs` | Runs pipeline per tick |
+| `IPipelineLayer.cs` | Interface definitions |
+| `PipelineContracts.cs` | All `readonly struct` contracts |
+| `AgentPathController.cs` | Bridges pipeline ↔ Motion Matching |
+| `PredictionMath.cs` | Collision prediction math |
+| `TimedForce.cs` | Smooth force transitions |
 
 ---
 
