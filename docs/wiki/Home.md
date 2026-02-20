@@ -39,25 +39,49 @@ For the published papers: [MIG2024](https://dl.acm.org/doi/10.1145/3677388.36963
 
 ---
 
+## Editor Tools
+
+All editor tools are accessed via **CollisionAvoidance > Social Crowd Simulation**. The unified window has three sections:
+
+| Section | Purpose |
+|---------|---------|
+| **Scene Setup** | Creates AvatarCreator GameObject + adds required tags (Agent, Group, Wall, Object, Obstacle) |
+| **Auto Setup** | Drag & drop humanoid models to generate fully-configured agent prefabs |
+| **Create Player** | Create a first-person controllable player from a humanoid model |
+
 ## Project Structure
 
 ```
 Assets/com.reiya.socialcrowdsimulation/
   Runtime/Core/
     Pipeline/              # 5-layer pipeline architecture
-      Perception/          # L1-2: DefaultPerceptionAttentionLayer
+      Perception/          # L1-2: DefaultPerceptionAttentionLayer, CollisionAvoidanceController
       Prediction/          # L3: DefaultPredictionLayer
       Decision/            # L4: DefaultDecisionLayer
       Motor/               # L5: DefaultMotorLayer
-      Driver/              # AgentPathController, BasePathController
+      Driver/              # AgentPathController, BasePathController, AgentDebugGizmos
       Navigation/          # AgentPathManager (graph-based navigation)
-    Animation/             # SocialBehaviour, GazeController
-    Avatar/                # ParameterManager, AgentState
+    Animation/             # SocialBehaviour, GazeController, AnimationModifier
+    Avatar/                # ParameterManager, GroupParameterManager, AgentState
     Group/                 # GroupManager, SharedFOV, GroupColliderMovement
-    Creator/               # AvatarCreatorQuickGraph, AgentManager
+    Creator/
+      AvatarCreator/       # AvatarCreatorQuickGraph, AgentManager, AgentsList, QuickGraph
+      PlayerCreator/       # InputManager, PlayerInput
     Environment/           # NormalVector (wall/obstacle normals)
-    Debug/                 # GizmoDrawer, TrailRendererGizmo
-    Utils/                 # MathExtensions, DrawUtils
-  Editor/                  # Custom inspectors and editor tools
-  Sample/                  # Demo scenes and quickstart resources
+    Utils/                 # DrawUtils, CrowdSimulationMonoBehaviour
+  Editor/Core/
+    PrefabCreator/         # AgentPrefabFactory, AgentPrefabConfig
+    AutoSetup/             # AutoSetupWindow, DefaultAssetLocator
+    PlayerCreator/         # PlayerCreationWindow
+    AgentManager/          # AgentManagerEditor, AvatarCreatorQuickGraphEditor
+    Navigation/            # QuickGraphEditor
+    SocialCrowdSimulationWindow.cs  # Unified editor window
+  Sample/
+    QuickStart/
+      ForPrefabCreator/    # Default assets for agent prefab creation
+      ForAvatarCreator/    # Example AgentLists and PathGraphs
+      ForPlayerCreator/    # MotionMatchingData for player
+      ForSetUpEnvironment/ # Wall and Obstacle prefabs
+    Animation/             # Motion Matching data and Unity Animator animations
+    SocialCrowdSimulationDemo.unity  # Demo scene
 ```

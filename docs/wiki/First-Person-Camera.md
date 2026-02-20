@@ -4,10 +4,28 @@ You can include a controllable first-person player in the simulation.
 
 ## Setup
 
-1. Open the **Create Player** window from the **CollisionAvoidance** tab
-2. In **Motion Matching Data**, select a `.asset` file from `Packages/SocialCrowdSimulation/Sample/QuickStart/ForPlayerCreator/MotionMatchingData`
-3. For **Humanoid Avatar**, choose a humanoid rig
-4. Click **CreatePlayer** to generate the player in your scene
+1. Open **CollisionAvoidance > Social Crowd Simulation**
+2. Expand the **Create Player** section
+3. Assign **Motion Matching Data** — use the asset from `Sample/QuickStart/ForPlayerCreator/MotionMatchingData.asset`
+4. Assign **Humanoid Avatar** — select a humanoid model (must have a Humanoid rig)
+5. Click **Create Player**
+
+### Generated Player Hierarchy
+
+```
+Player (tag="Agent")
+  <ModelName>_PlayerInstance (tag="Agent")
+    Rigidbody, CapsuleCollider
+    MotionMatchingSkinnedMeshRenderer
+    SpringParameterManager
+    HeadCamera (Camera, parented to Head bone)
+  MotionMatching
+    MotionMatchingController
+  CharacterController
+    InputManager
+    InputCharacterController
+    SpringCharacterController
+```
 
 ## Controls
 
@@ -15,7 +33,7 @@ You can include a controllable first-person player in the simulation.
 - Uses the **SpringCharacterController** from the Motion Matching system
 - For details on `SpringCharacterController`, see the [Motion Matching documentation](https://jlpm22.github.io/motionmatching-docs/basics/character_controller/)
 
-![Create Player](../../.github/media/create_player.gif)
+<!-- TODO: screenshot/gif of player creation -->
 
 ---
 
