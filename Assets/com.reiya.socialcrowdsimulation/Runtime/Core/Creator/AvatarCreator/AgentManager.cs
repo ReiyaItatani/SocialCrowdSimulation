@@ -75,43 +75,10 @@ public class AgentManager : MonoBehaviour
         public bool DebugContacts = false;
     }
 
-    // OCEAN Personality Model Parameters: Parameters that define the personality of the agent according to the OCEAN model.
-    [Space]
-    [Header("  ==FACIAL EXPRESSION==  ")]
-    //Facial Expression might be expensive.
-    public bool useFacialExpression = false;
-    [Header("Conversational Agent Framework Parameters")]
-    public OCEAN ocean;
-    [System.Serializable]
-    public class OCEAN
-    {
-        [Range(-1f, 1f)]public float openness = 0f;
-        [Range(-1f, 1f)]public float conscientiousness = 0f;
-        [Range(-1f, 1f)]public float extraversion = 0f;
-        [Range(-1f, 1f)]public float agreeableness = 0f;
-        [Range(-1f, 1f)]public float neuroticism = 0f;
-    }
-
-    // Emotion Parameters: Parameters that define the emotional state of the agent.
-    [Header("Emotion Parameters")]
-    public Emotion emotion;
-
-    [System.Serializable]
-    public class Emotion
-    {
-        [Range(0f, 1f)]public float happy = 0f;
-        [Range(0f, 1f)]public float sad = 0f;
-        [Range(0f, 1f)]public float angry = 0f;
-        [Range(0f, 1f)]public float disgust = 0f;
-        [Range(0f, 1f)]public float fear = 0f;
-        [Range(0f, 1f)]public float shock = 0f;
-    }
-
     // Lists to store references to various controller game objects.
     private List<GameObject> PathControllers = new List<GameObject>();
     private List<GameObject> MotionMatchingControllers = new List<GameObject>();
     private List<GameObject> CollisionAvoidanceControllers = new List<GameObject>();
-    private List<GameObject> ConversationalAgentFrameworks = new List<GameObject>();
     private List<GameObject> Avatars = new List<GameObject>();
     private AvatarCreatorQuickGraph avatarCreator;
 
@@ -150,13 +117,6 @@ public class AgentManager : MonoBehaviour
                 CollisionAvoidanceControllers.Add(collisionAvoidanceController.gameObject);
             }
 
-            // Get and set ConversationalAgentFramework parameters.
-            ConversationalAgentFramework conversationalAgentFramework = Avatars[i].GetComponentInChildren<ConversationalAgentFramework>();
-            if(conversationalAgentFramework != null) {
-                SetConversationalAgentFrameworkParams(conversationalAgentFramework);
-                ConversationalAgentFrameworks.Add(conversationalAgentFramework.gameObject);
-            }
-
             // Get and set SocialBehaviour parameters.
             SocialBehaviour socialBehaviour = Avatars[i].GetComponentInChildren<SocialBehaviour>();
             if(socialBehaviour != null) {
@@ -175,7 +135,7 @@ public class AgentManager : MonoBehaviour
             {
                 SetPathControllerParams(pathController);
             }
-            AgentPathManager pathManager = controllerObject.GetComponent<AgentPathManager>();
+            AgentPathManager pathManager = controllerObject.GetComponentInChildren<AgentPathManager>();
             if(pathController != null) 
             {
                 SetPathManagerrParams(pathManager);
@@ -202,19 +162,6 @@ public class AgentManager : MonoBehaviour
         //     }
         // }
 
-        // Loop through all ConversationalAgentFrameworks and set their parameters.
-        foreach(GameObject controllerObject in ConversationalAgentFrameworks) 
-        {
-            ConversationalAgentFramework conversationalAgentFramework = controllerObject.GetComponent<ConversationalAgentFramework>();
-            if(conversationalAgentFramework != null) 
-            {
-                SetConversationalAgentFrameworkParams(conversationalAgentFramework);
-            }
-            SocialBehaviour socialBehaviour = controllerObject.GetComponent<SocialBehaviour>();
-            if(socialBehaviour != null) {
-                SetSocialBehaviourParams(socialBehaviour);
-            }    
-        }
     }
 
     // Method to set parameters for PathController.
@@ -257,27 +204,6 @@ public class AgentManager : MonoBehaviour
     // private void SetCollisionAvoidanceControllerParams(CollisionAvoidanceController collisionAvoidanceController){
     //     collisionAvoidanceController.agentCollider.radius           = CapsuleColliderRadius;
     // }
-
-    protected virtual void SetConversationalAgentFrameworkParams(ConversationalAgentFramework conversationalAgentFramework){
-        if(useFacialExpression == true) {
-            conversationalAgentFramework.enabled = true;
-        } else {
-            conversationalAgentFramework.enabled = false;
-        }
-
-        conversationalAgentFramework.openness          = ocean.openness;
-        conversationalAgentFramework.conscientiousness = ocean.conscientiousness;
-        conversationalAgentFramework.extraversion      = ocean.extraversion;
-        conversationalAgentFramework.agreeableness     = ocean.agreeableness;
-        conversationalAgentFramework.neuroticism       = ocean.neuroticism;
-
-        conversationalAgentFramework.e_happy           = emotion.happy;
-        conversationalAgentFramework.e_sad             = emotion.sad;
-        conversationalAgentFramework.e_angry           = emotion.angry;
-        conversationalAgentFramework.e_disgust         = emotion.disgust;
-        conversationalAgentFramework.e_fear            = emotion.fear;
-        conversationalAgentFramework.e_shock           = emotion.shock;      
-    }
 
     protected virtual void SetSocialBehaviourParams(SocialBehaviour socialBehaviour){
 

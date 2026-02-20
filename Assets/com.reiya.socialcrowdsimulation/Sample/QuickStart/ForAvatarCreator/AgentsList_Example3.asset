@@ -22,9 +22,9 @@ MonoBehaviour:
   - groupName: TestGroup3
     count: 3
     agents:
-    - {fileID: 4127260373610900068, guid: 1718ab575ec590240a485e13ee4559a5, type: 3}
-    - {fileID: 4127260373610900068, guid: 1718ab575ec590240a485e13ee4559a5, type: 3}
-    - {fileID: 4127260373610900068, guid: 1718ab575ec590240a485e13ee4559a5, type: 3}
+    - {fileID: 1028955909813815932, guid: a345e8561d37d5743a37e6743c1cf162, type: 3}
+    - {fileID: 1028955909813815932, guid: a345e8561d37d5743a37e6743c1cf162, type: 3}
+    - {fileID: 1028955909813815932, guid: a345e8561d37d5743a37e6743c1cf162, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8

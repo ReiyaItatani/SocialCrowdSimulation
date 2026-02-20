@@ -29,8 +29,9 @@ For the paper, [MIG2024](https://dl.acm.org/doi/10.1145/3677388.3696337), [Compu
 4. [Adding a First-Person Camera Player](#adding-a-first-person-camera-player)
 5. [To Add Obstacles and Walls](#to-add-obstacles-and-walls)
 6. [AgentManager](#agentmanager)
-7. [Contributions](#contributions)
-8. [Citation](#citation)
+7. [Architecture](#architecture)
+8. [Contributions](#contributions)
+9. [Citation](#citation)
 
 ---
 
@@ -191,7 +192,186 @@ When adding walls or obstacles, please use the **Obstacle** and **Walls** assets
 Additionally, you can toggle **Gizmos On/Off** for debugging, fine-tune **Motion Matching** parameters, and adjust **Facial Expressions**.  
 However, to use the Facial Expression feature, you must use either the **Microsoft Rocket Box Avatar** or an avatar created with **Avatar SDK**.
 
-<img src=".github/media/AgentManager.png" alt="Avatar Creator" width="600"/> 
+<img src=".github/media/AgentManager.png" alt="Avatar Creator" width="600"/>
+
+---
+
+## Architecture
+
+The steering system uses a **composition-based** architecture. Each agent GameObject is composed of independent MonoBehaviour components that communicate through a shared `AgentState` object.
+
+### Component Overview
+
+Each agent is assembled from independent, swappable components:
+
+```mermaid
+graph TB
+    subgraph "Agent GameObject"
+        APC["AgentPathController<br/><i>Facade + Motion Matching</i>"]
+        FSC["ForceSolverComponent<br/><i>6 Force Calculations</i>"]
+        SSC["SpeedSolverComponent<br/><i>Speed Management</i>"]
+        RSC["ReactSolverComponent<br/><i>Collision Reaction</i>"]
+        ADG["AgentDebugGizmos<br/><i>Debug Visualization (Optional)</i>"]
+    end
+
+    AS["AgentState<br/><i>Shared Mutable State</i>"]
+    PS["PathSimulator<br/><i>Pure C# Class</i>"]
+
+    APC -->|owns| AS
+    APC -->|uses| PS
+    FSC -->|read/write| AS
+    SSC -->|read/write| AS
+    RSC -->|read/write| AS
+    ADG -->|read-only| AS
+    PS -->|reads| AS
+
+    style APC fill:#4a90d9,color:#fff
+    style AS fill:#e8a838,color:#fff
+    style PS fill:#7bc67e,color:#fff
+    style FSC fill:#6c8ebf,color:#fff
+    style SSC fill:#6c8ebf,color:#fff
+    style RSC fill:#6c8ebf,color:#fff
+    style ADG fill:#999,color:#fff
+```
+
+### Shared State: `AgentState`
+
+All components read from and write to a single `AgentState` instance owned by `AgentPathController`. This replaces the tightly-coupled inherited fields from the previous deep inheritance chain.
+
+```mermaid
+classDiagram
+    class AgentState {
+        +Vector3 CurrentPosition
+        +Vector3 CurrentDirection
+        +float CurrentSpeed
+        +Vector3 AvoidanceVector
+        +Vector3 ToGoalVector
+        +Vector3 AvoidNeighborsVector
+        +Vector3 GroupForce
+        +Vector3 WallRepForce
+        +Vector3 AvoidObstacleVector
+        +float ToGoalWeight
+        +float AvoidanceWeight
+        +float AvoidNeighborWeight
+        +float GroupForceWeight
+        +float WallRepForceWeight
+        +float AvoidObstacleWeight
+        +bool OnCollide
+        +bool OnMoving
+        +GameObject CollidedAgent
+        +bool OnInSlowingArea
+        +string GroupName
+    }
+```
+
+### Data Flow
+
+```mermaid
+flowchart LR
+    subgraph Input
+        CA["CollisionAvoidance<br/>Controller"]
+        APM["AgentPath<br/>Manager"]
+        AM["AgentManager"]
+    end
+
+    subgraph "Force Calculation"
+        FSC["ForceSolver<br/>Component"]
+    end
+
+    subgraph "Speed Control"
+        SSC["SpeedSolver<br/>Component"]
+    end
+
+    subgraph "Collision Reaction"
+        RSC["ReactSolver<br/>Component"]
+    end
+
+    subgraph "Shared State"
+        AS["AgentState"]
+    end
+
+    subgraph "Path Simulation"
+        PS["PathSimulator"]
+    end
+
+    subgraph Output
+        APC["AgentPath<br/>Controller"]
+        MM["Motion<br/>Matching"]
+    end
+
+    CA -->|targets| FSC
+    APM -->|goal position| FSC
+    AM -->|weights| AS
+    FSC -->|force vectors| AS
+    SSC -->|speed| AS
+    RSC -->|collision flags| AS
+    AS -->|all state| PS
+    PS -->|position, direction| APC
+    APC -->|trajectory| MM
+```
+
+### Component Responsibilities
+
+| Component | Responsibility | Writes to AgentState |
+|-----------|---------------|---------------------|
+| **ForceSolverComponent** | Calculates 6 forces (goal, avoidance, anticipated collision, group, wall, obstacle) via coroutines | Force vectors, avoidance targets |
+| **SpeedSolverComponent** | Group-based speed adjustment, goal-based slowing, animation-based speed changes | CurrentSpeed, OnInSlowingArea |
+| **ReactSolverComponent** | Collision detection callbacks, step-back/redirect reactions based on social relationships | OnCollide, OnMoving, CollidedAgent |
+| **AgentPathController** | Facade for external API, owns AgentState, runs PathSimulator for trajectory prediction | CurrentPosition, CurrentDirection |
+| **AgentDebugGizmos** | Draws force vectors as gizmos in Scene View (optional) | Read-only |
+
+### PathSimulator
+
+`PathSimulator` is a pure C# class (not a MonoBehaviour) that combines weighted forces into movement:
+
+```mermaid
+flowchart TD
+    A["Weighted Force Sum"] --> B{"OnCollide?"}
+    B -->|No| C["Normal Movement<br/>pos += direction * speed * dt"]
+    B -->|Yes| D{"CollidedAgent<br/>exists?"}
+    D -->|No| C
+    D -->|Yes| E{"OnMoving?"}
+    E -->|No| F["Step Back<br/>pos -= offset * 0.3 * dt"]
+    E -->|Yes| G{"Anti-parallel?"}
+    G -->|Yes| H["Reflection Vector<br/>pos += reflect(dir) * 0.1 * dt"]
+    G -->|No| I{"Other agent<br/>in front?"}
+    I -->|Yes| J["Stop<br/>pos = current"]
+    I -->|No| C
+```
+
+### Adding / Removing Components
+
+Because each component is independent, you can:
+- **Remove `AgentDebugGizmos`** to disable debug visualization without affecting behavior
+- **Replace `SpeedSolverComponent`** with a custom speed controller that writes to `state.CurrentSpeed`
+- **Replace `ForceSolverComponent`** with a different steering algorithm that writes to the force vectors
+
+The three core components (`ForceSolverComponent`, `SpeedSolverComponent`, `ReactSolverComponent`) are enforced via `[RequireComponent]` on `AgentPathController`.
+
+### Initialization Order
+
+```mermaid
+sequenceDiagram
+    participant Unity
+    participant APC as AgentPathController
+    participant FSC as ForceSolverComponent
+    participant SSC as SpeedSolverComponent
+    participant RSC as ReactSolverComponent
+
+    Unity->>APC: Awake()
+    APC->>APC: Create AgentState
+    APC->>APC: GetComponent (resolve siblings)
+    APC->>FSC: Initialize(state, controller)
+    FSC->>FSC: Start force coroutines
+    APC->>SSC: Initialize(state, controller)
+    SSC->>SSC: Start speed coroutines
+    APC->>RSC: Initialize(state, controller)
+    RSC->>RSC: Start delayed collision subscription
+    APC->>APC: InitMotionMatching()
+    Unity->>APC: OnUpdate() (every frame)
+    APC->>APC: PathSimulator.SimulatePath()
+    APC->>APC: Sync to MotionMatching
+```
 
 ---
 

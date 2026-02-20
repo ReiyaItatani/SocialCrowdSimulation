@@ -3,8 +3,7 @@
     "rootNamespace": "",
     "references": [
         "JLPM.MotionMatching",
-        "RI.SocialCrowdSimulation",
-        "Oculus.LipSync"
+        "RI.SocialCrowdSimulation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

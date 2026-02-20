@@ -146,7 +146,7 @@ public class SocialBehaviour : MonoBehaviour
             currentAnimationState = DetermineAnimationState(groupAgents);
 
             bool isCurrentlyTalking = currentAnimationState == UpperBodyAnimationState.Talk;
-            if(isCurrentlyTalking){
+            if(isCurrentlyTalking && groupAgents != null && groupAgents.Count > 1){
                 bool areAgentsClose = AreAgentsAndSelfCloseToAveragePos(groupAgents, gameObject);
                 currentAnimationState = areAgentsClose ? UpperBodyAnimationState.Talk : UpperBodyAnimationState.Walk;
             }
@@ -177,7 +177,7 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual UpperBodyAnimationState DetermineAnimationState(List<GameObject> groupAgents)
     {
-        bool isIndividual = parameterManager.GetGroupName() == "Individual" || groupAgents.Count <= 1;
+        bool isIndividual = parameterManager.GetGroupName() == "Individual" || groupAgents == null || groupAgents.Count <= 1;
         return UnityEngine.Random.value < WalkAnimationProbability ? UpperBodyAnimationState.Walk : (isIndividual ? UpperBodyAnimationState.SmartPhone : UpperBodyAnimationState.Talk);
     }
 
@@ -366,6 +366,8 @@ public class SocialBehaviour : MonoBehaviour
     // This includes making agents look at the talking agent in the group.
     protected virtual void UpdateGroupAgentLookAt(List<GameObject> groupAgents)
     {
+        if (groupAgents == null) return;
+
         // Get the current direction the agent is looking at
         Vector3 headDirection = GetCurrentLookAt();
 
@@ -396,7 +398,9 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual GameObject IsAnyAgentInAnimationState(List<GameObject> groupAgents, UpperBodyAnimationState targetUpperBodyState){
         foreach(GameObject agent in groupAgents){
-            if(agent != gameObject && agent.GetComponent<SocialBehaviour>().GetUpperBodyAnimationState() == targetUpperBodyState){
+            if(agent == null || agent == gameObject) continue;
+            SocialBehaviour sb = agent.GetComponent<SocialBehaviour>();
+            if(sb != null && sb.GetUpperBodyAnimationState() == targetUpperBodyState){
                 return agent;
             }
         }

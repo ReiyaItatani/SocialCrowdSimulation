@@ -17,7 +17,6 @@ public class GazeController : CrowdSimulationMonoBehaviour
         CoordinationTarget,
         CustomFocalPoint
     }
-    protected SkinnedMeshRenderer meshRenderer;
     protected Animator animator;
     protected Transform t_Neck;
 
@@ -40,9 +39,6 @@ public class GazeController : CrowdSimulationMonoBehaviour
         if(mySocialRelations == "Individual"){
             ifIndividual = true;
         }
-
-        GameObject body = FindObjectWithSkinnedMeshRenderer(gameObject);
-        meshRenderer = body.GetComponentInChildren<SkinnedMeshRenderer>();
     }
 
     protected virtual void OnEnable()
@@ -60,24 +56,6 @@ public class GazeController : CrowdSimulationMonoBehaviour
         StopAllCoroutines();
     }
 
-    GameObject FindObjectWithSkinnedMeshRenderer(GameObject parent)
-    {
-        if (parent.GetComponent<SkinnedMeshRenderer>() != null)
-        {
-            return parent;
-        }
-
-        foreach (Transform child in parent.transform)
-        {
-            GameObject found = FindObjectWithSkinnedMeshRenderer(child.gameObject);
-            if (found != null)
-            {
-                return found;
-            }
-        }
-        return null;
-    }
-
     public virtual void UpdateGaze(object sender, EventArgs e)
     {
         ParameterUpdater();
@@ -91,11 +69,6 @@ public class GazeController : CrowdSimulationMonoBehaviour
         HorizontalLookAtPass(currentLookAt, horizontalAttractionPoint, UnityEngine.Random.Range(0.3f, 1.0f));
         //LookAtAdjustmentPass
         LookAtAdjustmentPass(neckRotationLimit);
-        //EyesMovement
-        //Because AvatarSDK doesn't support blendshape, we need to check the target framework
-#if MicrosoftRocketBox
-        EyesMovementPass();
-#endif
     }
     #region LOOK AT PASS
     /* * *
@@ -264,76 +237,5 @@ public class GazeController : CrowdSimulationMonoBehaviour
         return Mathf.Clamp(angle, -limit, limit);
     }
     #endregion
-
-    #region EYES PASS
-    /* * *
-    * 
-    * EYES MOVEMENT PASS
-    * 
-    * * */
-
-    protected int lookRight_Eyes = 112;
-    protected int lookLeft_Eyes = 111;
-    protected float blendValue;
-
-    protected virtual void EyesMovementPass()
-    {
-        CalculateBlendValueBasedOnDirection(GetCurrentLookAt(), horizontalAttractionPoint);
-    }
-
-    protected virtual void ResetEyesBlendShape()
-    {
-        if (meshRenderer.GetBlendShapeWeight(lookRight_Eyes) > 0)
-        {
-            SetEyesBlendShape(lookRight_Eyes, blendValue);
-        }
-        else if (meshRenderer.GetBlendShapeWeight(lookLeft_Eyes) > 0)
-        {
-            SetEyesBlendShape(lookLeft_Eyes, blendValue);
-        }
-    }
-
-    protected virtual void CalculateBlendValueBasedOnDirection(Vector3 currentDirection, Vector3 targetDirection)
-    {
-        float angle = Vector3.Angle(currentDirection, targetDirection);
-        float sign = Mathf.Sign(Vector3.Cross(currentDirection, targetDirection).y);
-
-        blendValue = Mathf.Clamp(angle / 90.0f * 100.0f, 0.0f, 100.0f);
-
-        // Sign indicates targetDirection (1 for right, -1 for left)
-        if (sign >= 0)
-        {
-            SetEyesBlendShape(lookLeft_Eyes, 0);
-            SetEyesBlendShape(lookRight_Eyes, blendValue);
-        }
-        else
-        {
-            SetEyesBlendShape(lookLeft_Eyes, blendValue);
-            SetEyesBlendShape(lookRight_Eyes, 0);
-        }
-    }
-
-    protected virtual void SetEyesBlendShape(int blendShapeIndex, float value)
-    {
-        meshRenderer.SetBlendShapeWeight(blendShapeIndex, value);
-    }
-
-    protected virtual IEnumerator EyesWeightChanger(float originalWeight, float targetWeight, float duration)
-    {
-        float elapsedTime = 0;
-        float initialWeight = originalWeight;
-
-        while (elapsedTime < duration)
-        {
-            elapsedTime += Time.deltaTime;
-            blendValue = Mathf.Lerp(initialWeight, targetWeight, elapsedTime / duration);
-            yield return new WaitForSeconds(Time.deltaTime);
-        }
-
-        blendValue = targetWeight;
-    }
-    #endregion
-
-
 }
 }

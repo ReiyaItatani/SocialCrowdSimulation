@@ -13,8 +13,7 @@ public class PlayerCreationWindow : EditorWindow
     private MotionMatchingData MMData;
     private GameObject humanoidAvatar;
 
-    // MenuItem to open this custom editor window.
-    [MenuItem("CollisionAvoidance/Create Player")]
+    // Menu item moved to SocialCrowdSimulationWindow.
     private static void ShowWindow()
     {
         var window = GetWindow<PlayerCreationWindow>("Create Player");

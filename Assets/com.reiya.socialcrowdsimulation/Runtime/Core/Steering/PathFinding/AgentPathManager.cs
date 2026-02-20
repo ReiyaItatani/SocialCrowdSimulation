@@ -7,7 +7,6 @@ namespace CollisionAvoidance{
     {
         public float goalRadius = 2.0f;
         public AgentPathController pathController;
-        public GroupNodeEventChannelSO groupNodeEventChannel;
         public UnityAction OnTargetReached;
         #region PROTECTED ATTRIBUTES
 
@@ -23,16 +22,6 @@ namespace CollisionAvoidance{
 
         #region GET AND SET
 
-        void OnEnable()
-        {
-            groupNodeEventChannel.OnEventRaised += UpdateGroupNode;
-        }
-
-        void OnDisable()
-        {
-            groupNodeEventChannel.OnEventRaised -= UpdateGroupNode;
-        }
-
         public virtual void SetTargetNode(QuickGraphNode targetNode)
         {
             if (targetNode != _currentTargetNode)
@@ -46,40 +35,31 @@ namespace CollisionAvoidance{
         {
             if (_currentTargetNode._neighbours.Count == 1)
             {
-                if(groupName == "Individual"){
-                    return _currentTargetNode._neighbours[0];
-                }
-                else{
-                    QuickGraphNode groupNode = _currentTargetNode._neighbours[0];
-                    groupNodeEventChannel.RaiseEvent(new GroupNode{graphNode = groupNode, groupName = groupName});
-                    return groupNode;
-                }
+                QuickGraphNode nextNode = _currentTargetNode._neighbours[0];
+                NotifyGroupIfNeeded(nextNode);
+                return nextNode;
             }
-            
+
             List<QuickGraphNode> tmp = new List<QuickGraphNode>();
             foreach (var n in _currentTargetNode._neighbours)
             {
                 if (n != _prevTargetNode)
                 {
-                    tmp.Add(n); 
+                    tmp.Add(n);
                 }
             }
 
-            if(groupName == "Individual"){
-                return tmp[Random.Range(0, tmp.Count)];
-            }else{
-                //TODO: Implement group pathfinding
-                //If one person arrives at the target node, the rest of the group should also arrive at the target node
-                QuickGraphNode groupNode =  tmp[Random.Range(0, tmp.Count)];
-                groupNodeEventChannel.RaiseEvent(new GroupNode{graphNode = groupNode, groupName = groupName});
-                return groupNode;
-            }
+            QuickGraphNode selectedNode = tmp[Random.Range(0, tmp.Count)];
+            NotifyGroupIfNeeded(selectedNode);
+            return selectedNode;
         }
 
-        public void UpdateGroupNode(GroupNode groupNode)
+        private void NotifyGroupIfNeeded(QuickGraphNode node)
         {
-            if(groupNode.groupName == pathController.groupName){
-                SetTargetNode(groupNode.graphNode);
+            GroupManager gm = pathController.groupManager;
+            if (gm != null)
+            {
+                gm.NotifyNextNode(node, gameObject);
             }
         }
 

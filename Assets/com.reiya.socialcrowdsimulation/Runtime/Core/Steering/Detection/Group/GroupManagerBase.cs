@@ -66,5 +66,18 @@ public class GroupManagerBase : CrowdSimulationMonoBehaviour
     public List<GameObject> GetAgentsInSharedFOV(){
         return agentsInFOV.ToList();
     }
+
+    public void NotifyNextNode(QuickGraphNode node, GameObject sender)
+    {
+        foreach (var member in agentsInCategory)
+        {
+            if (member == null) continue;
+            var pathManager = member.GetComponentInParent<AgentPathManager>();
+            if (pathManager != null && pathManager.gameObject != sender)
+            {
+                pathManager.SetTargetNode(node);
+            }
+        }
+    }
 }
 }
