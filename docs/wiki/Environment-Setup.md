@@ -24,6 +24,4 @@ Auto-created by **Scene Setup > Create AvatarCreator**:
 
 ---
 
-Force weights are configured in [Agent Manager](Agent-Manager.md).
-
-Next: [Agent Manager](Agent-Manager.md) | [Home](Home.md)
+Next: [Agent Manager](Agent-Manager.md)

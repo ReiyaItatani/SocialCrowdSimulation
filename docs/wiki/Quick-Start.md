@@ -62,4 +62,4 @@ Press **Play**.
 
 ---
 
-Next: [Editor Window](Editor-Window.md) | [Agent Manager](Agent-Manager.md)
+Next: [Editor Window](Editor-Window.md)

@@ -85,4 +85,4 @@ Export/import all parameters as JSON via the Inspector buttons.
 
 ---
 
-Next: [Pipeline](Pipeline.md) | [Home](Home.md)
+Next: [Pipeline](Pipeline.md)
