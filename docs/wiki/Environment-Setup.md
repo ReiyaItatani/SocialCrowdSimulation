@@ -8,10 +8,6 @@ Walls and obstacles create repulsion forces that push agents away.
 
 Use the **Walls** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
 
-<!-- TODO: images/wall-prefab.png — Wall prefab in Project window -->
-
-<!-- TODO: images/wall-scene.png — Scene view with wall placed, showing agents being repelled -->
-
 | Requirement | |
 |-------------|---|
 | **Tag** | `Wall` |
@@ -23,10 +19,6 @@ Use the **Walls** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
 
 Use the **Obstacle** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
 
-<!-- TODO: images/obstacle-prefab.png — Obstacle prefab in Project window -->
-
-<!-- TODO: images/obstacle-scene.png — Scene view with obstacle, agents avoiding it -->
-
 | Requirement | |
 |-------------|---|
 | **Tag** | `Obstacle` |
@@ -35,8 +27,6 @@ Use the **Obstacle** prefab from `Sample/QuickStart/ForSetUpEnvironment/`.
 ---
 
 ## How NormalVector Works
-
-<!-- TODO: images/normal-vector-diagram.png — Diagram showing wall surface, normal direction pointing toward agent, distance-based scaling -->
 
 `NormalVector` computes a repulsion vector from the wall surface toward the agent:
 - Normal is perpendicular to wall direction, pointing toward agent

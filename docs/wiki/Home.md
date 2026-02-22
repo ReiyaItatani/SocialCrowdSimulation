@@ -4,7 +4,7 @@ Dynamic pedestrian simulation with social forces, group behavior, gaze control, 
 
 [MIG2024 Paper](https://dl.acm.org/doi/10.1145/3677388.3696337) | [Computers & Graphics 2025](https://www.sciencedirect.com/science/article/pii/S009784932500127X)
 
-<!-- TODO: images/hero.gif — Running simulation showing agents walking, avoiding each other, group behavior -->
+![Collision Avoidance](../../.github/media/collision_avoidance.gif)
 
 ---
 
@@ -40,7 +40,7 @@ Dynamic pedestrian simulation with social forces, group behavior, gaze control, 
 
 All tools: **CollisionAvoidance > Social Crowd Simulation**
 
-<!-- TODO: images/editor-window-overview.png — Full Social Crowd Simulation window showing all 3 sections -->
+![Editor Window](images/editor-window-overview.png)
 
 | Section | Purpose |
 |---------|---------|

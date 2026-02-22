@@ -8,8 +8,6 @@ Each layer: interface + default implementation + defined input/output. Resolved 
 
 **Interface**: `IPerceptionAttentionLayer` · **Default**: `DefaultPerceptionAttentionLayer`
 
-<!-- TODO: images/perception-layer-diagram.png — Diagram: raw GameObjects → PerceivedAgent structs, FOV cone, avoidance area -->
-
 The **only layer that calls `GetComponent`** on neighbors.
 
 | Input | → | Output (`AttentionOutput`) |
@@ -31,8 +29,6 @@ The **only layer that calls `GetComponent`** on neighbors.
 
 **Interface**: `IPredictionLayer` · **Default**: `DefaultPredictionLayer`
 
-<!-- TODO: images/prediction-layer-diagram.png — Diagram: current positions + velocities → predicted future positions with time-to-approach -->
-
 Linear extrapolation of neighbor positions.
 
 | Input | → | Output (`PredictionOutput`) |
@@ -48,8 +44,6 @@ When group collider is active → uses group-level position/direction/speed.
 ## L4: Decision
 
 **Interface**: `IDecisionLayer` · **Default**: `DefaultDecisionLayer`
-
-<!-- TODO: images/decision-layer-diagram.png — Diagram: 6 force vectors combining into desired direction -->
 
 **Social Force Model** — 6 weighted forces combined into a desired direction.
 
@@ -71,8 +65,6 @@ When group collider is active → uses group-level position/direction/speed.
 | 5 | **Wall** | Wall in range | Slerp fade |
 | 6 | **Obstacle** | Obstacle in FOV | Slerp |
 
-<!-- TODO: images/six-forces-scene.png — Scene view showing all 6 force vectors on an agent (debug gizmos enabled) -->
-
 #### Avoidance details
 - Perpendicular avoidance vector via cross products
 - **Mutual avoidance**: parallel approach → reflection vector
@@ -90,8 +82,6 @@ When group collider is active → uses group-level position/direction/speed.
 ## L5: Motor
 
 **Interface**: `IMotorLayer` · **Default**: `DefaultMotorLayer`
-
-<!-- TODO: images/motor-layer-diagram.png — Diagram: desired direction/speed → constrained position/speed with goal slowing -->
 
 Final position, direction, speed for the animation system.
 

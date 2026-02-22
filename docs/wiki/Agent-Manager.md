@@ -2,13 +2,11 @@
 
 Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply to all agents in real-time.
 
-<!-- TODO: images/agent-manager-inspector.png — Full AgentManager Inspector showing all sections -->
+![Agent Manager](../../.github/media/AgentManager.png)
 
 ---
 
 ## Force Weights
-
-<!-- TODO: images/force-weights.png — Force Weights section of AgentManager Inspector -->
 
 | Parameter | Default | |
 |-----------|---------|---|
@@ -23,8 +21,6 @@ Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply t
 
 ## Goal Parameters
 
-<!-- TODO: images/goal-parameters.png — Goal Parameters section of AgentManager Inspector -->
-
 | Parameter | Default | Range |
 |-----------|---------|-------|
 | `goalRadius` | 2.0 | 0.1 - 5.0 |
@@ -33,8 +29,6 @@ Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply t
 ---
 
 ## Motion Matching Parameters
-
-<!-- TODO: images/mm-parameters.png — Motion Matching Parameters section -->
 
 | Parameter | Default |
 |-----------|---------|
@@ -45,8 +39,6 @@ Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply t
 ---
 
 ## Debug Gizmos
-
-<!-- TODO: images/debug-gizmos-toggles.png — Both PathController and MotionMatching gizmo toggle sections -->
 
 ### Path Controller
 | Toggle | |
@@ -68,13 +60,9 @@ Centralized parameter panel on the **AvatarCreator** GameObject. Changes apply t
 | `DebugTrajectory` | Predicted trajectory |
 | `DebugContacts` | Contact points |
 
-<!-- TODO: images/debug-gizmos-scene.png — Scene view showing colored force vectors on agents -->
-
 ---
 
 ## Save / Load Settings
-
-<!-- TODO: images/save-load-buttons.png — Save Settings / Load Settings buttons in Inspector -->
 
 Export/import all parameters as JSON via the Inspector buttons.
 

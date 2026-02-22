@@ -107,7 +107,7 @@ sequenceDiagram
 
 ## Agent Prefab Hierarchy
 
-<!-- TODO: images/agent-prefab-hierarchy.png — Unity Hierarchy showing Agent prefab with Pipeline children -->
+![Agent Prefab Hierarchy](images/agent-prefab-hierarchy.png)
 
 ```
 Agent (tag="Agent")

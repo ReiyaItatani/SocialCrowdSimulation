@@ -13,8 +13,6 @@
 https://github.com/ReiyaItatani/SocialCrowdSimulation.git?path=Assets/com.reiya.socialcrowdsimulation
 ```
 
-<!-- TODO: images/package-manager.png — Package Manager with git URL input -->
-
 Auto-installed dependencies: `com.unity.collections`, `com.unity.burst`, `com.unity.inputsystem`
 
 [Motion Matching](https://github.com/JLPM22/MotionMatching) is included in the package.

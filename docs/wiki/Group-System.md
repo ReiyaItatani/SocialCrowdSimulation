@@ -2,8 +2,6 @@
 
 Groups: agents walking together with shared perception, coordinated speed, and formation forces.
 
-<!-- TODO: images/group-walking.gif — Group of 2-3 agents walking together, maintaining formation -->
-
 ---
 
 ## Inheritance Chain
@@ -15,13 +13,9 @@ GroupManagerBase         → Group membership + path sync
               └── GroupManager     → Entry point
 ```
 
-<!-- TODO: images/group-inspector.png — GroupManager Inspector showing group members list -->
-
 ---
 
 ## How Groups Affect the Pipeline
-
-<!-- TODO: images/group-pipeline-diagram.png — Diagram showing how GroupContext flows into each layer -->
 
 | Layer | Group Behavior |
 |-------|---------------|
@@ -33,8 +27,6 @@ GroupManagerBase         → Group membership + path sync
 ---
 
 ## Group Force (L4)
-
-<!-- TODO: images/group-forces-diagram.png — Diagram showing cohesion (pull), repulsion (push), alignment (arrows) -->
 
 | Sub-Force | Weight | Behavior |
 |-----------|--------|----------|
@@ -56,8 +48,6 @@ GroupManagerBase         → Group membership + path sync
 
 ## Group Collider
 
-<!-- TODO: images/group-collider.png — Scene view showing group collider around compact group -->
-
 - Position: center of mass of all members
 - **Enabled** when `maxDistance <= memberCount / 2` (compact group)
 - **Disabled** when group is spread out
@@ -74,8 +64,6 @@ When one member reaches a node → `GroupManager.NotifyNextNode()` → updates t
 ## Configuration
 
 Groups are defined in **AgentsList** ScriptableObject:
-
-<!-- TODO: images/agent-list-groups.png — AgentsList Inspector showing Group section with groupName, count, agents -->
 
 | Field | |
 |-------|-|

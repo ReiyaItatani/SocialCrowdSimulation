@@ -6,11 +6,7 @@ Upper body animation states and gaze behavior, layered on top of Motion Matching
 
 ## SocialBehaviour
 
-<!-- TODO: images/social-behaviour-inspector.png — SocialBehaviour component in Inspector showing WalkAnimationProbability, audio, smartphone fields -->
-
 ### Animation States
-
-<!-- TODO: images/animation-states.gif — Agent switching between Walk, Talk, and SmartPhone states -->
 
 | State | Description | System |
 |-------|-------------|--------|
@@ -23,8 +19,6 @@ States switch randomly every 5-10 seconds. `WalkAnimationProbability` (0-1) cont
 ---
 
 ## Gaze Behavior
-
-<!-- TODO: images/gaze-behavior.gif — Agent looking at group members, then shifting gaze to avoidance target -->
 
 Gaze targets update every 1.5 seconds:
 
@@ -46,8 +40,6 @@ SocialBehaviour.currentAnimationState
 L4: MutualAvoidanceDetected
   → SocialBehaviour: trigger mutual gaze
 ```
-
-<!-- TODO: images/mutual-gaze.gif — Two agents making eye contact before dodging each other -->
 
 ---
 

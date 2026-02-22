@@ -6,8 +6,6 @@ Each pipeline layer is defined by an interface. Implement it, attach to the corr
 
 ## Swapping a Layer
 
-<!-- TODO: images/layer-swap-prefab.png — Agent prefab Hierarchy showing Pipeline children with one custom component highlighted -->
-
 ### 1. Choose the layer
 
 | Layer | Interface | Child GameObject |
