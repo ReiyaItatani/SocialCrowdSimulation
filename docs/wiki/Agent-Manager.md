@@ -68,4 +68,4 @@ Export/import all parameters as JSON via the Inspector buttons.
 
 ---
 
-Next: [Architecture Overview](Architecture-Overview.md)
+Next: [Pipeline](Pipeline.md) | [Home](Home.md)

@@ -1,80 +1,24 @@
 # Social Crowd Simulation Wiki
 
-Dynamic pedestrian simulation with social forces, group behavior, gaze control, and motion matching.
+![Collision Avoidance](../../.github/media/collision_avoidance.gif)
 
 [MIG2024 Paper](https://dl.acm.org/doi/10.1145/3677388.3696337) | [Computers & Graphics 2025](https://www.sciencedirect.com/science/article/pii/S009784932500127X)
-
-![Collision Avoidance](../../.github/media/collision_avoidance.gif)
 
 ---
 
 ## Getting Started
 
-| | Page | |
-|:-:|------|:-:|
+| # | Page | |
+|:-:|------|--|
 | 1 | [Installation](Installation.md) | Package Manager setup |
-| 2 | [Quick Start](Quick-Start.md) | Prefab creation → agent list → spawn → run |
-| 3 | [First-Person Camera](First-Person-Camera.md) | Add a controllable player |
+| 2 | [Quick Start](Quick-Start.md) | Create prefabs, define crowd, run |
+| 3 | [Editor Window](Editor-Window.md) | Scene Setup / Auto Setup / Create Player |
 | 4 | [Environment Setup](Environment-Setup.md) | Walls and obstacles |
 
-## Configuration
+## Reference
 
 | Page | |
-|------|:-:|
+|------|--|
 | [Agent Manager](Agent-Manager.md) | Force weights, motion matching, debug gizmos |
-
-## Architecture
-
-| Page | |
-|------|:-:|
-| [Architecture Overview](Architecture-Overview.md) | 5-layer pipeline design |
-| [Pipeline Layers](Pipeline-Layers.md) | L1-2, L3, L4, L5 details |
-| [Data Contracts](Data-Contracts.md) | `readonly struct` types |
-| [Group System](Group-System.md) | Group management, shared FOV |
-| [Animation and Gaze](Animation-and-Gaze.md) | SocialBehaviour, gaze controller |
+| [Pipeline](Pipeline.md) | Input/Output of each layer (mermaid) |
 | [Customization](Customization.md) | Swap pipeline layers |
-
----
-
-## Editor Window
-
-All tools: **CollisionAvoidance > Social Crowd Simulation**
-
-![Editor Window](images/editor-window-overview.png)
-
-| Section | Purpose |
-|---------|---------|
-| **Scene Setup** | Create AvatarCreator + required tags |
-| **Auto Setup** | Drag & drop humanoid → agent prefab |
-| **Create Player** | First-person controllable player |
-
----
-
-## Project Structure
-
-```
-Assets/com.reiya.socialcrowdsimulation/
-  Runtime/Core/
-    Pipeline/              # 5-layer pipeline
-      Perception/          # L1-2
-      Prediction/          # L3
-      Decision/            # L4
-      Motor/               # L5
-      Driver/              # AgentPathController
-      Navigation/          # AgentPathManager
-    Animation/             # SocialBehaviour, GazeController
-    Avatar/                # ParameterManager
-    Group/                 # GroupManager, SharedFOV
-    Creator/
-      AvatarCreator/       # AvatarCreatorQuickGraph, AgentManager
-      PlayerCreator/       # InputManager
-    Environment/           # NormalVector
-  Editor/Core/
-    SocialCrowdSimulationWindow.cs  # Unified editor window
-    PrefabCreator/         # AgentPrefabFactory
-    AutoSetup/             # DefaultAssetLocator
-    PlayerCreator/         # PlayerCreationWindow
-  Sample/
-    QuickStart/            # Default assets, examples
-    SocialCrowdSimulationDemo.unity
-```
