@@ -18,7 +18,7 @@ Click **Create AvatarCreator** — run once per scene.
 
 Converts Humanoid models into agent prefabs.
 
-![Create Avatar](../../.github/media/create_avatar.gif)
+![Auto Setup](images/auto-setup-window.png)
 
 ### Steps
 

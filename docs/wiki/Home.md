@@ -20,5 +20,4 @@
 | Page | |
 |------|--|
 | [Agent Manager](Agent-Manager.md) | Force weights, motion matching, debug gizmos |
-| [Pipeline](Pipeline.md) | Input/Output of each layer (mermaid) |
-| [Customization](Customization.md) | Swap pipeline layers |
+| [Pipeline](Pipeline.md) | Input/Output of each layer (mermaid) + Customization |

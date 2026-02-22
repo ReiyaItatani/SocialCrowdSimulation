@@ -28,8 +28,7 @@ Full documentation is available in the [Wiki](https://github.com/ReiyaItatani/So
 | [Editor Window](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Editor-Window) | Scene Setup / Auto Setup / Create Player |
 | [Environment Setup](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Environment-Setup) | Walls and obstacles |
 | [Agent Manager](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Agent-Manager) | Force weights, motion matching, debug gizmos |
-| [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) | Pipeline I/O per layer (mermaid diagrams) |
-| [Customization](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Customization) | How to swap pipeline layers |
+| [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) | Pipeline I/O per layer + Customization |
 
 ---
 
@@ -80,7 +79,7 @@ flowchart LR
 | **L4** | `DefaultDecisionLayer` | Social Force Model: 6 weighted forces |
 | **L5** | `DefaultMotorLayer` | Speed management, goal slowing |
 
-Each layer is interface-based and swappable. See [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) and [Customization](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Customization) for details.
+Each layer is interface-based and swappable. See [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) for details.
 
 ---
 
