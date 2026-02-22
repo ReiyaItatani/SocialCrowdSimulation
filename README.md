@@ -23,16 +23,12 @@ Full documentation is available in the [Wiki](https://github.com/ReiyaItatani/So
 
 | Page | Description |
 |------|-------------|
-| [Installation](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Installation) | Prerequisites and Unity Package Manager setup |
-| [Quick Start](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Quick-Start) | Step-by-step demo scene setup |
-| [First-Person Camera](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/First-Person-Camera) | Adding a controllable player |
+| [Installation](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Installation) | Prerequisites and Package Manager setup |
+| [Quick Start](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Quick-Start) | Create prefabs, define crowd, run |
+| [Editor Window](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Editor-Window) | Scene Setup / Auto Setup / Create Player |
 | [Environment Setup](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Environment-Setup) | Walls and obstacles |
-| [Agent Manager](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Agent-Manager) | Force weights, motion matching parameters, debug gizmos |
-| [Architecture Overview](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Architecture-Overview) | 5-layer pipeline design and data flow |
-| [Pipeline Layers](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline-Layers) | Detailed L1-2, L3, L4, L5 documentation |
-| [Data Contracts](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Data-Contracts) | All `readonly struct` types |
-| [Group System](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Group-System) | Group management, shared FOV, group collider |
-| [Animation and Gaze](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Animation-and-Gaze) | Social behavior and gaze controller |
+| [Agent Manager](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Agent-Manager) | Force weights, motion matching, debug gizmos |
+| [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) | Pipeline I/O per layer (mermaid diagrams) |
 | [Customization](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Customization) | How to swap pipeline layers |
 
 ---
@@ -84,7 +80,7 @@ flowchart LR
 | **L4** | `DefaultDecisionLayer` | Social Force Model: 6 weighted forces |
 | **L5** | `DefaultMotorLayer` | Speed management, goal slowing |
 
-Each layer is interface-based and swappable. See [Architecture Overview](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Architecture-Overview) and [Customization](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Customization) for details.
+Each layer is interface-based and swappable. See [Pipeline](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Pipeline) and [Customization](https://github.com/ReiyaItatani/SocialCrowdSimulation/wiki/Customization) for details.
 
 ---
 
