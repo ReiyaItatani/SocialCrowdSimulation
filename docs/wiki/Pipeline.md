@@ -2,6 +2,14 @@
 
 Each agent runs a **5-layer pipeline** every frame. All layers communicate via immutable `readonly struct` data.
 
+## Why This Design
+
+Crowd simulation research often requires replacing specific algorithms — e.g., swapping the collision prediction model or trying a different decision strategy (ORCA, Social Force, etc.). This pipeline is designed so that **each layer can be independently replaced** without touching the rest of the system.
+
+- **Interface-based layers** — each layer implements a single interface (`IDecisionLayer`, etc.), so you can swap implementations by replacing one component
+- **Immutable data contracts** — layers communicate through `readonly struct`, preventing unintended side effects between layers
+- **Unity dependency boundary** — only L1-2 reads `GetComponent` from neighbors; L3-L5 receive pure data, making them testable and portable
+
 ---
 
 ## Overview
