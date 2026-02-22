@@ -4,11 +4,14 @@ Each agent runs a **5-layer pipeline** every frame. All layers communicate via i
 
 ## Why This Design
 
-Crowd simulation research often requires replacing specific algorithms — e.g., swapping the collision prediction model or trying a different decision strategy (ORCA, Social Force, etc.). This pipeline is designed so that **each layer can be independently replaced** without touching the rest of the system.
+This pipeline mirrors how humans actually navigate crowds:
 
-- **Interface-based layers** — each layer implements a single interface (`IDecisionLayer`, etc.), so you can swap implementations by replacing one component
-- **Immutable data contracts** — layers communicate through `readonly struct`, preventing unintended side effects between layers
-- **Unity dependency boundary** — only L1-2 reads `GetComponent` from neighbors; L3-L5 receive pure data, making them testable and portable
+1. **Perceive** — see who is around you (L1-2)
+2. **Predict** — anticipate where they are heading (L3)
+3. **Decide** — choose which direction to go (L4)
+4. **Act** — move your body (L5)
+
+Each layer corresponds to a stage of this cognitive process. Because each stage is a separate interface, you can replace any one algorithm (e.g., swap the decision model from Social Force to ORCA) without affecting the others.
 
 ---
 
