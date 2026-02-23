@@ -98,7 +98,7 @@ flowchart LR
     style DO fill:#d4edda,color:#000
 ```
 
-ForceWeights are configured in [Agent Manager](Agent-Manager.md).
+ForceWeights are configured in [Agent Manager](Agent-Manager).
 
 ---
 
@@ -168,4 +168,4 @@ Set debug force vectors to `Vector3.zero` if not needed.
 
 ---
 
-Back to: [Home](Home.md)
+Next: [Agent Manager](Agent-Manager)

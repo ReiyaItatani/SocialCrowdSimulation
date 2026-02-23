@@ -24,4 +24,4 @@ Auto-created by **Scene Setup > Create AvatarCreator**:
 
 ---
 
-Next: [Agent Manager](Agent-Manager.md)
+Next: [Pipeline](Pipeline)

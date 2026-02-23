@@ -19,4 +19,4 @@ Auto-installed dependencies: `com.unity.collections`, `com.unity.burst`, `com.un
 
 ---
 
-Next: [Quick Start](Quick-Start.md)
+Next: [Quick Start](Quick-Start)

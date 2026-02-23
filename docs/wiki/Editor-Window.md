@@ -64,4 +64,4 @@ Adds a first-person controllable player.
 
 ---
 
-Next: [Environment Setup](Environment-Setup.md)
+Next: [Environment Setup](Environment-Setup)

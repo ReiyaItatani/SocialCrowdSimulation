@@ -10,7 +10,7 @@
 
 Drag and drop Humanoid models into the drop zone. Agent prefabs are saved to `Assets/Resources/<ModelName>/Agent.prefab`.
 
-![Auto Setup](images/auto-setup-window.png)
+<img src="images/auto-setup-window.png" width="480">
 
 Default assets are auto-loaded from `Sample/QuickStart/ForPrefabCreator/`. Expand **Advanced Settings** to override.
 
@@ -20,7 +20,7 @@ Default assets are auto-loaded from `Sample/QuickStart/ForPrefabCreator/`. Expan
 
 **Create > SocialCrowdSimulation > Agent List** (or use `Sample/QuickStart/ForAvatarCreator/AgentsList_Example`)
 
-![Agent List](../../.github/media/AgentList.png)
+<img src="../../.github/media/AgentList.png" width="480">
 
 | Field | Description |
 |-------|-------------|
@@ -50,7 +50,7 @@ Drag a PathGraph from `Sample/QuickStart/ForAvatarCreator/` into the scene.
 3. **Bake NavMesh** (Window > AI > Navigation)
 4. Click **Instantiate Avatars**
 
-![Avatar Creation](../../.github/media/create_avatar.gif)
+<img src="../../.github/media/create_avatar.gif" width="600">
 
 ---
 
@@ -58,8 +58,8 @@ Drag a PathGraph from `Sample/QuickStart/ForAvatarCreator/` into the scene.
 
 Press **Play**.
 
-![Simulation Running](../../.github/media/collision_avoidance.gif)
+<img src="../../.github/media/collision_avoidance.gif" width="600">
 
 ---
 
-Next: [Editor Window](Editor-Window.md)
+Next: [Editor Window](Editor-Window)

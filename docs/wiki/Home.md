@@ -10,14 +10,14 @@
 
 | # | Page | |
 |:-:|------|--|
-| 1 | [Installation](Installation.md) | Package Manager setup |
-| 2 | [Quick Start](Quick-Start.md) | Create prefabs, define crowd, run |
-| 3 | [Editor Window](Editor-Window.md) | Scene Setup / Auto Setup / Create Player |
-| 4 | [Environment Setup](Environment-Setup.md) | Walls and obstacles |
+| 1 | [Installation](Installation) | Package Manager setup |
+| 2 | [Quick Start](Quick-Start) | Create prefabs, define crowd, run |
+| 3 | [Editor Window](Editor-Window) | Scene Setup / Auto Setup / Create Player |
+| 4 | [Environment Setup](Environment-Setup) | Walls and obstacles |
 
 ## Reference
 
 | Page | |
 |------|--|
-| [Agent Manager](Agent-Manager.md) | Force weights, motion matching, debug gizmos |
-| [Pipeline](Pipeline.md) | Input/Output of each layer (mermaid) + Customization |
+| [Pipeline](Pipeline) | Input/Output of each layer (mermaid) + Customization |
+| [Agent Manager](Agent-Manager) | Force weights, motion matching, debug gizmos |
