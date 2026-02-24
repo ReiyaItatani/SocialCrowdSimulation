@@ -10,7 +10,7 @@
 
 Drag and drop Humanoid models into the drop zone. Agent prefabs are saved to `Assets/Resources/<ModelName>/Agent.prefab`.
 
-<img src="images/auto-setup-window.png" width="480">
+<img src="images/auto-setup-window.png" width="320">
 
 Default assets are auto-loaded from `Sample/QuickStart/ForPrefabCreator/`. Expand **Advanced Settings** to override.
 
