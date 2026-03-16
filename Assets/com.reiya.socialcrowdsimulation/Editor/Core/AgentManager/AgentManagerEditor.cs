@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(AgentManager))]

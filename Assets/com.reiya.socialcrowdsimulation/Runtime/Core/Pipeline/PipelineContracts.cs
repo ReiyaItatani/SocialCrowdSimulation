@@ -137,7 +137,7 @@ namespace CollisionAvoidance
 
     /// <summary>
     /// Force weights for the L4 Decision layer (the "sliders").
-    /// Set by AgentManager via AgentPathController properties.
+    /// Set by AgentManager via AgentPipelineCoordinator properties.
     /// </summary>
     public readonly struct ForceWeights
     {
@@ -380,6 +380,121 @@ namespace CollisionAvoidance
             GoalPosition = goalPosition;
             AvoidanceColliderSize = avoidanceColliderSize;
             AgentColliderRadius = agentColliderRadius;
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    //  Gaze channel: shared mutable state spanning the entire pipeline
+    // ────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Priority levels for gaze target selection.
+    /// Higher values override lower values within a single tick.
+    /// </summary>
+    public enum GazePriority
+    {
+        /// <summary>Look forward (individual) or at center of mass (group).</summary>
+        Default = 0,
+        /// <summary>L3: predictive look-ahead toward anticipated collision (Matthis et al. 2018).</summary>
+        Prediction = 10,
+        /// <summary>L4: avoidance target, gaze as intention signal (Ducourant et al. 2022).</summary>
+        Decision = 20,
+        /// <summary>Physical collision response (look at collided agent).</summary>
+        Collision = 30,
+        /// <summary>Social filter override (close-range eye contact avoidance, Foulsham et al. 2022).</summary>
+        Social = 40
+    }
+
+    /// <summary>
+    /// Shared mutable gaze channel that spans the entire pipeline.
+    /// Unlike other pipeline contracts (readonly structs), GazeState is a mutable class
+    /// because multiple layers read and write it within a single tick.
+    ///
+    /// Owned by AgentPipelineCoordinator. Created once, persisted across ticks.
+    /// The coordinator resets per-tick fields (TargetPriority) at tick start
+    /// while preserving accumulated state (CurrentLookAtDirection, SmoothedNeckRotation).
+    ///
+    /// Thread safety: Not needed — pipeline runs synchronously per agent per tick.
+    /// </summary>
+    public class GazeState
+    {
+        // ── Per-tick fields (reset by coordinator at tick start) ──
+
+        /// <summary>Current gaze priority for this tick. Reset to Default each tick.</summary>
+        public GazePriority TargetPriority;
+
+        /// <summary>World-space position of the gaze target (if any). Zero if direction-only.</summary>
+        public Vector3 TargetPosition;
+
+        /// <summary>The GameObject being looked at (if any). Null for direction-based targets.</summary>
+        public GameObject TargetObject;
+
+        /// <summary>Whether a specific target was set this tick (vs. default forward gaze).</summary>
+        public bool HasExplicitTarget;
+
+        /// <summary>Whether mutual gaze was detected this tick (set by social filter).</summary>
+        public bool MutualGazeDetected;
+
+        /// <summary>Whether gaze aversion is active (close-range eye contact avoidance).</summary>
+        public bool GazeAversionActive;
+
+        // ── Accumulated state (persists across ticks, updated by Neck Driver) ──
+
+        /// <summary>
+        /// Current actual look-at direction (world-space, normalized).
+        /// Updated by the Neck Driver after applying neck rotation.
+        /// Read by L1-2 to determine FOV center.
+        /// </summary>
+        public Vector3 CurrentLookAtDirection;
+
+        /// <summary>
+        /// Desired look-at direction for this tick (world-space, normalized).
+        /// Written by the highest-priority layer this tick.
+        /// </summary>
+        public Vector3 DesiredLookAtDirection;
+
+        /// <summary>
+        /// Accumulated neck rotation (local-space Quaternion, applied by Neck Driver).
+        /// Persists across ticks for smooth interpolation.
+        /// </summary>
+        public Quaternion SmoothedNeckRotation;
+
+        /// <summary>
+        /// Tries to set the gaze target. Succeeds only if the given priority
+        /// is >= the current TargetPriority.
+        /// </summary>
+        public bool TrySetTarget(GazePriority priority, Vector3 direction,
+            Vector3 targetPosition = default, GameObject targetObject = null)
+        {
+            if (priority < TargetPriority) return false;
+
+            TargetPriority = priority;
+            DesiredLookAtDirection = direction.normalized;
+            TargetPosition = targetPosition;
+            TargetObject = targetObject;
+            HasExplicitTarget = true;
+            return true;
+        }
+
+        /// <summary>
+        /// Called by the coordinator at the start of each tick.
+        /// Resets per-tick fields while preserving accumulated state.
+        /// </summary>
+        public void ResetForTick()
+        {
+            TargetPriority = GazePriority.Default;
+            TargetPosition = Vector3.zero;
+            TargetObject = null;
+            HasExplicitTarget = false;
+            MutualGazeDetected = false;
+            GazeAversionActive = false;
+            // Ensure DesiredLookAtDirection never stays as zero from a previous failed tick.
+            if (DesiredLookAtDirection == Vector3.zero)
+            {
+                DesiredLookAtDirection = Vector3.forward;
+            }
+            // NOTE: CurrentLookAtDirection, DesiredLookAtDirection, and SmoothedNeckRotation
+            // are NOT reset — they carry forward for temporal continuity.
         }
     }
 

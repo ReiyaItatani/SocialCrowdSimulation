@@ -12,7 +12,7 @@ namespace CollisionAvoidance
     /// No GetComponent calls. No concrete Unity component references.
     /// To replace the force model (e.g., with ORCA), implement IDecisionLayer.
     /// </summary>
-    public class DefaultDecisionLayer : MonoBehaviour, IDecisionLayer
+    public class DefaultDecisionLayer : MonoBehaviour, IDecisionLayer, IGazeAwareLayer
     {
         // Group force sub-weights
         private float cohesionWeight = 2.0f;
@@ -37,6 +37,7 @@ namespace CollisionAvoidance
         public DecisionOutput Tick(DecisionInput input, AgentFrame frame, ForceWeights weights,
             GroupContext group, float deltaTime)
         {
+            lastInput = input;
             float dt = deltaTime;
 
             // Update each force on its own timer
@@ -354,6 +355,45 @@ namespace CollisionAvoidance
                 : Vector3.zero;
 
             obstacleForce.SetTarget(newObstacleForce);
+        }
+
+        #endregion
+
+        #region IGazeAwareLayer
+
+        // Cached input for ProcessGaze (available after Tick completes)
+        private DecisionInput lastInput;
+
+        /// <summary>
+        /// Writes gaze toward the urgent avoidance target (Decision priority).
+        /// Literature: Ducourant et al. 2022 — gaze direction signals avoidance intent.
+        /// Also writes mutual avoidance target when detected.
+        /// </summary>
+        public void ProcessGaze(GazeState gaze, AgentFrame frame, GroupContext group)
+        {
+            if (mutualAvoidanceDetected && mutualAvoidanceTarget != null)
+            {
+                Vector3 targetDir = (mutualAvoidanceTarget.transform.position - frame.Position).normalized;
+                if (targetDir != Vector3.zero)
+                {
+                    gaze.TrySetTarget(GazePriority.Decision, targetDir,
+                        mutualAvoidanceTarget.transform.position,
+                        mutualAvoidanceTarget);
+                    gaze.MutualGazeDetected = true;
+                }
+                return;
+            }
+
+            if (lastInput.UrgentAvoidanceTarget.HasValue)
+            {
+                PerceivedAgent target = lastInput.UrgentAvoidanceTarget.Value;
+                Vector3 targetDir = (target.Position - frame.Position).normalized;
+                if (targetDir != Vector3.zero)
+                {
+                    gaze.TrySetTarget(GazePriority.Decision, targetDir,
+                        target.Position, target.GameObject);
+                }
+            }
         }
 
         #endregion

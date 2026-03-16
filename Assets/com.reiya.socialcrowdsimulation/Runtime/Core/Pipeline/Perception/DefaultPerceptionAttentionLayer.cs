@@ -9,7 +9,7 @@ namespace CollisionAvoidance
     /// All GetComponent calls happen here, pre-resolving neighbor data
     /// into PerceivedAgent structs so downstream layers (L3, L4, L5) never call GetComponent.
     /// </summary>
-    public class DefaultPerceptionAttentionLayer : MonoBehaviour, IPerceptionAttentionLayer
+    public class DefaultPerceptionAttentionLayer : MonoBehaviour, IPerceptionAttentionLayer, IGazeAwareLayer
     {
         // Pooled lists to avoid per-tick allocations.
         // Safe because the pipeline runs synchronously — downstream layers consume
@@ -17,6 +17,9 @@ namespace CollisionAvoidance
         private readonly List<PerceivedAgent> pooledVisibleAgents = new List<PerceivedAgent>();
         private readonly List<PerceivedAgent> pooledAvoidanceAreaAgents = new List<PerceivedAgent>();
         private readonly List<PerceivedAgent> pooledSharedFOVAgents = new List<PerceivedAgent>();
+
+        // Cached output for ProcessGaze (available after Tick completes)
+        private AttentionOutput lastOutput;
 
         public AttentionOutput Tick(AgentFrame frame, SensorInput sensors, GroupContext group)
         {
@@ -53,7 +56,7 @@ namespace CollisionAvoidance
             ResolveEnvironment(sensors, frame, group,
                 out wallNormal, out hasWall, out closestObstacleNormal, out hasObstacle);
 
-            return new AttentionOutput(
+            lastOutput = new AttentionOutput(
                 pooledVisibleAgents,
                 pooledAvoidanceAreaAgents,
                 urgentTarget,
@@ -62,6 +65,24 @@ namespace CollisionAvoidance
                 wallNormal, hasWall,
                 closestObstacleNormal, hasObstacle,
                 sensors.AvoidanceColliderSize, sensors.AgentColliderRadius);
+            return lastOutput;
+        }
+
+        /// <summary>
+        /// Writes gaze toward the most salient perceived agent (Default priority).
+        /// Literature: Jovancevic-Misic &amp; Hayhoe 2009 — salient stimuli shift gaze.
+        /// </summary>
+        public void ProcessGaze(GazeState gaze, AgentFrame frame, GroupContext group)
+        {
+            if (!lastOutput.PotentialAvoidanceTarget.HasValue) return;
+
+            Vector3 targetDir = (lastOutput.PotentialAvoidanceTarget.Value.Position - frame.Position).normalized;
+            if (targetDir != Vector3.zero)
+            {
+                gaze.TrySetTarget(GazePriority.Default, targetDir,
+                    lastOutput.PotentialAvoidanceTarget.Value.Position,
+                    lastOutput.PotentialAvoidanceTarget.Value.GameObject);
+            }
         }
 
         /// <summary>

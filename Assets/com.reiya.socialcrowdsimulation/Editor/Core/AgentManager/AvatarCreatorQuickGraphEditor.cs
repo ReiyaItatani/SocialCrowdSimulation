@@ -2,7 +2,8 @@ using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 [CustomEditor(typeof(AvatarCreatorQuickGraph), true)]
 public class AvatarCreatorQuickGraphEditor : Editor
 {

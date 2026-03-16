@@ -1,6 +1,7 @@
 using UnityEngine;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 public class NormalVector : MonoBehaviour
 {
     /// <summary>

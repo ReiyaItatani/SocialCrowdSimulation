@@ -5,7 +5,8 @@ using UnityEditor;
 #endif
 
 #if UNITY_EDITOR
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 public class CollisionAvoidanceMenuItems
 {
     // Menu item moved to SocialCrowdSimulationWindow.

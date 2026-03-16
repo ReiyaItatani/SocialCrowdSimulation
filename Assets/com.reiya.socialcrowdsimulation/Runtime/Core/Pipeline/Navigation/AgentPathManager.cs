@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
     public class AgentPathManager : MonoBehaviour
     {
         public float goalRadius = 2.0f;
-        public AgentPathController pathController;
+        public AgentPipelineCoordinator coordinator;
         public UnityAction OnTargetReached;
         #region PROTECTED ATTRIBUTES
 
@@ -56,7 +57,7 @@ namespace CollisionAvoidance{
 
         private void NotifyGroupIfNeeded(QuickGraphNode node)
         {
-            GroupManager gm = pathController.groupManager;
+            GroupManager gm = coordinator.groupManager;
             if (gm != null)
             {
                 gm.NotifyNextNode(node, gameObject);
@@ -69,9 +70,9 @@ namespace CollisionAvoidance{
 
         protected virtual void Update()
         {
-            float distanceToGoal = Vector3.Distance(pathController.GetCurrentPosition(), CurrentTargetNodePosition);
+            float distanceToGoal = Vector3.Distance(coordinator.GetCurrentPosition(), CurrentTargetNodePosition);
             if(distanceToGoal < goalRadius) {
-                SetTargetNode(GetNextNode(pathController.groupName));
+                SetTargetNode(GetNextNode(coordinator.groupName));
                 OnTargetReached?.Invoke();
             }
         }

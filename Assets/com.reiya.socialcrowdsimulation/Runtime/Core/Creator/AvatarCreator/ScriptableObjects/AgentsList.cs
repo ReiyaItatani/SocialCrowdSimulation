@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
     [CreateAssetMenu(fileName = "AgentsList", menuName = "SocialCrowdSimulation/Agent List")]
     public class AgentsList : AgentListBase
     {

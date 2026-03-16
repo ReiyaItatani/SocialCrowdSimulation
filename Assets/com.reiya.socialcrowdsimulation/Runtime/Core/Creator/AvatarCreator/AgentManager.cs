@@ -6,7 +6,8 @@ using UnityEditor;
 #endif
 using System.IO;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 // AgentManager is a class that manages various parameters and settings for agents in a simulation.
 
 public class AgentManager : MonoBehaviour
@@ -97,10 +98,10 @@ public class AgentManager : MonoBehaviour
         for (int i = 0; i < Avatars.Count; i++)
         {
             // Get and set PathController parameters.
-            AgentPathController pathController = Avatars[i].GetComponentInChildren<AgentPathController>();
-            if(pathController != null) {
-                SetPathControllerParams(pathController);
-                PathControllers.Add(pathController.gameObject);
+            AgentPipelineCoordinator coordinator = Avatars[i].GetComponentInChildren<AgentPipelineCoordinator>();
+            if(coordinator != null) {
+                SetPathControllerParams(coordinator);
+                PathControllers.Add(coordinator.gameObject);
             }
 
             // Get and set MotionMatchingController parameters.
@@ -130,13 +131,13 @@ public class AgentManager : MonoBehaviour
         // Loop through all PathControllers and set their parameters.
         foreach(GameObject controllerObject in PathControllers) 
         {
-            AgentPathController pathController = controllerObject.GetComponent<AgentPathController>();
-            if(pathController != null) 
+            AgentPipelineCoordinator coordinator = controllerObject.GetComponent<AgentPipelineCoordinator>();
+            if(coordinator != null)
             {
-                SetPathControllerParams(pathController);
+                SetPathControllerParams(coordinator);
             }
             AgentPathManager pathManager = controllerObject.GetComponentInChildren<AgentPathManager>();
-            if(pathController != null) 
+            if(coordinator != null)
             {
                 SetPathManagerrParams(pathManager);
             }
@@ -165,27 +166,27 @@ public class AgentManager : MonoBehaviour
     }
 
     // Method to set parameters for PathController.
-    protected virtual void SetPathControllerParams(AgentPathController pathController){
-        pathController.slowingRadius = goalParameters.slowingRadius;
+    protected virtual void SetPathControllerParams(AgentPipelineCoordinator coordinator){
+        coordinator.slowingRadius = goalParameters.slowingRadius;
 
-        pathController.toGoalWeight               = forceWeights.toGoalWeight;
-        pathController.avoidanceWeight            = forceWeights.avoidanceWeight;
-        pathController.avoidNeighborWeight        = forceWeights.avoidNeighborWeight;
-        pathController.groupForceWeight           = forceWeights.groupForceWeight;
-        pathController.wallRepForceWeight         = forceWeights.wallRepForceWeight;
-        pathController.avoidObstacleWeight        = forceWeights.avoidObstacleWeight;
+        coordinator.toGoalWeight               = forceWeights.toGoalWeight;
+        coordinator.avoidanceWeight            = forceWeights.avoidanceWeight;
+        coordinator.avoidNeighborWeight        = forceWeights.avoidNeighborWeight;
+        coordinator.groupForceWeight           = forceWeights.groupForceWeight;
+        coordinator.wallRepForceWeight         = forceWeights.wallRepForceWeight;
+        coordinator.avoidObstacleWeight        = forceWeights.avoidObstacleWeight;
 
-        pathController.MaxDistanceMMAndCharacterController = mmParameters.MaxDistanceMMAndCharacterController;
-        pathController.PositionAdjustmentHalflife          = mmParameters.PositionAdjustmentHalflife;
-        pathController.PosMaximumAdjustmentRatio           = mmParameters.PosMaximumAdjustmentRatio;
+        coordinator.MaxDistanceMMAndCharacterController = mmParameters.MaxDistanceMMAndCharacterController;
+        coordinator.PositionAdjustmentHalflife          = mmParameters.PositionAdjustmentHalflife;
+        coordinator.PosMaximumAdjustmentRatio           = mmParameters.PosMaximumAdjustmentRatio;
 
-        pathController.ShowAvoidanceForce                = gizmosPC.ShowAvoidanceForce;
-        pathController.ShowAnticipatedCollisionAvoidance = gizmosPC.ShowAnticipatedCollisionAvoidance;
-        pathController.ShowGoalDirection                 = gizmosPC.ShowGoalDirection;
-        pathController.ShowCurrentDirection              = gizmosPC.ShowCurrentDirection;
-        pathController.ShowGroupForce                    = gizmosPC.ShowGroupForce;
-        pathController.ShowWallForce                     = gizmosPC.ShowWallForce;
-        pathController.ShowAvoidObstacleForce            = gizmosPC.ShowObstacleAvoidanceForce;
+        coordinator.ShowAvoidanceForce                = gizmosPC.ShowAvoidanceForce;
+        coordinator.ShowAnticipatedCollisionAvoidance = gizmosPC.ShowAnticipatedCollisionAvoidance;
+        coordinator.ShowGoalDirection                 = gizmosPC.ShowGoalDirection;
+        coordinator.ShowCurrentDirection              = gizmosPC.ShowCurrentDirection;
+        coordinator.ShowGroupForce                    = gizmosPC.ShowGroupForce;
+        coordinator.ShowWallForce                     = gizmosPC.ShowWallForce;
+        coordinator.ShowAvoidObstacleForce            = gizmosPC.ShowObstacleAvoidanceForce;
     }
 
     protected virtual void SetPathManagerrParams(AgentPathManager pathManager){

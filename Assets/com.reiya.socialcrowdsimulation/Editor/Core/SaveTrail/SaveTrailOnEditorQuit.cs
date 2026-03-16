@@ -3,7 +3,8 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 #if UNITY_EDITOR
 [InitializeOnLoad]

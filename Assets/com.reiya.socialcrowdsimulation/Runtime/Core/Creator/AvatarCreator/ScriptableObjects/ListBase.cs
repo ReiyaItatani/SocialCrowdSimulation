@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
     public class AgentListBase : ScriptableObject
     {
     }

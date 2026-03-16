@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 public class ReadOnlyAttribute : PropertyAttribute { }
 
 #if UNITY_EDITOR

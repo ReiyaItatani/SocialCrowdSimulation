@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using MotionMatching;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public enum UpperBodyAnimationState
 {
@@ -12,12 +13,12 @@ public enum UpperBodyAnimationState
     // Used for activities within a group, e.g., smoking, holding a bug, carrying luggage.
     // Utilizes Motion Matching technology.
     Walk,
-    
+
     // The 'Talking' animation state.
     // Used for communication within a group.
     // Utilizes Unity's animation system.
     Talk,
-    
+
     // The 'Using Smartphone' animation state.
     // Used for individual activities, e.g., listening to music, texting, making calls.
     // Utilizes Unity's animation system.
@@ -25,7 +26,11 @@ public enum UpperBodyAnimationState
 }
 
 /// <summary>
-/// Manages the social behavior and animation states for a character.
+/// Manages animation states for a character.
+/// Gaze logic lives in the pipeline's GazeState channel.
+/// Responsibilities:
+///   - Animation state management (Walk/Talk/SmartPhone)
+///   - CustomFocalPoints (serialized list, wired to SocialGazeFilter by coordinator)
 /// </summary>
 public class SocialBehaviour : MonoBehaviour
 {
@@ -33,34 +38,27 @@ public class SocialBehaviour : MonoBehaviour
         private static int _animParamID_Talk = Animator.StringToHash(UpperBodyAnimationState.Talk.ToString());
         private static int _animParamID_SmartPhone = Animator.StringToHash(UpperBodyAnimationState.SmartPhone.ToString());
 
-        protected const float LookAtUpdateTime = 1.5f;
     protected const float AnimationStateUpdateMinTime = 5.0f;
     protected const float AnimationStateUpdateMaxTime = 10.0f;
     [Range(0,1)]
     public float WalkAnimationProbability = 0.5f;
-    protected const float FieldOfView = 45f;
-    
+
     [Header("Conversation")]
     public AudioSource audioSource;
     public AudioClip[] audioClips;
 
     [Header("Animation")]
-    protected MotionMatchingSkinnedMeshRenderer motionMatchingRenderer;
-    protected GazeController gazeController;
+    public MotionMatchingSkinnedMeshRenderer targetRenderer;
     protected AvatarMaskData initialAvatarMask;
 
-    [Header("LookAt")]
-    protected ParameterManager parameterManager;
+    public AvatarParameterProxy targetParameterProxy;
 
     [Header("AnimationState")]
     [ReadOnly]
     public UpperBodyAnimationState currentAnimationState = UpperBodyAnimationState.Walk;
     public GameObject smartPhone;
-    protected Animator animator;
+    public Animator targetAnimator;
     protected bool onSmartPhone = true;
-
-    [Header("Collision")]
-    protected AgentCollisionDetection agentCollisionDetection;
 
     protected bool isInitialized = false;
     public bool IsInitialized{
@@ -93,15 +91,10 @@ public class SocialBehaviour : MonoBehaviour
         if(isInitialized == true){
             return;
         }
-        parameterManager = GetComponent<ParameterManager>();
-        animator = GetComponent<Animator>();
-        motionMatchingRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
-        gazeController = GetComponent<GazeController>();
-        agentCollisionDetection = GetComponent<AgentCollisionDetection>();
 
-        if (motionMatchingRenderer != null)
+        if (targetRenderer != null)
         {
-            initialAvatarMask = motionMatchingRenderer.AvatarMask;
+            initialAvatarMask = targetRenderer.AvatarMask;
         }
 
         if(smartPhone != null){
@@ -112,24 +105,32 @@ public class SocialBehaviour : MonoBehaviour
         isInitialized = true;
     }
 
+    public virtual void InitializeDependencies(Animator anim, MotionMatchingSkinnedMeshRenderer renderer, AvatarParameterProxy pm)
+    {
+        targetAnimator = anim;
+        targetRenderer = renderer;
+        targetParameterProxy = pm;
+        
+        InitSocialBehaviour();
+    }
+
     protected virtual void Awake()
     {
+        // For backwards compatibility: if components exist on the same GameObject, get them
+        if (targetParameterProxy == null) targetParameterProxy = GetComponent<AvatarParameterProxy>();
+        if (targetAnimator == null) targetAnimator = GetComponent<Animator>();
+        if (targetRenderer == null) targetRenderer = GetComponent<MotionMatchingSkinnedMeshRenderer>();
+
         InitSocialBehaviour();
     }
 
     protected virtual void OnEnable()
     {
-        agentCollisionDetection.OnEnterTrigger += HandleAgentCollision;
-        parameterManager.GetPathController().OnMutualGaze += OnMutualGaze;   
-
-        StartCoroutine(UpdateCurrentLookAt(LookAtUpdateTime));
         StartCoroutine(UpdateAnimationState());
     }
 
     protected virtual void OnDisable()
     {
-        agentCollisionDetection.OnEnterTrigger -= HandleAgentCollision;
-        parameterManager.GetPathController().OnMutualGaze -= OnMutualGaze;   
         StopAllCoroutines();
     }
 
@@ -141,7 +142,7 @@ public class SocialBehaviour : MonoBehaviour
     {
         while (true)
         {
-            List<GameObject> groupAgents = parameterManager.GetGroupAgents();
+            List<GameObject> groupAgents = targetParameterProxy.GetGroupAgents();
             //Determine Random Animation State based on social relations
             currentAnimationState = DetermineAnimationState(groupAgents);
 
@@ -162,41 +163,27 @@ public class SocialBehaviour : MonoBehaviour
         }
     }
 
-    #if UNITY_EDITOR
-    // void OnDrawGizmos()
-    // {
-    //     var style = new GUIStyle()
-    //     {
-    //         fontSize = 20,
-    //         normal = new GUIStyleState() { textColor = Color.black, background = Texture2D.whiteTexture }
-    //     };
-    //     Handles.Label(transform.position + Vector3.up * 2.3f, currentAnimationState.ToString(), style);
-
-    // }
-    #endif
-
     protected virtual UpperBodyAnimationState DetermineAnimationState(List<GameObject> groupAgents)
     {
-        bool isIndividual = parameterManager.GetGroupName() == "Individual" || groupAgents == null || groupAgents.Count <= 1;
+        bool isIndividual = targetParameterProxy.GetGroupName() == "Individual" || groupAgents == null || groupAgents.Count <= 1;
         return UnityEngine.Random.value < WalkAnimationProbability ? UpperBodyAnimationState.Walk : (isIndividual ? UpperBodyAnimationState.SmartPhone : UpperBodyAnimationState.Talk);
     }
 
     protected virtual void FollowMotionMatching()
     {
         TriggerUnityAnimation(UpperBodyAnimationState.Walk);
-        motionMatchingRenderer.AvatarMask = null;
+        if (targetRenderer != null) targetRenderer.AvatarMask = null;
     }
 
     protected virtual void TriggerUnityAnimation(UpperBodyAnimationState animationState)
     {
         //Update current animation state
         currentAnimationState = animationState;
-        motionMatchingRenderer.AvatarMask = initialAvatarMask;
+        if (targetRenderer != null) targetRenderer.AvatarMask = initialAvatarMask;
 
         foreach (UpperBodyAnimationState state in Enum.GetValues(typeof(UpperBodyAnimationState)))
         {
-                //animator.SetBool(state.ToString(), state == animationState);
-                animator.SetBool(GetAnimParamID(state), state == animationState);
+            if (targetAnimator != null) targetAnimator.SetBool(GetAnimParamID(state), state == animationState);
         }
         if(animationState == UpperBodyAnimationState.SmartPhone || animationState == UpperBodyAnimationState.Talk){
             TryPlayAudio(0.0f);
@@ -205,8 +192,8 @@ public class SocialBehaviour : MonoBehaviour
 
     protected virtual void SetSmartPhoneActiveBasedOnSocialRelations(GameObject smartPhone)
     {
-        bool isIndividual = parameterManager.GetGroupName() == "Individual";
-        
+        bool isIndividual = targetParameterProxy.GetGroupName() == "Individual";
+
         if(isIndividual){
             smartPhone.SetActive(true);
             onSmartPhone = true;
@@ -232,7 +219,7 @@ public class SocialBehaviour : MonoBehaviour
     {
         // Calculate the center of mass, including the calling object itself
         Vector3 averagePos = CalculateAveragePosition(groupAgents);
-        
+
         // Set the distance threshold to half the number of agents
         float agentRadius = 0.3f;
         float safetyDistance = 0.1f;
@@ -278,7 +265,6 @@ public class SocialBehaviour : MonoBehaviour
 
     #endregion
 
-    #region Collide Response
     public virtual void TryPlayAudio(float PlayAudioProbability)
     {
         if (audioSource != null && audioClips.Length > 0 && UnityEngine.Random.value < PlayAudioProbability)
@@ -287,335 +273,13 @@ public class SocialBehaviour : MonoBehaviour
             audioSource.Play();
         }
     }
-    
-    protected virtual void HandleAgentCollision(Collider other){
-        if(collidedTarget != null) return;
-
-        string  mySocialRelations          = parameterManager.GetGroupName();
-        IParameterManager otherAgentParameterManager = other.GetComponent<IParameterManager>();
-        string  otherAgentSocialRelations  = otherAgentParameterManager.GetGroupName();
-        float probability = UnityEngine.Random.value;
-
-        if(mySocialRelations == "Individual" || mySocialRelations != otherAgentSocialRelations && probability < 0.05f){
-            //if the collided agent is not in the same group, then react to collision
-            StartCoroutine(ReactionToCollisionGazeAndAnim(2.0f, other.gameObject));
-        }else{
-            StartCoroutine(ReactionToCollisionGaze(2.0f, other.gameObject));
-        }
-    }
-
-    public virtual IEnumerator ReactionToCollisionGazeAndAnim(float talkDuration, GameObject collidedAgent)
-    {
-        collidedTarget = collidedAgent.transform;
-        TriggerUnityAnimation(UpperBodyAnimationState.Talk);
-        yield return new WaitForSeconds(talkDuration);
-        FollowMotionMatching();
-        collidedTarget = null;
-    }
-
-    public virtual IEnumerator ReactionToCollisionGaze(float gazeDuration, GameObject collidedAgent)
-    {
-        collidedTarget = collidedAgent.transform;
-        yield return new WaitForSeconds(gazeDuration);
-        collidedTarget = null;
-    }
-
-    #endregion
-
-    #region Update Look At
-    protected virtual IEnumerator UpdateCurrentLookAt(float updateTime)
-    {
-        string mySocialRelations = parameterManager.GetGroupName();
-        bool _isIndividual = mySocialRelations == "Individual";
-
-        while (true)
-        {
-            UpdateDirectionAndAvoidance(mySocialRelations, _isIndividual);
-
-            if (!_isIndividual)
-            {
-                UpdateGroupAgentLookAt(parameterManager.GetGroupAgents());
-            }
-
-            yield return new WaitForSeconds(updateTime);
-        }
-    }
-
-    //For individual
-    protected virtual void UpdateDirectionAndAvoidance(string mySocialRelations, bool _isIndividual)
-    {
-        SetCurrentDirection(parameterManager.GetCurrentDirection());
-        GameObject _potentialAvoidanceTarget = parameterManager.GetPotentialAvoidanceTarget();
-
-        if (_potentialAvoidanceTarget != null)
-        {
-            string avoidanceTargetSocialRelations = _potentialAvoidanceTarget.GetComponent<IParameterManager>().GetGroupName();
-            if(_isIndividual == true){
-                SetPotentialAvoidanceTarget(_potentialAvoidanceTarget.GetComponent<IParameterManager>().GetCurrentPosition(), _potentialAvoidanceTarget);
-            }else{
-                SetPotentialAvoidanceTarget(avoidanceTargetSocialRelations != mySocialRelations ? _potentialAvoidanceTarget.GetComponent<IParameterManager>().GetCurrentPosition() : Vector3.zero, _potentialAvoidanceTarget);
-            }
-        }
-        else
-        {
-            SetPotentialAvoidanceTarget(Vector3.zero);
-        }
-    }
-
-    // UpdateGroupAgentLookAt: Updates the direction group agents are looking at.
-    // This includes making agents look at the talking agent in the group.
-    protected virtual void UpdateGroupAgentLookAt(List<GameObject> groupAgents)
-    {
-        if (groupAgents == null) return;
-
-        // Get the current direction the agent is looking at
-        Vector3 headDirection = GetCurrentLookAt();
-
-        // Only proceed if there is a valid head direction
-        if (headDirection != Vector3.zero)
-        {
-            // Get the current position of this agent
-            Vector3 currentPosition = parameterManager.GetCurrentPosition();
-            // Check if any other agent in the group is talking
-            GameObject otherAgent = IsAnyAgentInAnimationState(groupAgents, UpperBodyAnimationState.Talk);
-
-            if (otherAgent != null &&
-            Vector3.Distance(currentPosition, otherAgent.GetComponent<ParameterManager>().GetCurrentPosition()) < groupAgents.Count / 2f)
-            {
-                // If another agent is talking, calculate and set the gaze direction towards them
-                Vector3 gazeDirectionToTalkingAgent = (otherAgent.GetComponent<ParameterManager>().GetCurrentPosition() - currentPosition).normalized;
-                SetCurrentCenterOfMass(gazeDirectionToTalkingAgent);
-            }
-            else
-            {
-                // If no agent is talking, calculate and set the gaze direction based on group's center of mass
-                Vector3 gazeAngleDirection = CalculateGazingDirectionToCOM(groupAgents, currentPosition, headDirection, gameObject, FieldOfView);
-                SetCurrentCenterOfMass(gazeAngleDirection);
-            }
-        }
-    }
-
-
-    protected virtual GameObject IsAnyAgentInAnimationState(List<GameObject> groupAgents, UpperBodyAnimationState targetUpperBodyState){
-        foreach(GameObject agent in groupAgents){
-            if(agent == null || agent == gameObject) continue;
-            SocialBehaviour sb = agent.GetComponent<SocialBehaviour>();
-            if(sb != null && sb.GetUpperBodyAnimationState() == targetUpperBodyState){
-                return agent;
-            }
-        }
-        return null;
-    }
-
-    public virtual Vector3 GetCurrentLookAt()
-    {
-        if(isInitialized == false){
-            InitSocialBehaviour();
-        }
-        return gazeController.GetCurrentLookAt();
-    }
-
-    protected virtual Vector3 CalculateGazingDirectionToCOM(List<GameObject> groupAgents, Vector3 currentPos, Vector3 currentLookDir, GameObject myself, float angleLimit)
-    {
-        Vector3            centerOfMass = Math.CalculateCenterOfMass(groupAgents, myself);
-        Vector3 directionToCenterOfMass = (centerOfMass - currentPos).normalized;    
-
-        float             angle = Vector3.Angle(currentLookDir, directionToCenterOfMass);
-        float neckRotationAngle = 0f;
-
-        if (angle > angleLimit)
-        {
-            neckRotationAngle = angle - angleLimit;
-        }
-
-        Vector3 crossProduct = Vector3.Cross(currentLookDir, directionToCenterOfMass);
-        Quaternion  rotation = Quaternion.identity;
-        if (crossProduct.y > 0)
-        {
-            // directionToCenterOfMass is on your right side
-            rotation = Quaternion.Euler(0, neckRotationAngle, 0);
-        }
-        else if (crossProduct.y <= 0)
-        {
-            // directionToCenterOfMass is on your left side
-            rotation = Quaternion.Euler(0, -neckRotationAngle, 0);
-        }
-
-        Vector3 rotatedVector = rotation * currentLookDir;
-
-        return rotatedVector.normalized;
-    }
-    #endregion
 
     #region GET and SET
     public virtual bool GetOnSmartPhone(){
         return onSmartPhone;
     }
 
-    Transform collidedTarget;
-    Vector3 currentDirection;
-    Vector3 lookAtCenterOfMass;
-    Vector3 potentialAvoidanceTarget;
-    GameObject potentialAvoidanceObject;
-    Transform avoidanceCoordinateTarget;
-
     public List<GameObject> CustomFocalPoints = new List<GameObject>();
-
-    protected virtual void SetCurrentDirection(Vector3 _currentDirection){
-        currentDirection = _currentDirection;
-    }
-
-    protected virtual void SetCurrentCenterOfMass(Vector3 _lookAtCenterOfMass){
-        lookAtCenterOfMass = _lookAtCenterOfMass;
-    }
-
-    protected virtual void SetPotentialAvoidanceTarget(Vector3 _potentialAvoidanceTarget, GameObject avoidanceTargetObject = null){
-        if (_potentialAvoidanceTarget != Vector3.zero){
-
-            float distance = Vector3.Distance(transform.position, _potentialAvoidanceTarget);
-            //TODO: this maxdistance should be considered with unalinged collision avoidance area
-            // Define the maximum distance (threshold)
-            float maxDistance = 7.0f; // Adjust this value based on game requirements
-            // Calculate the probability based on distance (linearly decreasing)
-            float probability = distance / maxDistance;
-
-            // Random.value returns a random number between 0 and 1
-            if (UnityEngine.Random.value < probability){
-                // Use _potentialAvoidanceTarget based on probability
-                potentialAvoidanceTarget = _potentialAvoidanceTarget;
-                potentialAvoidanceObject = avoidanceTargetObject;
-                //this is for adjusting duration of looking at potential avoidance target
-                StartCoroutine(CheckMutualGaze(LookAtUpdateTime-0.1f, avoidanceTargetObject));
-            } else {
-                // Otherwise, set to Vector3.zero
-                potentialAvoidanceTarget = Vector3.zero;
-                potentialAvoidanceObject = null;
-            }
-        } else {
-            potentialAvoidanceTarget = Vector3.zero;
-            potentialAvoidanceObject = null;
-        }
-    }
-
-    //TODO: potential avoidance target > getcurrentlookat→ 180° → potential avoidance target = Vector3.zero
-    //implement mutual gaze
-    protected virtual IEnumerator CheckMutualGaze(float duration, GameObject avoidanceTargetObject){
-        if(duration > LookAtUpdateTime){
-            duration = LookAtUpdateTime;
-        }
-
-        float elapsedTime = 0f;
-
-        SocialBehaviour targetSocialBehaviour = avoidanceTargetObject.GetComponent<SocialBehaviour>();
-        IParameterManager targetParameterManager = avoidanceTargetObject.GetComponent<IParameterManager>();
-
-        while (duration > elapsedTime)
-        {
-            elapsedTime += Time.deltaTime;
-
-            if (targetSocialBehaviour != null && targetParameterManager != null)
-            {
-                Vector3 targetLookAt = targetSocialBehaviour.GetCurrentLookAt();
-                Vector3 myLookAt     = GetCurrentLookAt();
-
-                Vector3 targetPosition = targetParameterManager.GetCurrentPosition();
-                Vector3 myPosition     = parameterManager.GetCurrentPosition(); 
-
-                Vector3 myPositionToTarget = (targetPosition - myPosition).normalized;
-
-                // Normalize vectors (if they are not already normalized in their methods)
-                targetLookAt.Normalize();
-                myLookAt.Normalize();
-
-                // Calculate the dot products
-                float dotProductLookAt = Vector3.Dot(targetLookAt, myLookAt);
-                float dotProductPosition = Vector3.Dot(myPositionToTarget, myLookAt);
-
-                if (dotProductLookAt < -0.99 && dotProductPosition > 0.99)
-                {
-                    // This indicates mutual gaze
-                    potentialAvoidanceTarget = Vector3.zero;
-                    //Debug.Log("Detect Mutual Gaze");
-                }
-            }
-
-            yield return new WaitForSeconds(Time.deltaTime);
-        }
-    }
-
-    private bool isMutualGazeRunning = false;
-
-    // Handle the mutual gaze event
-    protected virtual void OnMutualGaze(GameObject currentAvoidanceTarget){
-        // Skip the process if it's already running
-        if (isMutualGazeRunning) return;
-
-        // Set the flag indicating the process is running
-        isMutualGazeRunning = true;
-
-        avoidanceCoordinateTarget = currentAvoidanceTarget.transform;
-
-        // Call ResetAvoidanceCoordinateTarget method after 1 second
-        Invoke("ResetAvoidanceCoordinateTarget", 2f);
-    }
-
-    // Reset the avoidance coordinate target
-    protected virtual void ResetAvoidanceCoordinateTarget(){
-        // Set avoidanceCoordinateTarget to null
-        avoidanceCoordinateTarget = null;
-
-        // Reset the flag indicating the process is running
-        isMutualGazeRunning = false;
-    }
-
-    public virtual Transform GetCustomFocalPoint()
-    {
-        if (!parameterManager.GetOnInSlowingArea())
-        {
-            return null;
-        }
-
-        if (CustomFocalPoints.Count == 0)
-        {
-            return null;
-        }
-
-        GameObject minDistanceFocalPoint = CustomFocalPoints[0];
-        float minDistance = Vector3.Distance(parameterManager.GetCurrentPosition(), minDistanceFocalPoint.transform.position);
-
-        foreach (GameObject focalPoint in CustomFocalPoints)
-        {
-            float distance = Vector3.Distance(parameterManager.GetCurrentPosition(), focalPoint.transform.position);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                minDistanceFocalPoint = focalPoint;
-            }
-        }
-
-        return minDistanceFocalPoint.transform;
-
-    }
-
-    public virtual Transform GetAvoidanceCoordinationTarget(){
-        return avoidanceCoordinateTarget;
-    }
-
-    public virtual Transform GetCollidedTarget(){
-        return collidedTarget;
-    }
-    public virtual Vector3 GetCurrentDirection(){
-        return currentDirection;
-    }
-
-    public virtual Vector3 GetCurrentCenterOfMass(){
-        return lookAtCenterOfMass;
-    }
-
-    public virtual Vector3 GetPotentialAvoidanceTarget(){
-        return potentialAvoidanceTarget;
-    }
-
 
     #endregion
 }

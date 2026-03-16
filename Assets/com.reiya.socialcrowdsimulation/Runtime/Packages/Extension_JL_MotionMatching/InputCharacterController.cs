@@ -1,6 +1,7 @@
 using UnityEngine;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 [RequireComponent(typeof(InputManager))]
 /// <summary>

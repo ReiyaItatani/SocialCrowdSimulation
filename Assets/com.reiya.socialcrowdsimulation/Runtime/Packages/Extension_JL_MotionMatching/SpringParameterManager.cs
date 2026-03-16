@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using MotionMatching;
 using UnityEngine;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public class SpringParameterManager : MonoBehaviour, IParameterManager
 {

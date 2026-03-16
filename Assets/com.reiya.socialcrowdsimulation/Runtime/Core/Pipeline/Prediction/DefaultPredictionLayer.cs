@@ -9,10 +9,13 @@ namespace CollisionAvoidance
     /// Separates prediction math from force computation so prediction algorithms
     /// can be swapped independently (e.g., linear → polynomial → learned model).
     /// </summary>
-    public class DefaultPredictionLayer : MonoBehaviour, IPredictionLayer
+    public class DefaultPredictionLayer : MonoBehaviour, IPredictionLayer, IGazeAwareLayer
     {
         // Pooled list — safe because pipeline runs synchronously per tick.
         private readonly List<PredictedNeighbor> pooledPredictedNeighbors = new List<PredictedNeighbor>();
+
+        // Cached output for ProcessGaze (available after Tick completes)
+        private PredictionOutput lastOutput;
 
         public PredictionOutput Tick(AttentionOutput attention, AgentFrame frame, GroupContext group)
         {
@@ -64,7 +67,29 @@ namespace CollisionAvoidance
                 }
             }
 
-            return new PredictionOutput(pooledPredictedNeighbors, nearestCollisionTime, mostUrgent);
+            lastOutput = new PredictionOutput(pooledPredictedNeighbors, nearestCollisionTime, mostUrgent);
+            return lastOutput;
+        }
+
+        /// <summary>
+        /// Writes gaze toward the predicted collision point (Prediction priority).
+        /// Literature: Matthis et al. 2018 — humans look 1-2 seconds ahead.
+        /// Only activates when a collision is predicted within 2 seconds.
+        /// </summary>
+        public void ProcessGaze(GazeState gaze, AgentFrame frame, GroupContext group)
+        {
+            if (!lastOutput.MostUrgentNeighbor.HasValue) return;
+
+            PredictedNeighbor urgent = lastOutput.MostUrgentNeighbor.Value;
+            if (urgent.TimeToApproach > 2f) return;
+
+            Vector3 targetDir = (urgent.PredictedPosition - frame.Position).normalized;
+            if (targetDir != Vector3.zero)
+            {
+                gaze.TrySetTarget(GazePriority.Prediction, targetDir,
+                    urgent.PredictedPosition,
+                    urgent.Agent.GameObject);
+            }
         }
     }
 }

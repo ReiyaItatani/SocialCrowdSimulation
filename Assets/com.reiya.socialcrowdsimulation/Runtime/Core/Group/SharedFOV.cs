@@ -4,7 +4,8 @@ using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public class SharedFOV : GroupManagerBase
 {
@@ -13,7 +14,7 @@ public class SharedFOV : GroupManagerBase
     protected virtual void InitSharedFOV()
     {
         foreach(GameObject agent in agentsInCategory){
-            collisionAvoidanceControllers.Add(agent.GetComponent<ParameterManager>().GetCollisionAvoidanceController());
+            collisionAvoidanceControllers.Add(agent.GetComponent<AvatarParameterProxy>().GetCollisionAvoidanceController());
         }
     }
 

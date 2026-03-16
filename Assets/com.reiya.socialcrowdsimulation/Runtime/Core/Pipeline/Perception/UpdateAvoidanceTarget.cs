@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using MotionMatching;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public class UpdateAvoidanceTarget : MonoBehaviour
 {

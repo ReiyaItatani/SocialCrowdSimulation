@@ -4,10 +4,11 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
     public class CollisionAvoidanceController : MonoBehaviour
     {
-        public AgentPathController pathController;
+        public AgentPipelineCoordinator coordinator;
         public CapsuleCollider agentCollider;
         public CapsuleCollider groupCollider;
 
@@ -32,9 +33,12 @@ namespace CollisionAvoidance{
         private FOVActiveController fovActiveController;
         public SocialBehaviour socialBehaviour;
 
+        // GazeState channel  Epreferred FOV direction source (set by coordinator)
+        private GazeState gazeState;
+
 
         [Header("Repulsion Force from the wall")]
-        public AgentCollisionDetection agentCollisionDetection; 
+        public AgentPhysicsTrigger agentPhysicsTrigger;
 
         private bool isInitialized = false;
         public bool IsInitialized{
@@ -85,12 +89,12 @@ namespace CollisionAvoidance{
                 updateAvoidanceTarget.InitParameter(agentCollider, groupCollider);
             }
 
-            //Create Agent Collision Detection
-            agentCollisionDetection                 = agentCollider.GetComponent<AgentCollisionDetection>();
-            if (agentCollisionDetection == null)
+            //Create Agent Physics Trigger
+            agentPhysicsTrigger                 = agentCollider.GetComponent<AgentPhysicsTrigger>();
+            if (agentPhysicsTrigger == null)
             {
-                agentCollisionDetection = agentCollider.gameObject.AddComponent<AgentCollisionDetection>();
-                Debug.Log("AgentCollisionDetection script added");
+                agentPhysicsTrigger = agentCollider.gameObject.AddComponent<AgentPhysicsTrigger>();
+                Debug.Log("AgentPhysicsTrigger script added");
             }
 
             //Call Once to Initialize
@@ -117,7 +121,7 @@ namespace CollisionAvoidance{
 
         private IEnumerator UpdateBasicAvoidanceAreaPos(float AgentHeight){
             while(true){
-                if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
+                if(coordinator.GetCurrentDirection() == Vector3.zero) yield return null;
                 CalculateBasicAvoidanceAreaPos(AgentHeight);
                 yield return null;
             }
@@ -125,8 +129,8 @@ namespace CollisionAvoidance{
 
         private void CalculateBasicAvoidanceAreaPos(float AgentHeight){
             Transform t = basicAvoidanceArea._cachedTransform;
-            Vector3 currentDir = pathController.GetCurrentDirection().normalized;
-            Vector3 Center = (Vector3)pathController.GetCurrentPosition() + currentDir * avoidanceCollider.size.z/2;
+            Vector3 currentDir = coordinator.GetCurrentDirection().normalized;
+            Vector3 Center = (Vector3)coordinator.GetCurrentPosition() + currentDir * avoidanceCollider.size.z/2;
             t.position = new Vector3(Center.x, AgentHeight, Center.z);
             Quaternion targetRotation = Quaternion.LookRotation(currentDir);
             t.rotation = targetRotation;
@@ -134,15 +138,27 @@ namespace CollisionAvoidance{
 
         private IEnumerator UpdateBasicAvoidanceSemiCircleAreaPos(float AgentHeight, float AgentRadius){
             while(true){
-                if(pathController.GetCurrentDirection() == Vector3.zero) yield return null;
+                if(coordinator.GetCurrentDirection() == Vector3.zero) yield return null;
                 CalculateBasicAvoidanceSemiCircleAreaPos(AgentHeight, AgentRadius);
                 yield return null;
             }
         }
 
+        /// <summary>
+        /// Set the GazeState reference (called by coordinator after initialization).
+        /// </summary>
+        public void SetGazeState(GazeState gaze)
+        {
+            gazeState = gaze;
+        }
+
         private void CalculateBasicAvoidanceSemiCircleAreaPos(float AgentHeight, float AgentRadius){
-            Vector3   currentPosition = (Vector3)pathController.GetCurrentPosition();
-            Vector3   lookAtDirection = socialBehaviour.GetCurrentLookAt().normalized;
+            Vector3   currentPosition = (Vector3)coordinator.GetCurrentPosition();
+            Vector3   pathDir = coordinator.GetCurrentDirection().normalized;
+            Vector3   lookAtDirection = gazeState != null && gazeState.CurrentLookAtDirection != Vector3.zero
+                ? gazeState.CurrentLookAtDirection.normalized
+                : pathDir;
+            if (lookAtDirection == Vector3.zero) lookAtDirection = Vector3.forward;
             Vector3   newPosition     = currentPosition + lookAtDirection * AgentRadius;
             Quaternion targetRotation = Quaternion.LookRotation(lookAtDirection);
 
@@ -168,7 +184,7 @@ namespace CollisionAvoidance{
         }
 
         public GameObject GetCurrentWallTarget(){
-            return agentCollisionDetection.GetCurrentWallTarget();
+            return agentPhysicsTrigger.GetCurrentWallTarget();
         }
 
         public CapsuleCollider GetAgentCollider(){
@@ -187,8 +203,8 @@ namespace CollisionAvoidance{
             return socialBehaviour.GetUpperBodyAnimationState();
         }
 
-        public AgentCollisionDetection GetAgentCollisionDetection(){
-            return agentCollisionDetection;
+        public AgentPhysicsTrigger GetAgentPhysicsTrigger(){
+            return agentPhysicsTrigger;
         }
     }
 }

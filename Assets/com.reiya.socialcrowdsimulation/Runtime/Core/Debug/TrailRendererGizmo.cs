@@ -5,7 +5,8 @@ using System.IO;
 using System;
 
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public class TrailRendererGizmo : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class TrailRendererGizmo : MonoBehaviour
             csv.AppendLine($"{point.x},{point.y},{point.z}");
         }
 
-        // セッションの開始時刻をファイル名に追加
+        // セチE��ョンの開始時刻をファイル名に追加
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         string fileName = $"{gameObject.name}_TrailPoints_{timestamp}.csv";
         string filePath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Users", fileName);

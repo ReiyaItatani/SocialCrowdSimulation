@@ -48,7 +48,7 @@ namespace CollisionAvoidance
         /// Hierarchy:
         ///   Agent (root)
         ///   ├── Avatar (humanoid model + physics + social behavior)
-        ///   ├── Pipeline (AgentPathController + Coordinator)
+        ///   ├── Pipeline (AgentPipelineCoordinator)
         ///   │   ├── Navigation              L0: AgentPathManager
         ///   │   ├── PerceptionAttention      L1-2: Perception + CollisionAvoidanceController
         ///   │   ├── Prediction               L3: PredictionLayer
@@ -88,16 +88,15 @@ namespace CollisionAvoidance
             humanoidInstance.transform.SetParent(agent.transform);
             humanoidInstance.tag = "Agent";
 
-            // ── Pipeline (driver + coordinator) ──
+            // ── Pipeline (unified coordinator) ──
             GameObject pipelineGO = new GameObject("Pipeline");
             pipelineGO.transform.SetParent(agent.transform);
-            AgentPathController pathController = pipelineGO.AddComponent<AgentPathController>();
+            AgentPipelineCoordinator coordinator = pipelineGO.AddComponent<AgentPipelineCoordinator>();
             pipelineGO.AddComponent<AgentDebugGizmos>();
-            // AgentPipelineCoordinator is auto-added by [RequireComponent] on AgentPathController
             AddLayerInfo(pipelineGO,
                 "Pipeline",
-                "Agent pipeline driver. AgentPathController bridges MotionMatching with the pipeline. " +
-                "AgentPipelineCoordinator executes L0-L5 each tick.");
+                "Unified agent pipeline driver. AgentPipelineCoordinator bridges MotionMatching " +
+                "with the 5-layer pipeline (L0-L5) each tick.");
 
             // ── L0: Navigation ──
             GameObject navigationGO = CreateLayerChild(pipelineGO, "Navigation",
@@ -140,6 +139,9 @@ namespace CollisionAvoidance
                 "Computes final nextPosition from desired direction and constrained speed.");
             motorGO.AddComponent<DefaultMotorLayer>();
 
+            // ── Post-pipeline: Social Gaze Filter ──
+            pipelineGO.AddComponent<SocialGazeFilter>();
+
             // ── Animation ──
             GameObject animationGO = new GameObject("Animation");
             animationGO.transform.SetParent(agent.transform);
@@ -153,15 +155,15 @@ namespace CollisionAvoidance
             // ── Wire cross-references ──
 
             // Pipeline ↔ Animation
-            pathController.MotionMatching = motionMatchingController;
-            pathController.collisionAvoidance = collisionAvoidanceController;
-            pathController.agentPathManager = agentPathManager;
+            coordinator.MotionMatching = motionMatchingController;
+            coordinator.collisionAvoidance = collisionAvoidanceController;
+            coordinator.agentPathManager = agentPathManager;
 
             // Navigation
-            agentPathManager.pathController = pathController;
+            agentPathManager.coordinator = coordinator;
 
             // MotionMatching
-            motionMatchingController.CharacterController = pathController;
+            motionMatchingController.CharacterController = coordinator;
             motionMatchingController.MMData = config.MMData;
             motionMatchingController.SearchTime = 0.01f;
 
@@ -193,9 +195,9 @@ namespace CollisionAvoidance
             capsuleCollider.radius = 0.3f;
             capsuleCollider.height = 1.8f;
 
-            // Add ParameterManager.
-            ParameterManager parameterManager = humanoidInstance.AddComponent<ParameterManager>();
-            parameterManager.pathController = pathController;
+            // Add AvatarParameterProxy.
+            AvatarParameterProxy avatarParameterProxy = humanoidInstance.AddComponent<AvatarParameterProxy>();
+            avatarParameterProxy.coordinator = coordinator;
 
             // Create Sound child with AudioSource.
             GameObject soundObject = new GameObject("Sound");
@@ -204,35 +206,40 @@ namespace CollisionAvoidance
             AudioSource audioSource = soundObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
 
-            // Add SocialBehaviour.
-            SocialBehaviour socialBehaviour = humanoidInstance.AddComponent<SocialBehaviour>();
+            // Add SocialBehaviour to Decision hierarchy.
+            // decisionGO is already defined above, so just use it.
+            SocialBehaviour socialBehaviour = decisionGO.AddComponent<SocialBehaviour>();
             socialBehaviour.smartPhone = phoneInstance;
             socialBehaviour.audioSource = audioSource;
             socialBehaviour.audioClips = config.AudioClips;
 
-            // Add AgentCollisionDetection.
-            AgentCollisionDetection agentCollisionDetection = humanoidInstance.AddComponent<AgentCollisionDetection>();
+            // Add AgentPhysicsTrigger.
+            AgentPhysicsTrigger agentPhysicsTrigger = humanoidInstance.AddComponent<AgentPhysicsTrigger>();
 
-            // Add GazeController.
-            humanoidInstance.AddComponent<GazeController>();
+            // Add GazeController to PerceptionAttention hierarchy.
+            // perceptionGO is already defined above, so just use it.
+            GazeController gazeController = perceptionGO.AddComponent<GazeController>();
 
             // Add MotionMatchingSkinnedMeshRenderer.
             CollisionAvoidance.MotionMatchingSkinnedMeshRenderer motionMatchingSkinnedMeshRenderer =
                 humanoidInstance.AddComponent<CollisionAvoidance.MotionMatchingSkinnedMeshRenderer>();
             motionMatchingSkinnedMeshRenderer.MotionMatching = motionMatchingController;
-            motionMatchingSkinnedMeshRenderer.AvatarMask = config.AvatarMask;
             motionMatchingSkinnedMeshRenderer.AvoidToesFloorPenetration = true;
             motionMatchingSkinnedMeshRenderer.ToesSoleOffset = new Vector3(0, 0, -0.02f);
 
-            // Add AnimationModifier and RightHandRotModifier.
-            humanoidInstance.AddComponent<AnimationModifier>();
-            humanoidInstance.AddComponent<RightHandRotModifier>();
+            // Wire dependencies into GazeController and SocialBehaviour.
+            gazeController.InitializeDependencies(humanoidAnimator, motionMatchingSkinnedMeshRenderer, avatarParameterProxy, coordinator);
+            socialBehaviour.InitializeDependencies(humanoidAnimator, motionMatchingSkinnedMeshRenderer, avatarParameterProxy);
+
+            // AvatarMask must be set AFTER SocialBehaviour.InitializeDependencies,
+            // because FollowMotionMatching() inside it sets AvatarMask = null (Walk state).
+            motionMatchingSkinnedMeshRenderer.AvatarMask = config.AvatarMask;
 
             // Wire CollisionAvoidanceController references.
-            collisionAvoidanceController.pathController = pathController;
+            collisionAvoidanceController.coordinator = coordinator;
             collisionAvoidanceController.FOVMeshPrefab = config.FOVMeshPrefab;
             collisionAvoidanceController.socialBehaviour = socialBehaviour;
-            collisionAvoidanceController.agentCollisionDetection = agentCollisionDetection;
+            collisionAvoidanceController.agentPhysicsTrigger = agentPhysicsTrigger;
             collisionAvoidanceController.agentCollider = capsuleCollider;
 
             // ── Save as prefab ──
@@ -245,6 +252,14 @@ namespace CollisionAvoidance
             }
 
             string prefabPath = Path.Combine(agentPath, agent.name + ".prefab");
+
+            // Diagnostic: verify AvatarMask before save
+            var mmsmr = agent.GetComponentInChildren<CollisionAvoidance.MotionMatchingSkinnedMeshRenderer>();
+            Debug.Log($"[AgentPrefabFactory] Pre-save check:" +
+                $"\n  config.AvatarMask = {(config.AvatarMask != null ? config.AvatarMask.name : "NULL")}" +
+                $"\n  MMSMR.AvatarMask  = {(mmsmr != null && mmsmr.AvatarMask != null ? mmsmr.AvatarMask.name : "NULL")}" +
+                $"\n  MMSMR type        = {(mmsmr != null ? mmsmr.GetType().FullName : "NOT FOUND")}");
+
             PrefabUtility.SaveAsPrefabAsset(agent, prefabPath);
 
             // Clean up temporary scene objects.

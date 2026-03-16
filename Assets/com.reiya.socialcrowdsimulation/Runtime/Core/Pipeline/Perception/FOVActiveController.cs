@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CollisionAvoidance {
+namespace CollisionAvoidance
+{
 
     // Enum to define different states of Field of View (FOV)
     public enum FOVDegree {
@@ -159,19 +160,22 @@ namespace CollisionAvoidance {
 
         public FOVObject GetChildObject(FOVDegree fKey)
         {
-            _fovMap.TryGetValue((int)fKey, out var obj);
-            if (obj == null)
+            if (!_fovMap.TryGetValue((int)fKey, out var obj))
             {
+                // First time: initialize the entire map
                 foreach (Transform child in transform)
                 {
                     // Try to parse the child's name as an integer to get the FOV value.
                     if (int.TryParse(child.name, out int fovValue))
                     {
-                        obj = new FOVObject();
-                        obj._gameObject = child.gameObject;
-                        _fovMap[fovValue] = obj;
+                        var newObj = new FOVObject();
+                        newObj._gameObject = child.gameObject;
+                        _fovMap[fovValue] = newObj;
                     }
                 }
+                
+                // Now try getting it again after initialization
+                _fovMap.TryGetValue((int)fKey, out obj);
             }
 
             return obj;

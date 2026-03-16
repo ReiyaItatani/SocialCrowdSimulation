@@ -4,7 +4,8 @@ using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
     public class GroupColliderMovement : SharedFOV
     {

@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System;
 using UnityEngine.AI;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 [RequireComponent(typeof(AgentManager))]
 public class AvatarCreatorQuickGraph : MonoBehaviour
 {
@@ -82,35 +83,69 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
 
     protected virtual void AssignPathController(GameObject instance, string groupName, SpeedRange speedRange, Vector3 pos, QuickGraphNode node, QuickGraphNode neighbours)
     {
-        AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
+        AgentPipelineCoordinator coordinator = instance.GetComponentInChildren<AgentPipelineCoordinator>();
         AgentPathManager agentPathManager = instance.GetComponentInChildren<AgentPathManager>();
-        // MotionMatchingController motionMatchingController = instance.GetComponentInChildren<MotionMatchingController>();
-        // ConversationalAgentFramework conversationalAgentFramework = instance.GetComponentInChildren<ConversationalAgentFramework>();
-        
-        pathController.maxSpeed = speedRange.maxSpeed;
-        pathController.minSpeed = speedRange.minSpeed;
-        pathController.initialSpeed = UnityEngine.Random.Range(speedRange.minSpeed, speedRange.maxSpeed);
-        pathController.groupName = groupName;
+
+        Debug.Log($"[AvatarCreator] AssignPathController for '{instance.name}'" +
+            $"\n  coordinator={coordinator != null} | agentPathManager={agentPathManager != null}");
+
+        if (coordinator == null)
+        {
+            Debug.LogError($"[AvatarCreator] AgentPipelineCoordinator NOT FOUND in '{instance.name}'! " +
+                $"Children: {string.Join(", ", GetChildNames(instance.transform))}");
+        }
+
+        coordinator.maxSpeed = speedRange.maxSpeed;
+        coordinator.minSpeed = speedRange.minSpeed;
+        coordinator.initialSpeed = UnityEngine.Random.Range(speedRange.minSpeed, speedRange.maxSpeed);
+        coordinator.groupName = groupName;
         agentPathManager.SetTargetNode(node);
         agentPathManager.SetTargetNode(neighbours);
-        // pathController.transform.position = pos;
-        // motionMatchingController.transform.position = pos;
-        // conversationalAgentFramework.transform.position = pos;
+
+        // DI: Inject Model components into Pipeline controllers (GazeController, SocialBehaviour)
+        Animator anim = instance.GetComponentInChildren<Animator>();
+        CollisionAvoidance.MotionMatchingSkinnedMeshRenderer mmRenderer = instance.GetComponentInChildren<CollisionAvoidance.MotionMatchingSkinnedMeshRenderer>();
+        AvatarParameterProxy pm = instance.GetComponentInChildren<AvatarParameterProxy>();
+
+        Debug.Log($"[AvatarCreator]   anim={anim != null} | mmRenderer={mmRenderer != null} | pm={pm != null}");
+
+        GazeController gazeController = instance.GetComponentInChildren<GazeController>();
+        Debug.Log($"[AvatarCreator]   gazeController={gazeController != null}" +
+            (gazeController != null ? $" (on '{gazeController.gameObject.name}')" : " — NOT FOUND!"));
+
+        if (gazeController != null)
+        {
+            gazeController.InitializeDependencies(anim, mmRenderer, pm, coordinator);
+        }
+        else
+        {
+            Debug.LogError($"[AvatarCreator] GazeController NOT FOUND in '{instance.name}'!");
+        }
+
+        SocialBehaviour socialBehaviour = instance.GetComponentInChildren<SocialBehaviour>();
+        if (socialBehaviour != null)
+        {
+            // Save AvatarMask before InitializeDependencies — FollowMotionMatching() inside sets it to null.
+            var savedMask = mmRenderer != null ? mmRenderer.AvatarMask : null;
+            socialBehaviour.InitializeDependencies(anim, mmRenderer, pm);
+            if (mmRenderer != null) mmRenderer.AvatarMask = savedMask;
+
+        }
     }
 
     protected virtual void AssignGroupComponents(GameObject instance, GroupParameterManager groupParameterManager, GroupManager groupManager)
     {
-        AgentPathController pathController = instance.GetComponentInChildren<AgentPathController>();
+        AgentPipelineCoordinator coordinator = instance.GetComponentInChildren<AgentPipelineCoordinator>();
         CollisionAvoidanceController collisionAvoidanceController = instance.GetComponentInChildren<CollisionAvoidanceController>();
-        
+
         if (groupParameterManager != null)
         {
-            groupParameterManager.pathControllers.Add(pathController);
+            groupParameterManager.coordinators.Add(coordinator);
             collisionAvoidanceController.groupCollider = groupParameterManager.GetComponent<CapsuleCollider>();
         }
         if (groupManager != null)
         {
-            pathController.groupManager = groupManager;
+            coordinator.groupManager = groupManager;
             groupManager.groupMembers.Add(instance);
         }
     }
@@ -163,6 +198,20 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         }
         instantiatedAvatars.Clear();
         instantiatedGroups.Clear();
+    }
+
+    private static string[] GetChildNames(Transform root)
+    {
+        var names = new List<string>();
+        foreach (Transform child in root)
+        {
+            names.Add(child.name);
+            foreach (Transform grandchild in child)
+            {
+                names.Add($"  {child.name}/{grandchild.name}");
+            }
+        }
+        return names.ToArray();
     }
 
     protected virtual bool ComputeSafeSpawnPosition(QuickGraphNode node, QuickGraphNode neighbours, out Vector3 pos)

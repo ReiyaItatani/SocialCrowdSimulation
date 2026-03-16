@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 /// <summary>
 /// Class responsible for wrapping the input from the generated C# class from the new Unity's Input System.
 /// </summary>

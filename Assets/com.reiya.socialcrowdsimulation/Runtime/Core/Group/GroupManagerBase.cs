@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine.PlayerLoop;
 
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 
 public class GroupManagerBase : CrowdSimulationMonoBehaviour
 {
@@ -46,7 +47,7 @@ public class GroupManagerBase : CrowdSimulationMonoBehaviour
     protected virtual List<GameObject> GetNewGroupAgents(){
         List<GameObject> _groupMembers = new List<GameObject>();
         foreach(GameObject agent in groupMembers){
-            _groupMembers.Add(agent.GetComponentInChildren<ParameterManager>().gameObject);
+            _groupMembers.Add(agent.GetComponentInChildren<AvatarParameterProxy>().gameObject);
         }
         return _groupMembers;
     }

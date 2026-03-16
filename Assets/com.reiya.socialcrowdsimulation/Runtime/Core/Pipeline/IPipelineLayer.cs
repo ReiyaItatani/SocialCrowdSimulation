@@ -33,6 +33,16 @@ namespace CollisionAvoidance
     }
 
     /// <summary>
+    /// Optional interface for pipeline layers that participate in the gaze channel.
+    /// Layers implement this alongside their existing IXxxLayer interface.
+    /// The coordinator calls ProcessGaze() after each layer's main Tick().
+    /// </summary>
+    public interface IGazeAwareLayer
+    {
+        void ProcessGaze(GazeState gaze, AgentFrame frame, GroupContext group);
+    }
+
+    /// <summary>
     /// L5: Motor Constraints layer.
     /// Applies max speed, acceleration limits, and goal slowing.
     /// Produces final position/direction/speed for the animation system.

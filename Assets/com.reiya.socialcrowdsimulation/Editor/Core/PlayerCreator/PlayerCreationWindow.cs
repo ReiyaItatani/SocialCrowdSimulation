@@ -7,7 +7,8 @@ using UnityEditor;
 #endif
 
 #if UNITY_EDITOR
-namespace CollisionAvoidance{
+namespace CollisionAvoidance
+{
 public class PlayerCreationWindow : EditorWindow
 {
     private MotionMatchingData MMData;

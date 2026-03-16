@@ -1,10 +1,12 @@
 using UnityEngine;
 
+#if UNITY_EDITOR
 namespace CollisionAvoidance
 {
     /// <summary>
     /// Manages the runtime speed of the simulation by adjusting the time scale.
     /// The speed can be modified in real-time using a slider in the Unity Inspector.
+    /// Editor-only: this component should not be included in production builds.
     /// </summary>
     public class RunTimeManager : MonoBehaviour
     {
@@ -24,3 +26,4 @@ namespace CollisionAvoidance
         }
     }
 }
+#endif

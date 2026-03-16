@@ -1,24 +1,25 @@
 using UnityEngine;
 
 #if UNITY_EDITOR
-namespace CollisionAvoidance{
-[ExecuteInEditMode] 
-public class GizmoDrawer : MonoBehaviour
+namespace CollisionAvoidance
 {
-    public Color gizmoColor = Color.red;
-
-    [Range(0.1f, 5.0f)] 
-    public float gizmoRadius = 0.2f; 
-
-    private void OnDrawGizmos()
+    /// <summary>
+    /// Draws a colored sphere gizmo at the GameObject's position in the Scene view.
+    /// Editor-only utility for visual debugging.
+    /// </summary>
+    [ExecuteInEditMode]
+    public class GizmoDrawer : MonoBehaviour
     {
-        Gizmos.color = gizmoColor;
-        Gizmos.DrawSphere(transform.position, gizmoRadius);
+        public Color gizmoColor = Color.red;
+
+        [Range(0.1f, 5.0f)]
+        public float gizmoRadius = 0.2f;
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = gizmoColor;
+            Gizmos.DrawSphere(transform.position, gizmoRadius);
+        }
     }
 }
-}
 #endif
-
-
-
-

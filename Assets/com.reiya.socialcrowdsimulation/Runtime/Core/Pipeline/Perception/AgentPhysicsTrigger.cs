@@ -4,18 +4,18 @@ using UnityEngine;
 namespace CollisionAvoidance
 {
     /// <summary>
-    /// Handles collision detection and response for an agent in a virtual environment.
-    /// Utilizes a CapsuleCollider for collision detection and interacts with
-    /// the ParameterManager to adjust the agent's movement based on collisions.
+    /// Handles physics trigger detection and response for an agent in a virtual environment.
+    /// Utilizes a CapsuleCollider for physics trigger detection and interacts with
+    /// the AvatarParameterProxy to adjust the agent's movement based on collisions.
     /// </summary>
     [RequireComponent(typeof(CapsuleCollider))]
-    public class AgentCollisionDetection : MonoBehaviour
+    public class AgentPhysicsTrigger : MonoBehaviour
     {
         private const string AgentTag = "Agent";
         private const string WallTag = "Wall";
 
         [Header("Collision Handling Parameters")]
-        private ParameterManager parameterManager;
+        private AvatarParameterProxy avatarParameterProxy;
         private CapsuleCollider capsuleCollider;
         // private bool isColliding;
 
@@ -32,7 +32,7 @@ namespace CollisionAvoidance
 
         private void Update()
         {
-            UpdateColliderCenterToMatchParameterManager();
+            SyncColliderCenter();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -52,15 +52,15 @@ namespace CollisionAvoidance
 
         private void InitializeComponents()
         {
-            parameterManager = GetComponent<ParameterManager>();
+            avatarParameterProxy = GetComponent<AvatarParameterProxy>();
             capsuleCollider = GetComponent<CapsuleCollider>();
         }
 
-        private void UpdateColliderCenterToMatchParameterManager()
+        private void SyncColliderCenter()
         {
-            if (parameterManager == null) return;
+            if (avatarParameterProxy == null) return;
 
-            Vector3 currentPosition = parameterManager.GetCurrentPosition();
+            Vector3 currentPosition = avatarParameterProxy.GetCurrentPosition();
             Vector3 offset = new Vector3(currentPosition.x - transform.position.x, capsuleCollider.center.y, currentPosition.z - transform.position.z);
             capsuleCollider.center = offset;
         }
