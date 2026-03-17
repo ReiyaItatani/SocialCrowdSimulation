@@ -1,4 +1,4 @@
-# Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior (MIG2024: Best Student Paper, C&G2025)
+# Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior (MIG2024, C&G2025)
 
 Welcome to the **Social Crowd Simulation** repository. This system simulates dynamic pedestrian movement by integrating social forces, group behavior, gaze control, and motion matching animation.
 
@@ -9,7 +9,8 @@ Welcome to the **Social Crowd Simulation** repository. This system simulates dyn
 - Natural animation by [motion matching](https://github.com/JLPM22/MotionMatching)
 
 For a detailed overview and demo, visit the [Project Page](https://reiyaitatani.github.io/SocialCrowdSimulation/).
-For the paper: [MIG2024](https://dl.acm.org/doi/10.1145/3677388.3696337) | [Computers & Graphics 2025](https://www.sciencedirect.com/science/article/pii/S009784932500127X)
+For the paper: [MIG2024](https://dl.acm.org/doi/10.1145/3677388.3696337) (Best Student Paper Honorable Mention) | [Computers & Graphics 2025](https://www.sciencedirect.com/science/article/pii/S009784932500127X)
+
 
 <img src=".github/media/collision_avoidance_system.png" alt="Collision Avoidance System" width="300"/>
 
