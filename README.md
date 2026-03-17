@@ -1,4 +1,4 @@
-# Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior (MIG2024, C&G2025)
+# Social Crowd Simulation: Improving Realism with Social Rules and Gaze Behavior (MIG2024(Best Student Paper Honorable Mention), C&G2025)
 
 Welcome to the **Social Crowd Simulation** repository. This system simulates dynamic pedestrian movement by integrating social forces, group behavior, gaze control, and motion matching animation.
 
