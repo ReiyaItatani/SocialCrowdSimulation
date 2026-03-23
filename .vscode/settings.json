@@ -53,5 +53,5 @@
     },
     "dotnet.preferCSharpExtension": true,
     "CodeGPT.apiKey": "CodeGPT Plus Beta",
-    "dotnet.defaultSolution": "MotionMatching.sln"
+    "dotnet.defaultSolution": "SocialCrowdSimulation.slnx"
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   individuals:
     agents:
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8
@@ -22,25 +22,25 @@ MonoBehaviour:
   - groupName: TestGroup2
     count: 2
     agents:
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8
   - groupName: TestGroup3
     count: 3
     agents:
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8
   - groupName: TestGroup4
     count: 2
     agents:
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
-    - {fileID: 3208049686052641204, guid: a576ddef12d739447ac829775ffea856, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8

@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Project Path="RI.SocialCrowdSimulation.csproj" />
+  <Project Path="JLPM.MotionMatching.csproj" />
+  <Project Path="RI.SocialCrowdSimulation.Editor.csproj" />
+  <Project Path="JLPM.MotionMatching.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+</Solution>
