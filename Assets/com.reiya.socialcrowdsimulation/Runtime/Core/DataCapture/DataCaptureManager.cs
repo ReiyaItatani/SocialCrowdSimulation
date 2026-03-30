@@ -55,6 +55,10 @@ namespace CollisionAvoidance
         [Range(0.5f, 5f)]
         [SerializeField] private float fovEdgeWidth = 1.5f;
 
+        [Header("Depth Capture")]
+        [Tooltip("Save per-frame depth maps alongside RGB frames")]
+        [SerializeField] private bool captureDepth;
+
         [Header("Output Settings")]
         [SerializeField] private string scenarioName = "default";
         [SerializeField] private string outputRootPath = "";
@@ -81,6 +85,11 @@ namespace CollisionAvoidance
         private Camera disabledMainCamera;
         private AgentPipelineCoordinator observerCoordinator;
         private List<Renderer> hiddenObserverRenderers;
+        private List<Transform[]> agentBones; // Per-agent bone cache for bbox calculation
+        private RenderTexture depthRenderTexture;
+        private Texture2D depthReadbackTexture;
+        private Material depthMaterial;
+        private string depthDirectory;
 
         public bool IsCapturing => captureEnabled && isInitialized;
         public int FrameCount => frameCount;
@@ -208,6 +217,9 @@ namespace CollisionAvoidance
             SetupOutput();
             WriteCameraJson();
 
+            // Cache renderers per agent for bounding box calculation
+            CacheAgentBones();
+
             Time.captureFramerate = targetFrameRate;
             isInitialized = true;
 
@@ -321,6 +333,10 @@ namespace CollisionAvoidance
             fpCamera.nearClipPlane = nearClip;
             fpCamera.farClipPlane = farClip;
             fpCamera.enabled = false;
+            if (captureDepth)
+            {
+                fpCamera.depthTextureMode = DepthTextureMode.Depth;
+            }
 
             renderTexture = new RenderTexture(captureWidth, captureHeight, 24, RenderTextureFormat.ARGB32);
             fpCamera.targetTexture = renderTexture;
@@ -362,9 +378,131 @@ namespace CollisionAvoidance
             framesDirectory = Path.Combine(outputDirectory, "frames");
             Directory.CreateDirectory(framesDirectory);
 
+            if (captureDepth)
+            {
+                depthDirectory = Path.Combine(outputDirectory, "depth");
+                Directory.CreateDirectory(depthDirectory);
+
+                depthRenderTexture = new RenderTexture(captureWidth, captureHeight, 24, RenderTextureFormat.RFloat);
+                depthReadbackTexture = new Texture2D(captureWidth, captureHeight, TextureFormat.RFloat, false);
+
+                depthMaterial = new Material(Shader.Find("Hidden/Internal-DepthNormalsTexture"));
+                if (depthMaterial == null)
+                {
+                    depthMaterial = new Material(Shader.Find("Hidden/Internal-Colored"));
+                }
+            }
+
             string csvPath = Path.Combine(outputDirectory, "trajectories.csv");
             csvWriter = new StreamWriter(csvPath, false, System.Text.Encoding.UTF8);
-            csvWriter.WriteLine("frame,timestamp,agent_id,x,y,z,vx,vy,vz,direction_x,direction_y,direction_z,speed,group_name,visible,vp_x,vp_y");
+            csvWriter.WriteLine("frame,timestamp,agent_id,x,y,z,vx,vy,vz,direction_x,direction_y,direction_z,speed,group_name,visible,vp_x,vp_y,bbox_x1,bbox_y1,bbox_x2,bbox_y2");
+
+            WriteEnvironmentJson();
+        }
+
+        private void WriteEnvironmentJson()
+        {
+            var envData = new EnvironmentData();
+
+            // Find walls and obstacles
+            var walls = GameObject.FindGameObjectsWithTag("Wall");
+            foreach (var wall in walls)
+            {
+                var t = wall.transform;
+                envData.walls.Add(new EnvironmentData.WallData
+                {
+                    name = wall.name,
+                    position = new[] { t.position.x, t.position.y, t.position.z },
+                    rotation = new[] { t.eulerAngles.x, t.eulerAngles.y, t.eulerAngles.z },
+                    scale = new[] { t.lossyScale.x, t.lossyScale.y, t.lossyScale.z }
+                });
+            }
+
+            var obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
+            foreach (var obs in obstacles)
+            {
+                var t = obs.transform;
+                envData.obstacles.Add(new EnvironmentData.ObstacleData
+                {
+                    name = obs.name,
+                    position = new[] { t.position.x, t.position.y, t.position.z },
+                    scale = new[] { t.lossyScale.x, t.lossyScale.y, t.lossyScale.z }
+                });
+            }
+
+            // Agent summary
+            envData.agent_count = allCoordinators.Count;
+            envData.observer_index = observerAgentIndex;
+            for (int i = 0; i < allCoordinators.Count; i++)
+            {
+                var coord = allCoordinators[i];
+                envData.agents.Add(new EnvironmentData.AgentData
+                {
+                    agent_id = i,
+                    is_observer = (i == observerCoordinatorIndex),
+                    group_name = coord.GetGroupName() ?? "Individual",
+                    sfm_params = new EnvironmentData.SFMParams
+                    {
+                        to_goal_weight = coord.toGoalWeight,
+                        avoidance_weight = coord.avoidanceWeight,
+                        avoid_neighbor_weight = coord.avoidNeighborWeight,
+                        group_force_weight = coord.groupForceWeight,
+                        wall_repulsion_weight = coord.wallRepForceWeight,
+                        avoid_obstacle_weight = coord.avoidObstacleWeight
+                    }
+                });
+            }
+
+            string json = JsonUtility.ToJson(envData, true);
+            string jsonPath = Path.Combine(outputDirectory, "environment.json");
+            File.WriteAllText(jsonPath, json);
+        }
+
+        [Serializable]
+        private class EnvironmentData
+        {
+            public List<WallData> walls = new List<WallData>();
+            public List<ObstacleData> obstacles = new List<ObstacleData>();
+            public List<AgentData> agents = new List<AgentData>();
+            public int agent_count;
+            public int observer_index;
+
+            [Serializable]
+            public class WallData
+            {
+                public string name;
+                public float[] position;
+                public float[] rotation;
+                public float[] scale;
+            }
+
+            [Serializable]
+            public class ObstacleData
+            {
+                public string name;
+                public float[] position;
+                public float[] scale;
+            }
+
+            [Serializable]
+            public class AgentData
+            {
+                public int agent_id;
+                public bool is_observer;
+                public string group_name;
+                public SFMParams sfm_params;
+            }
+
+            [Serializable]
+            public class SFMParams
+            {
+                public float to_goal_weight;
+                public float avoidance_weight;
+                public float avoid_neighbor_weight;
+                public float group_force_weight;
+                public float wall_repulsion_weight;
+                public float avoid_obstacle_weight;
+            }
         }
 
         private void WriteTrajectoryFrame()
@@ -403,15 +541,23 @@ namespace CollisionAvoidance
                     }
                 }
 
+                // Bounding box: project agent's renderer bounds to screen pixels
+                float bboxX1 = -1, bboxY1 = -1, bboxX2 = -1, bboxY2 = -1;
+                if (visible == 1)
+                {
+                    ComputeScreenBBox(csvAgentId, out bboxX1, out bboxY1, out bboxX2, out bboxY2);
+                }
+
                 csvWriter.WriteLine(string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0},{1:F6},{2},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4},{13},{14},{15:F4},{16:F4}",
+                    "{0},{1:F6},{2},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4},{13},{14},{15:F4},{16:F4},{17:F1},{18:F1},{19:F1},{20:F1}",
                     frameCount, timestamp, csvAgentId,
                     pos.x, pos.y, pos.z,
                     vel.x, vel.y, vel.z,
                     dir.x, dir.y, dir.z,
                     speed, groupName,
-                    visible, vp.x, vp.y));
+                    visible, vp.x, vp.y,
+                    bboxX1, bboxY1, bboxX2, bboxY2));
 
                 csvAgentId++;
             }
@@ -435,6 +581,44 @@ namespace CollisionAvoidance
             byte[] pngBytes = readbackTexture.EncodeToPNG();
             string filePath = Path.Combine(framesDirectory, $"frame_{frameCount:D6}.png");
             File.WriteAllBytes(filePath, pngBytes);
+
+            if (captureDepth && depthRenderTexture != null)
+            {
+                CaptureDepthFrame();
+            }
+        }
+
+        private void CaptureDepthFrame()
+        {
+            // Render depth: use camera's depth texture via a replacement shader pass
+            var prevTarget = fpCamera.targetTexture;
+            fpCamera.targetTexture = depthRenderTexture;
+            fpCamera.RenderWithShader(Shader.Find("Hidden/Internal-DepthNormalsTexture"), "");
+            fpCamera.targetTexture = prevTarget;
+
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = depthRenderTexture;
+            depthReadbackTexture.ReadPixels(new Rect(0, 0, captureWidth, captureHeight), 0, 0);
+            depthReadbackTexture.Apply();
+            RenderTexture.active = prev;
+
+            // Convert depth float to 16-bit grayscale PNG for storage efficiency
+            var depthPixels = depthReadbackTexture.GetPixels();
+            var grayscale = new Texture2D(captureWidth, captureHeight, TextureFormat.R16, false);
+            var grayColors = new Color[depthPixels.Length];
+            for (int p = 0; p < depthPixels.Length; p++)
+            {
+                float d = depthPixels[p].r; // Linear depth 0-1
+                grayColors[p] = new Color(d, d, d, 1f);
+            }
+            grayscale.SetPixels(grayColors);
+            grayscale.Apply();
+
+            byte[] depthPng = grayscale.EncodeToPNG();
+            string depthPath = Path.Combine(depthDirectory, $"depth_{frameCount:D6}.png");
+            File.WriteAllBytes(depthPath, depthPng);
+
+            Destroy(grayscale);
         }
 
         private void SetupFOVVisualization(GameObject observerRoot)
@@ -474,6 +658,101 @@ namespace CollisionAvoidance
             }
 
             Debug.Log($"[DataCapture] FOV visualization: {originalFovMaterials.Count} meshes using Custom/FOVVisualization shader.");
+        }
+
+        private static readonly HumanBodyBones[] BBoxBones = new[]
+        {
+            HumanBodyBones.Head,
+            HumanBodyBones.Neck,
+            HumanBodyBones.Hips,
+            HumanBodyBones.LeftUpperArm,
+            HumanBodyBones.RightUpperArm,
+            HumanBodyBones.LeftUpperLeg,
+            HumanBodyBones.RightUpperLeg,
+            HumanBodyBones.LeftFoot,
+            HumanBodyBones.RightFoot,
+        };
+
+        private void CacheAgentBones()
+        {
+            var creator = FindAvatarCreator();
+            var avatars = (creator != null) ? creator.instantiatedAvatars : null;
+
+            agentBones = new List<Transform[]>();
+            for (int i = 0; i < allCoordinators.Count; i++)
+            {
+                if (i == observerCoordinatorIndex)
+                {
+                    agentBones.Add(null);
+                    continue;
+                }
+
+                GameObject avatarRoot = (avatars != null && i < avatars.Count) ? avatars[i] : allCoordinators[i].gameObject;
+                Animator anim = avatarRoot.GetComponentInChildren<Animator>();
+                if (anim == null)
+                {
+                    agentBones.Add(null);
+                    continue;
+                }
+
+                var bones = new List<Transform>();
+                foreach (var bone in BBoxBones)
+                {
+                    Transform t = anim.GetBoneTransform(bone);
+                    if (t != null) bones.Add(t);
+                }
+                agentBones.Add(bones.ToArray());
+            }
+        }
+
+        private void ComputeScreenBBox(int csvAgentId, out float x1, out float y1, out float x2, out float y2)
+        {
+            x1 = -1; y1 = -1; x2 = -1; y2 = -1;
+
+            // Map csvAgentId back to coordinator index (skipping observer)
+            int coordIdx = -1;
+            int count = 0;
+            for (int i = 0; i < allCoordinators.Count; i++)
+            {
+                if (i == observerCoordinatorIndex) continue;
+                if (count == csvAgentId) { coordIdx = i; break; }
+                count++;
+            }
+
+            if (coordIdx < 0 || coordIdx >= agentBones.Count || agentBones[coordIdx] == null) return;
+
+            Transform[] bones = agentBones[coordIdx];
+            if (bones.Length == 0) return;
+
+            float minX = float.MaxValue, minY = float.MaxValue;
+            float maxX = float.MinValue, maxY = float.MinValue;
+
+            foreach (var bone in bones)
+            {
+                if (bone == null) continue;
+
+                Vector3 screen = fpCamera.WorldToScreenPoint(bone.position);
+                if (screen.z <= 0) continue;
+
+                float sx = screen.x;
+                float sy = captureHeight - screen.y;
+
+                if (sx < minX) minX = sx;
+                if (sx > maxX) maxX = sx;
+                if (sy < minY) minY = sy;
+                if (sy > maxY) maxY = sy;
+            }
+
+            if (minX < float.MaxValue)
+            {
+                // Add small padding around bone points
+                float padX = (maxX - minX) * 0.15f + 10f;
+                float padY = (maxY - minY) * 0.05f + 5f;
+                x1 = Mathf.Clamp(minX - padX, 0, captureWidth);
+                y1 = Mathf.Clamp(minY - padY, 0, captureHeight);
+                x2 = Mathf.Clamp(maxX + padX, 0, captureWidth);
+                y2 = Mathf.Clamp(maxY + padY, 0, captureHeight);
+            }
         }
 
         private void RestoreFOVMaterials()
@@ -602,6 +881,20 @@ namespace CollisionAvoidance
             if (fovVisualizationMaterial != null)
             {
                 Destroy(fovVisualizationMaterial);
+            }
+
+            if (depthRenderTexture != null)
+            {
+                depthRenderTexture.Release();
+                Destroy(depthRenderTexture);
+            }
+            if (depthReadbackTexture != null)
+            {
+                Destroy(depthReadbackTexture);
+            }
+            if (depthMaterial != null)
+            {
+                Destroy(depthMaterial);
             }
 
             Time.captureFramerate = 0;

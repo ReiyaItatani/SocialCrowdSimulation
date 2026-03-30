@@ -390,7 +390,10 @@ namespace CollisionAvoidance
             // ── 7. Social Gaze Filter (post-pipeline) ──
             if (socialGazeFilter != null)
             {
-                socialGazeFilter.ProcessGaze(gazeState, frame, group, isIndividual, motor.IsInSlowingArea);
+                UpperBodyAnimationState animState = collisionAvoidance != null
+                    ? collisionAvoidance.GetUpperBodyAnimationState()
+                    : UpperBodyAnimationState.Walk;
+                socialGazeFilter.ProcessGaze(gazeState, frame, group, isIndividual, motor.IsInSlowingArea, deltaTime, animState);
             }
 
             return motor;
@@ -438,7 +441,7 @@ namespace CollisionAvoidance
                 if (param == null) continue;
 
                 Vector3 pos = param.GetCurrentPosition();
-                pooledGroupMembers.Add(new GroupMember(pos, param.GetCurrentDirection(), param.GetCurrentSpeed()));
+                pooledGroupMembers.Add(new GroupMember(pos, param.GetCurrentDirection(), param.GetCurrentSpeed(), go));
                 centerOfMassSum += pos;
             }
 

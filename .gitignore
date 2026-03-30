@@ -78,3 +78,6 @@ crashlytics-build.properties
 Users/
 Assets/_Recovery/
 excalidraw.log
+
+# DataCapture output
+dataset/

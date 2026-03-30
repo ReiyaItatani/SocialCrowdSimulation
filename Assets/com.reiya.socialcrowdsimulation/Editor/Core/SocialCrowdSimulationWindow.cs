@@ -27,7 +27,7 @@ namespace CollisionAvoidance
 
         private Vector2 _scrollPosition;
 
-        [MenuItem("CollisionAvoidance/Social Crowd Simulation")]
+        [MenuItem("SocialCrowdSimulation/Setup")]
         public static void ShowWindow()
         {
             var window = GetWindow<SocialCrowdSimulationWindow>("Social Crowd Simulation");

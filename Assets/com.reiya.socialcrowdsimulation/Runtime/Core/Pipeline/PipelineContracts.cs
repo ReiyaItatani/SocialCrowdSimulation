@@ -264,12 +264,14 @@ namespace CollisionAvoidance
         public readonly Vector3 Position;
         public readonly Vector3 Direction;
         public readonly float Speed;
+        public readonly GameObject GameObject;
 
-        public GroupMember(Vector3 position, Vector3 direction, float speed)
+        public GroupMember(Vector3 position, Vector3 direction, float speed, GameObject gameObject = null)
         {
             Position = position;
             Direction = direction;
             Speed = speed;
+            GameObject = gameObject;
         }
     }
 
@@ -399,6 +401,8 @@ namespace CollisionAvoidance
         Prediction = 10,
         /// <summary>L4: avoidance target, gaze as intention signal (Ducourant et al. 2022).</summary>
         Decision = 20,
+        /// <summary>Social conversation gaze (look at conversation partner during Talk).</summary>
+        Conversation = 25,
         /// <summary>Physical collision response (look at collided agent).</summary>
         Collision = 30,
         /// <summary>Social filter override (close-range eye contact avoidance, Foulsham et al. 2022).</summary>
@@ -437,6 +441,9 @@ namespace CollisionAvoidance
 
         /// <summary>Whether gaze aversion is active (close-range eye contact avoidance).</summary>
         public bool GazeAversionActive;
+
+        /// <summary>Whether the current target is a group member (for debug display).</summary>
+        public bool IsGroupMemberTarget;
 
         // ── Accumulated state (persists across ticks, updated by Neck Driver) ──
 
@@ -488,6 +495,7 @@ namespace CollisionAvoidance
             HasExplicitTarget = false;
             MutualGazeDetected = false;
             GazeAversionActive = false;
+            IsGroupMemberTarget = false;
             // Ensure DesiredLookAtDirection never stays as zero from a previous failed tick.
             if (DesiredLookAtDirection == Vector3.zero)
             {

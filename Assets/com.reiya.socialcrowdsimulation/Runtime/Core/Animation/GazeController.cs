@@ -16,7 +16,9 @@ public class GazeController : CrowdSimulationMonoBehaviour
         MyDirection,
         CenterOfMass,
         CoordinationTarget,
-        CustomFocalPoint
+        CustomFocalPoint,
+        ConversationTarget,
+        GroupMember
     }
     public Animator targetAnimator;
     protected Transform t_Neck;
@@ -161,10 +163,14 @@ public class GazeController : CrowdSimulationMonoBehaviour
                 // Map GazePriority to CurrentLookTarget for debug display
                 if (gazeState.TargetPriority >= GazePriority.Collision)
                     currentLookTarget = CurrentLookTarget.CollidedTarget;
+                else if (gazeState.TargetPriority >= GazePriority.Conversation)
+                    currentLookTarget = CurrentLookTarget.ConversationTarget;
                 else if (gazeState.TargetPriority >= GazePriority.Decision)
                     currentLookTarget = CurrentLookTarget.CoordinationTarget;
                 else if (gazeState.TargetPriority >= GazePriority.Prediction)
                     currentLookTarget = CurrentLookTarget.CurerntAvoidancetarget;
+                else if (gazeState.IsGroupMemberTarget)
+                    currentLookTarget = CurrentLookTarget.GroupMember;
                 else if (gazeState.TargetObject != null)
                     currentLookTarget = CurrentLookTarget.CustomFocalPoint;
                 else
@@ -177,7 +183,7 @@ public class GazeController : CrowdSimulationMonoBehaviour
 
             if (lookForward)
             {
-                horizontalAttractionPoint = gazeState.DesiredLookAtDirection.normalized;
+                horizontalAttractionPoint = GetAgentForward();
                 currentLookTarget = CurrentLookTarget.MyDirection;
             }
         }
@@ -252,62 +258,54 @@ public class GazeController : CrowdSimulationMonoBehaviour
         currentLookTarget = CurrentLookTarget.MyDirection;
     }
 #if UNITY_EDITOR
+    [Header("Gizmo Settings")]
+    public bool showGazeGizmos = true;
+    public bool showGazeLabel = true;
+
     void OnDrawGizmos()
     {
-        if(targetAnimator == null) return;
+        if (!showGazeGizmos || targetAnimator == null) return;
         Transform headBone = targetAnimator.GetBoneTransform(HumanBodyBones.Head);
-        if(headBone == null) return;
+        if (headBone == null) return;
+
         Vector3 eyePosition = headBone.position;
-        float lineLength = 1.0f;
         float sphereSize = 0.02f;
-
-        // 1. Attraction point (target) — color-coded by current look target type
         Color targetColor = GetGizmoColorForTarget(currentLookTarget);
-        Gizmos.color = targetColor;
-        Vector3 attractionDir = horizontalAttractionPoint.normalized;
-        if (attractionDir != Vector3.zero)
+
+        // Line to actual target position (color-coded by target type)
+        if (gazeState != null && gazeState.HasExplicitTarget && gazeState.TargetPosition != Vector3.zero)
         {
-            Vector3 attractionEnd = eyePosition + new Vector3(attractionDir.x, 0f, attractionDir.z) * lineLength;
-            Gizmos.DrawLine(eyePosition, attractionEnd);
-            Gizmos.DrawSphere(attractionEnd, sphereSize);
+            Gizmos.color = targetColor;
+            Gizmos.DrawLine(eyePosition, gazeState.TargetPosition);
+            Gizmos.DrawSphere(gazeState.TargetPosition, sphereSize * 1.5f);
         }
 
-        // 2. Agent visual forward (magenta)
-        Gizmos.color = Color.magenta;
-        Vector3 fwd = GetAgentForward();
-        Vector3 fwdEnd = eyePosition + new Vector3(fwd.x, 0f, fwd.z).normalized * lineLength;
-        Gizmos.DrawLine(eyePosition, fwdEnd);
-        Gizmos.DrawSphere(fwdEnd, sphereSize * 0.7f);
+        // Label
+        if (showGazeLabel)
+        {
+            DrawGazeLabel(eyePosition, targetColor);
+        }
+    }
 
-        // 3. Label showing debug info
-        Handles.color = targetColor;
-        string label = currentLookTarget.ToString();
-        if (gazeState != null)
-        {
-            Vector3 d = gazeState.DesiredLookAtDirection;
-            float angle = Vector3.SignedAngle(fwd, d, Vector3.up);
-            label += lookForward ? " [LookFwd]" : "";
-            label += $"\nDir:({d.x:F2},{d.z:F2}) ({angle:F0} deg)";
-            label += gazeState.HasExplicitTarget ? $" P:{gazeState.TargetPriority}" : " NoTarget";
-        }
-        else
-        {
-            label += "\n[gazeState: NULL]";
-        }
-        Handles.Label(eyePosition + Vector3.up * 0.3f, label);
+    private void DrawGazeLabel(Vector3 eyePosition, Color color)
+    {
+        Handles.color = color;
+        Handles.Label(eyePosition + Vector3.up * 0.3f, currentLookTarget.ToString());
     }
 
     private static Color GetGizmoColorForTarget(CurrentLookTarget target)
     {
         switch (target)
         {
-            case CurrentLookTarget.CollidedTarget:        return Color.red;
+            case CurrentLookTarget.CollidedTarget:         return Color.red;
             case CurrentLookTarget.CurerntAvoidancetarget: return Color.yellow;
-            case CurrentLookTarget.CoordinationTarget:    return Color.cyan;
-            case CurrentLookTarget.CustomFocalPoint:      return Color.blue;
-            case CurrentLookTarget.CenterOfMass:          return Color.white;
-            case CurrentLookTarget.MyDirection:            return new Color(1f, 0.5f, 0f); // orange
-            default:                                       return Color.magenta;
+            case CurrentLookTarget.CoordinationTarget:     return Color.cyan;
+            case CurrentLookTarget.CustomFocalPoint:       return Color.blue;
+            case CurrentLookTarget.ConversationTarget:     return Color.green;
+            case CurrentLookTarget.GroupMember:             return new Color(0.5f, 1f, 0.5f);
+            case CurrentLookTarget.CenterOfMass:           return Color.white;
+            case CurrentLookTarget.MyDirection:             return new Color(1f, 0.5f, 0f);
+            default:                                        return Color.magenta;
         }
     }
 #endif
