@@ -10,21 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8af626eb17ad0434cafaa840c7b19e26, type: 3}
-  m_Name: AgentsList_Example3
-  m_EditorClassIdentifier: 
+  m_Name: AgentsList_Test_3Ind
+  m_EditorClassIdentifier: RI.SocialCrowdSimulation::CollisionAvoidance.AgentsList
   individuals:
     agents:
     - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
-    speedRange:
-      minSpeed: 0.4
-      maxSpeed: 0.8
-  groups:
-  - groupName: TestGroup3
-    count: 3
-    agents:
-    - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
     - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
     - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
     speedRange:
-      minSpeed: 0.4
-      maxSpeed: 0.8
+      minSpeed: 0.5
+      maxSpeed: 1.2
+  groups: []

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   individuals:
     agents:
-    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8
@@ -22,9 +22,9 @@ MonoBehaviour:
   - groupName: TestGroup4
     count: 3
     agents:
-    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
-    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
-    - {fileID: 5661805862305515323, guid: f0acfa760ab4d8a458efb255928591c9, type: 3}
+    - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
+    - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
+    - {fileID: 535294792710788952, guid: a69bcdd0449959a4790ed33bbd1cccb9, type: 3}
     speedRange:
       minSpeed: 0.4
       maxSpeed: 0.8
