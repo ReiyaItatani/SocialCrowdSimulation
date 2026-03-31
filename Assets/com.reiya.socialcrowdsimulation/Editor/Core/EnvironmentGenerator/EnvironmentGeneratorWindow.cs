@@ -216,6 +216,11 @@ namespace CollisionAvoidance.EnvironmentGeneration
             statusMessage = "";
         }
 
+        public static EnvironmentConfig CreatePresetConfigPublic(LayoutType layout, int seed)
+        {
+            return CreatePresetConfig(layout, seed);
+        }
+
         private static EnvironmentConfig CreatePresetConfig(LayoutType layout, int seed)
         {
             var config = new EnvironmentConfig { seed = seed };
