@@ -8,6 +8,17 @@ using UnityEngine;
 namespace CollisionAvoidance
 {
     /// <summary>
+    /// Controls what direction the 1PP camera faces.
+    /// </summary>
+    public enum CameraDirectionMode
+    {
+        /// <summary>Camera follows the agent's gaze / head orientation.</summary>
+        Gaze,
+        /// <summary>Camera faces the agent's movement (forward) direction.</summary>
+        MovementDirection
+    }
+
+    /// <summary>
     /// Captures first-person perspective video and records surrounding agent trajectories.
     /// Attach to a single GameObject in the scene. Observer agent is excluded from trajectory CSV.
     /// AvatarCreatorQuickGraph is auto-detected from the scene.
@@ -19,6 +30,9 @@ namespace CollisionAvoidance
         [Header("Observer Selection")]
         [Tooltip("Select which agent to use as the 1PP camera observer")]
         public int observerAgentIndex;
+
+        [Tooltip("Gaze = camera follows head/gaze direction, MovementDirection = camera faces agent's forward direction")]
+        public CameraDirectionMode cameraDirectionMode = CameraDirectionMode.Gaze;
 
         [Header("Perspective")]
         [Tooltip("0 = First Person, 1 = Bird View. Blend in real-time.")]
@@ -59,6 +73,14 @@ namespace CollisionAvoidance
         [Tooltip("Save per-frame depth maps alongside RGB frames")]
         [SerializeField] private bool captureDepth;
 
+        [Header("Auto Capture")]
+        [Tooltip("Automatically start capture on Play and stop after maxFrames")]
+        [SerializeField] private bool autoCapture;
+        [Tooltip("Maximum frames to capture (0 = unlimited, manual stop)")]
+        [SerializeField] private int maxFrames = 300;
+        [Tooltip("Automatically exit Play mode after capture completes")]
+        [SerializeField] private bool autoExitPlay = true;
+
         [Header("Output Settings")]
         [SerializeField] private string scenarioName = "default";
         [SerializeField] private string outputRootPath = "";
@@ -93,6 +115,14 @@ namespace CollisionAvoidance
 
         public bool IsCapturing => captureEnabled && isInitialized;
         public int FrameCount => frameCount;
+
+        private void Start()
+        {
+            if (autoCapture)
+            {
+                StartCapture();
+            }
+        }
 
         public void StartCapture()
         {
@@ -161,6 +191,21 @@ namespace CollisionAvoidance
                 if (!captureEnabled || !isInitialized) break;
                 CaptureFrame();
                 frameCount++;
+
+                // Auto-stop after maxFrames
+                if (maxFrames > 0 && frameCount >= maxFrames)
+                {
+                    Debug.Log($"[DataCapture] Reached {maxFrames} frames. Auto-stopping.");
+                    StopCapture();
+
+                    if (autoExitPlay)
+                    {
+#if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                    }
+                    break;
+                }
             }
             captureCoroutine = null;
         }
@@ -256,11 +301,21 @@ namespace CollisionAvoidance
         {
             if (headBone == null || fpCamera == null || observerTransform == null) return;
 
-            // --- First-person: head position, gaze direction (where the face is looking) ---
+            // --- First-person: head position, facing direction ---
             Vector3 fpPos = headBone.TransformPoint(cameraOffset);
-            Vector3 gazeDir = (observerCoordinator != null)
-                ? observerCoordinator.GazeState.CurrentLookAtDirection
-                : Vector3.forward;
+            Vector3 gazeDir;
+            if (cameraDirectionMode == CameraDirectionMode.MovementDirection)
+            {
+                gazeDir = (observerCoordinator != null)
+                    ? observerCoordinator.GetCurrentDirection()
+                    : observerTransform.forward;
+            }
+            else
+            {
+                gazeDir = (observerCoordinator != null)
+                    ? observerCoordinator.GazeState.CurrentLookAtDirection
+                    : Vector3.forward;
+            }
             if (gazeDir.sqrMagnitude < 0.001f) gazeDir = Vector3.forward;
             // Keep horizontal only (no pitch from gaze, prevents camera looking at ground)
             Vector3 horizontalFwd = new Vector3(gazeDir.x, 0f, gazeDir.z).normalized;
@@ -529,14 +584,16 @@ namespace CollisionAvoidance
                 int visible = 0;
                 if (inViewport)
                 {
-                    // Raycast from camera to agent — check if a wall/obstacle blocks line of sight
+                    // Raycast from camera to agent — check if any wall/obstacle blocks line of sight
                     Vector3 toAgent = agentWorldPos - fpCamera.transform.position;
                     visible = 1;
-                    if (Physics.Raycast(fpCamera.transform.position, toAgent.normalized, out var hit, toAgent.magnitude))
+                    var hits = Physics.RaycastAll(fpCamera.transform.position, toAgent.normalized, toAgent.magnitude);
+                    foreach (var hit in hits)
                     {
                         if (hit.collider.CompareTag("Wall") || hit.collider.CompareTag("Obstacle"))
                         {
                             visible = 0;
+                            break;
                         }
                     }
                 }

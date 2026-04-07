@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.AI;
 using UnityEngine;
@@ -10,40 +11,47 @@ namespace CollisionAvoidance.EnvironmentGeneration
 {
     /// <summary>
     /// Batch dataset generation window.
-    /// Generates multiple environment + agent configurations and captures data automatically.
+    /// State persists across Play/Stop via EditorPrefs.
     /// Menu: SocialCrowdSimulation > Batch Capture
     /// </summary>
     public class BatchCaptureWindow : EditorWindow
     {
-        // Batch configuration
-        private int[] seeds = { 42, 123, 456 };
-        private int[] agentCounts = { 5, 10 };
+        // EditorPrefs keys
+        private const string PREF_SEEDS = "BatchCapture_Seeds";
+        private const string PREF_AGENTS = "BatchCapture_Agents";
+        private const string PREF_LAYOUTS = "BatchCapture_Layouts";
+        private const string PREF_DURATION = "BatchCapture_Duration";
+        private const string PREF_DEPTH = "BatchCapture_Depth";
+        private const string PREF_FOV = "BatchCapture_FOV";
+        private const string PREF_CAM_DIR = "BatchCapture_CamDir";
+        private const string PREF_PENDING = "BatchCapture_Pending";
+        private const string PREF_COMPLETED = "BatchCapture_Completed";
+
+        // Configuration
+        private string seedsText = "42, 123";
+        private string agentCountsText = "5, 10";
+        private string layoutsText = "Corridor, Plaza";
         private float captureDuration = 10f;
         private bool captureDepth = true;
         private bool visualizeFOV;
-        private string seedsText = "42, 123, 456";
-        private string agentCountsText = "5, 10";
+        private CameraDirectionMode cameraDirectionMode = CameraDirectionMode.MovementDirection;
 
         // State
-        private List<BatchJob> pendingJobs = new List<BatchJob>();
-        private List<BatchJob> completedJobs = new List<BatchJob>();
-        private bool isRunning;
+        private List<string> pendingJobs = new List<string>();
+        private List<string> completedJobs = new List<string>();
         private string statusMessage = "";
         private Vector2 scrollPosition;
-
-        private struct BatchJob
-        {
-            public LayoutType layout;
-            public int seed;
-            public int agentCount;
-            public string scenarioName;
-        }
 
         [MenuItem("SocialCrowdSimulation/Batch Capture")]
         public static void ShowWindow()
         {
             var window = GetWindow<BatchCaptureWindow>("Batch Capture");
             window.minSize = new Vector2(350, 400);
+        }
+
+        private void OnEnable()
+        {
+            LoadState();
         }
 
         private void OnGUI()
@@ -53,45 +61,72 @@ namespace CollisionAvoidance.EnvironmentGeneration
             EditorGUILayout.Space(4);
 
             // Configuration
-            seedsText = EditorGUILayout.TextField("Seeds (comma-sep)", seedsText);
-            agentCountsText = EditorGUILayout.TextField("Agent Counts (comma-sep)", agentCountsText);
+            seedsText = EditorGUILayout.TextField("Seeds", seedsText);
+            agentCountsText = EditorGUILayout.TextField("Agent Counts", agentCountsText);
+            layoutsText = EditorGUILayout.TextField("Layouts", layoutsText);
             captureDuration = EditorGUILayout.FloatField("Capture Duration (sec)", captureDuration);
             captureDepth = EditorGUILayout.Toggle("Capture Depth", captureDepth);
             visualizeFOV = EditorGUILayout.Toggle("Visualize FOV", visualizeFOV);
+            cameraDirectionMode = (CameraDirectionMode)EditorGUILayout.EnumPopup("Camera Direction", cameraDirectionMode);
 
             EditorGUILayout.Space(8);
 
-            // Generate job list
+            // Preview / Reset
+            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Preview Jobs", GUILayout.Height(30)))
             {
                 GenerateJobList();
+                SaveState();
             }
+            if (GUILayout.Button("Reset", GUILayout.Height(30), GUILayout.Width(60)))
+            {
+                pendingJobs.Clear();
+                completedJobs.Clear();
+                statusMessage = "Reset.";
+                SaveState();
+            }
+            EditorGUILayout.EndHorizontal();
 
-            if (pendingJobs.Count > 0)
+            // Progress
+            int total = pendingJobs.Count + completedJobs.Count;
+            if (total > 0)
             {
                 EditorGUILayout.Space(4);
-                EditorGUILayout.LabelField($"Jobs: {pendingJobs.Count} pending, {completedJobs.Count} completed");
+                float progress = (float)completedJobs.Count / total;
+                EditorGUI.ProgressBar(
+                    EditorGUILayout.GetControlRect(GUILayout.Height(20)),
+                    progress,
+                    $"{completedJobs.Count} / {total} completed");
+            }
 
-                if (GUILayout.Button("Generate All Environments (Editor Only)", GUILayout.Height(36)))
+            // Generate Next button
+            if (pendingJobs.Count > 0)
+            {
+                EditorGUILayout.Space(8);
+                string nextJob = pendingJobs[0];
+                if (GUILayout.Button($"Generate Next: {nextJob}", GUILayout.Height(36)))
                 {
-                    RunBatchGeneration();
+                    GenerateEnvironment(nextJob);
+                    pendingJobs.RemoveAt(0);
+                    completedJobs.Add(nextJob);
+                    SaveState();
                 }
 
-                EditorGUILayout.Space(4);
                 EditorGUILayout.HelpBox(
-                    "This generates environments one by one in Editor mode.\n" +
-                    "For data capture, each environment needs Play mode.\n" +
-                    "Use 'Generate Next + Capture' to process one at a time.",
+                    "1. Click 'Generate Next' above\n" +
+                    "2. Play → Start Capture in Inspector\n" +
+                    "3. Wait for 300 frames → Stop Capture\n" +
+                    "4. Stop Play → Click 'Generate Next' again",
                     MessageType.Info);
-
-                if (GUILayout.Button("Generate Next Environment"))
-                {
-                    GenerateNextEnvironment();
-                }
+            }
+            else if (completedJobs.Count > 0)
+            {
+                EditorGUILayout.Space(8);
+                EditorGUILayout.HelpBox("All jobs completed!", MessageType.Info);
             }
 
             // Job list
-            if (pendingJobs.Count > 0 || completedJobs.Count > 0)
+            if (total > 0)
             {
                 EditorGUILayout.Space(8);
                 EditorGUILayout.LabelField("Job Queue", EditorStyles.boldLabel);
@@ -99,11 +134,11 @@ namespace CollisionAvoidance.EnvironmentGeneration
 
                 foreach (var job in completedJobs)
                 {
-                    EditorGUILayout.LabelField($"  ✓ {job.scenarioName}", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"  \u2713 {job}", EditorStyles.miniLabel);
                 }
                 foreach (var job in pendingJobs)
                 {
-                    EditorGUILayout.LabelField($"  ○ {job.scenarioName}", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"  \u25CB {job}", EditorStyles.miniLabel);
                 }
 
                 EditorGUILayout.EndScrollView();
@@ -121,10 +156,9 @@ namespace CollisionAvoidance.EnvironmentGeneration
             pendingJobs.Clear();
             completedJobs.Clear();
 
-            seeds = ParseIntArray(seedsText);
-            agentCounts = ParseIntArray(agentCountsText);
-
-            var layouts = (LayoutType[])System.Enum.GetValues(typeof(LayoutType));
+            var seeds = ParseIntArray(seedsText);
+            var agentCounts = ParseIntArray(agentCountsText);
+            var layouts = ParseLayouts(layoutsText);
 
             foreach (var layout in layouts)
             {
@@ -132,113 +166,88 @@ namespace CollisionAvoidance.EnvironmentGeneration
                 {
                     foreach (int count in agentCounts)
                     {
-                        pendingJobs.Add(new BatchJob
-                        {
-                            layout = layout,
-                            seed = seed,
-                            agentCount = count,
-                            scenarioName = $"{layout.ToString().ToLower()}_seed{seed}_{count}agents"
-                        });
+                        string name = $"{layout.ToString().ToLower()}_seed{seed}_{count}agents";
+                        pendingJobs.Add(name);
                     }
                 }
             }
 
-            statusMessage = $"Generated {pendingJobs.Count} jobs: {layouts.Length} layouts × {seeds.Length} seeds × {agentCounts.Length} densities";
+            statusMessage = $"{pendingJobs.Count} jobs: {layouts.Length} layouts x {seeds.Length} seeds x {agentCounts.Length} densities";
         }
 
-        private void RunBatchGeneration()
+        private void GenerateEnvironment(string jobName)
         {
-            int total = pendingJobs.Count;
-            for (int i = 0; i < total; i++)
-            {
-                EditorUtility.DisplayProgressBar("Batch Generation",
-                    $"Generating {pendingJobs[0].scenarioName}... ({i + 1}/{total})",
-                    (float)i / total);
+            // Parse job name: layout_seedN_Magents
+            var parts = jobName.Split('_');
+            string layoutStr = parts[0];
+            int seed = int.Parse(parts[1].Replace("seed", ""));
+            int agentCount = int.Parse(parts[2].Replace("agents", ""));
 
-                GenerateNextEnvironment();
-            }
-            EditorUtility.ClearProgressBar();
-            statusMessage = $"All {total} environments generated. Play each scene to capture data.";
-        }
-
-        private void GenerateNextEnvironment()
-        {
-            if (pendingJobs.Count == 0)
+            if (!System.Enum.TryParse(layoutStr, true, out LayoutType layout))
             {
-                statusMessage = "No pending jobs.";
+                statusMessage = $"Unknown layout: {layoutStr}";
                 return;
             }
-
-            var job = pendingJobs[0];
-            pendingJobs.RemoveAt(0);
 
             // Clear existing
             ClearEnvironment();
 
-            // Ensure tags
             EnsureTagExists("Wall");
             EnsureTagExists("Obstacle");
             EnsureTagExists("Agent");
             EnsureTagExists("Group");
 
-            // Create config
-            var config = EnvironmentGeneratorWindow.CreatePresetConfigPublic(job.layout, job.seed);
-
-            // Build layout
-            var layout = LayoutBuilder.Build(config.layout, job.seed);
+            // Build
+            var config = EnvironmentGeneratorWindow.CreatePresetConfigPublic(layout, seed);
+            var layoutResult = LayoutBuilder.Build(config.layout, seed);
             Physics.SyncTransforms();
-
-            // QuickGraph
-            var graph = QuickGraphBuilder.Build(layout, config.graph, job.seed);
-
-            // NavMesh
+            var graph = QuickGraphBuilder.Build(layoutResult, config.graph, seed);
             NavMeshBuilder.BuildNavMesh();
 
-            // Agents (auto-generate AgentsList)
-            if (graph != null)
-            {
-                var agentPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
-                    "Assets/com.reiya.socialcrowdsimulation/Sample/QuickStart/ForAvatarCreator/Agent.prefab");
+            if (graph == null) { statusMessage = "Graph build failed."; return; }
 
-                if (agentPrefab != null)
-                {
-                    var agentsList = CreateAgentsList(agentPrefab, job.agentCount);
+            var agentPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/com.reiya.socialcrowdsimulation/Sample/QuickStart/ForAvatarCreator/Agent.prefab");
+            if (agentPrefab == null) { statusMessage = "Agent prefab not found."; return; }
 
-                    var creatorGO = new GameObject("AvatarCreator");
-                    creatorGO.transform.parent = layout.rootGameObject.transform;
-                    creatorGO.AddComponent<AgentManager>();
+            var agentsList = CreateAgentsList(agentPrefab, agentCount);
 
-                    var avatarCreator = creatorGO.AddComponent<AvatarCreatorQuickGraph>();
-                    avatarCreator.quickGraph = graph;
-                    avatarCreator.agentsList = agentsList;
-                    avatarCreator.InstantiateAvatars();
+            var creatorGO = new GameObject("AvatarCreator");
+            creatorGO.transform.parent = layoutResult.rootGameObject.transform;
+            creatorGO.AddComponent<AgentManager>();
 
-                    // Add DataCaptureManager
-                    var dcGO = new GameObject("DataCaptureManager");
-                    dcGO.transform.parent = layout.rootGameObject.transform;
-                    var dcm = dcGO.AddComponent<DataCaptureManager>();
+            var avatarCreator = creatorGO.AddComponent<AvatarCreatorQuickGraph>();
+            avatarCreator.quickGraph = graph;
+            avatarCreator.agentsList = agentsList;
+            avatarCreator.observerAgentIndex = 0;
+            avatarCreator.InstantiateAvatars();
 
-                    var so = new SerializedObject(dcm);
-                    so.FindProperty("scenarioName").stringValue = job.scenarioName;
-                    so.FindProperty("captureDepth").boolValue = captureDepth;
-                    so.FindProperty("visualizeFOV").boolValue = visualizeFOV;
-                    so.FindProperty("observerAgentIndex").intValue = 0;
-                    so.ApplyModifiedProperties();
+            // DataCaptureManager
+            var dcGO = new GameObject("DataCaptureManager");
+            dcGO.transform.parent = layoutResult.rootGameObject.transform;
+            var dcm = dcGO.AddComponent<DataCaptureManager>();
 
-                    int total = avatarCreator.instantiatedAvatars.Count;
-                    statusMessage = $"Generated: {job.scenarioName} ({total} agents). Hit Play → Start Capture.";
-                }
-            }
+            var so = new SerializedObject(dcm);
+            so.FindProperty("scenarioName").stringValue = jobName;
+            so.FindProperty("captureDepth").boolValue = captureDepth;
+            so.FindProperty("visualizeFOV").boolValue = visualizeFOV;
+            so.FindProperty("observerAgentIndex").intValue = 0;
+            so.FindProperty("cameraDirectionMode").enumValueIndex = (int)cameraDirectionMode;
+            so.FindProperty("autoCapture").boolValue = true;
+            so.FindProperty("maxFrames").intValue = (int)(captureDuration * 30);
+            so.FindProperty("autoExitPlay").boolValue = true;
+            so.ApplyModifiedProperties();
 
-            completedJobs.Add(job);
-            Selection.activeGameObject = layout.rootGameObject;
+            int total = avatarCreator.instantiatedAvatars.Count;
+            statusMessage = $"Generated: {jobName} ({total} agents). Hit Play — auto captures {(int)(captureDuration * 30)} frames and stops.";
+
+            Selection.activeGameObject = dcGO;
         }
 
         private AgentsList CreateAgentsList(GameObject prefab, int totalCount)
         {
             var al = ScriptableObject.CreateInstance<AgentsList>();
 
-            // Split: ~70% individual, ~30% groups
             int groupCount = Mathf.Max(1, totalCount / 4);
             int groupSize = 2;
             int individualCount = totalCount - groupCount * groupSize;
@@ -270,6 +279,44 @@ namespace CollisionAvoidance.EnvironmentGeneration
             return al;
         }
 
+        // --- State Persistence ---
+
+        private void SaveState()
+        {
+            EditorPrefs.SetString(PREF_SEEDS, seedsText);
+            EditorPrefs.SetString(PREF_AGENTS, agentCountsText);
+            EditorPrefs.SetString(PREF_LAYOUTS, layoutsText);
+            EditorPrefs.SetFloat(PREF_DURATION, captureDuration);
+            EditorPrefs.SetBool(PREF_DEPTH, captureDepth);
+            EditorPrefs.SetBool(PREF_FOV, visualizeFOV);
+            EditorPrefs.SetInt(PREF_CAM_DIR, (int)cameraDirectionMode);
+            EditorPrefs.SetString(PREF_PENDING, string.Join("|", pendingJobs));
+            EditorPrefs.SetString(PREF_COMPLETED, string.Join("|", completedJobs));
+        }
+
+        private void LoadState()
+        {
+            seedsText = EditorPrefs.GetString(PREF_SEEDS, seedsText);
+            agentCountsText = EditorPrefs.GetString(PREF_AGENTS, agentCountsText);
+            layoutsText = EditorPrefs.GetString(PREF_LAYOUTS, layoutsText);
+            captureDuration = EditorPrefs.GetFloat(PREF_DURATION, captureDuration);
+            captureDepth = EditorPrefs.GetBool(PREF_DEPTH, captureDepth);
+            visualizeFOV = EditorPrefs.GetBool(PREF_FOV, visualizeFOV);
+            cameraDirectionMode = (CameraDirectionMode)EditorPrefs.GetInt(PREF_CAM_DIR, (int)cameraDirectionMode);
+
+            string pending = EditorPrefs.GetString(PREF_PENDING, "");
+            pendingJobs = string.IsNullOrEmpty(pending)
+                ? new List<string>()
+                : pending.Split('|').Where(s => !string.IsNullOrEmpty(s)).ToList();
+
+            string completed = EditorPrefs.GetString(PREF_COMPLETED, "");
+            completedJobs = string.IsNullOrEmpty(completed)
+                ? new List<string>()
+                : completed.Split('|').Where(s => !string.IsNullOrEmpty(s)).ToList();
+        }
+
+        // --- Utilities ---
+
         private void ClearEnvironment()
         {
             foreach (var name in new[] { "Environment_Corridor", "Environment_Plaza", "Environment_Intersection",
@@ -282,14 +329,20 @@ namespace CollisionAvoidance.EnvironmentGeneration
 
         private static int[] ParseIntArray(string text)
         {
-            var parts = text.Split(',');
-            var result = new System.Collections.Generic.List<int>();
-            foreach (var p in parts)
-            {
-                if (int.TryParse(p.Trim(), out int val))
-                    result.Add(val);
-            }
-            return result.ToArray();
+            return text.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => int.TryParse(s, out _))
+                .Select(int.Parse)
+                .ToArray();
+        }
+
+        private static LayoutType[] ParseLayouts(string text)
+        {
+            return text.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => System.Enum.TryParse(s, true, out LayoutType _))
+                .Select(s => (LayoutType)System.Enum.Parse(typeof(LayoutType), s, true))
+                .ToArray();
         }
 
         private static void EnsureTagExists(string tag)

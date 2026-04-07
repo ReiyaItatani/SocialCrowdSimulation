@@ -24,6 +24,10 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
     public float agentHeight = 1.8f;
     public float agentRadius = 0.3f;
 
+    [Header("Observer Patrol")]
+    [Tooltip("Index into instantiatedAvatars for the observer agent. -1 = no patrol (random walk).")]
+    public int observerAgentIndex = -1;
+
     [Header("Info After Instantiation")]
     // instantiatedAvatars: A list of instantiated avatars.
     [ReadOnly] public List<GameObject> instantiatedAvatars = new List<GameObject>();
@@ -31,17 +35,72 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
 
     public virtual void InstantiateAvatars()
     {
-        InstantiateIndividuals();
-        InstantiateGroups();
+        // Pre-compute patrol route to determine the observer's start node
+        QuickGraphNode observerStartNode = null;
+        List<QuickGraphNode> patrolRoute = null;
+        if (observerAgentIndex >= 0)
+        {
+            patrolRoute = QuickGraphPathFinder.ComputePatrolRoute(quickGraph._nodes);
+            if (patrolRoute.Count > 0)
+                observerStartNode = patrolRoute[0];
+        }
+
+        InstantiateIndividuals(observerStartNode);
+        InstantiateGroups(observerStartNode);
+
+        if (observerAgentIndex >= 0 && observerAgentIndex < instantiatedAvatars.Count)
+        {
+            SetupObserverPatrol(instantiatedAvatars[observerAgentIndex], patrolRoute);
+        }
     }
 
-    protected virtual void InstantiateIndividuals()
+    /// <summary>
+    /// Replace the observer agent's AgentPathManager with ObserverPathManager
+    /// so it follows a structured patrol route instead of random walking.
+    /// </summary>
+    private void SetupObserverPatrol(GameObject observerAgent, List<QuickGraphNode> patrolRoute)
+    {
+        var coordinator = observerAgent.GetComponentInChildren<AgentPipelineCoordinator>();
+        var oldPathManager = observerAgent.GetComponentInChildren<AgentPathManager>();
+
+        if (coordinator == null || oldPathManager == null)
+        {
+            Debug.LogError("[AvatarCreator] Cannot setup observer patrol: missing coordinator or path manager.");
+            return;
+        }
+
+        // Unsubscribe from old path manager's event before destroying
+        oldPathManager.OnTargetReached -= coordinator.OnTargetReached;
+
+        // Swap component: destroy old, add new
+        GameObject navGO = oldPathManager.gameObject;
+        DestroyImmediate(oldPathManager);
+
+        var observerPathManager = navGO.AddComponent<ObserverPathManager>();
+        observerPathManager.coordinator = coordinator;
+        observerPathManager.goalRadius = 2.0f;
+        observerPathManager.InitializePatrolWithRoute(patrolRoute);
+
+        // Re-wire coordinator reference and re-subscribe to event
+        coordinator.agentPathManager = observerPathManager;
+        observerPathManager.OnTargetReached += coordinator.OnTargetReached;
+
+        // Teleport to patrol start
+        if (patrolRoute != null && patrolRoute.Count > 0)
+        {
+            Vector3 startPos = patrolRoute[0].transform.position;
+            observerAgent.transform.position = new Vector3(startPos.x, observerAgent.transform.position.y, startPos.z);
+        }
+    }
+
+    protected virtual void InstantiateIndividuals(QuickGraphNode excludeNode = null)
     {
         GameObject individualParent = GetOrCreateParent("Individual");
+        var spawnableNodes = GetSpawnableNodes(excludeNode);
 
         foreach (GameObject agent in agentsList.individuals.agents)
         {
-            var node = quickGraph._nodes[UnityEngine.Random.Range(0, quickGraph._nodes.Count)];
+            var node = spawnableNodes[UnityEngine.Random.Range(0, spawnableNodes.Count)];
             var neighbours = node._neighbours[UnityEngine.Random.Range(0, node._neighbours.Count)];
             if (ComputeSafeSpawnPosition(node, neighbours, out Vector3 pos)){
                 InstantiateAgent(agent, individualParent, "Individual", agentsList.individuals.speedRange, node, neighbours, pos);
@@ -49,8 +108,10 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
         }
     }
 
-    protected virtual void InstantiateGroups()
+    protected virtual void InstantiateGroups(QuickGraphNode excludeNode = null)
     {
+        var spawnableNodes = GetSpawnableNodes(excludeNode);
+
         foreach (GroupEntry group in agentsList.groups)
         {
             GameObject groupParent = GetOrCreateParent(group.groupName);
@@ -58,7 +119,7 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             GameObject groupColliderObject = CreateGroupCollider(groupParent, group.groupName);
             GroupParameterManager groupParameterManager = groupColliderObject.GetComponent<GroupParameterManager>();
             GroupManager groupManager = CreateGroupManager(groupParent, groupColliderObject);
-            var node = quickGraph._nodes[UnityEngine.Random.Range(0, quickGraph._nodes.Count)];
+            var node = spawnableNodes[UnityEngine.Random.Range(0, spawnableNodes.Count)];
             var neighbours = node._neighbours[UnityEngine.Random.Range(0, node._neighbours.Count)];
             foreach (GameObject agent in group.agents)
             {
@@ -212,6 +273,20 @@ public class AvatarCreatorQuickGraph : MonoBehaviour
             }
         }
         return names.ToArray();
+    }
+
+    private List<QuickGraphNode> GetSpawnableNodes(QuickGraphNode excludeNode)
+    {
+        if (excludeNode == null)
+            return quickGraph._nodes;
+
+        var nodes = new List<QuickGraphNode>();
+        foreach (var node in quickGraph._nodes)
+        {
+            if (node != excludeNode)
+                nodes.Add(node);
+        }
+        return nodes.Count > 0 ? nodes : quickGraph._nodes;
     }
 
     protected virtual bool ComputeSafeSpawnPosition(QuickGraphNode node, QuickGraphNode neighbours, out Vector3 pos)
